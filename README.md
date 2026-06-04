@@ -1,1 +1,0 @@
-# Sthugh.Gestion.Medical

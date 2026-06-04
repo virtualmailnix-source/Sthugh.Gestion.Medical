@@ -1,0 +1,62 @@
+{
+  "name": "St Hugh's Anglican Home — Gestion Médicale",
+  "short_name": "St Hugh's",
+  "description": "Gestion médicale des résidents — St Hugh's Anglican Home, Rose Hill, Mauritius",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#124848",
+  "theme_color": "#124848",
+  "orientation": "any",
+  "lang": "fr",
+  "categories": ["medical", "health", "productivity"],
+  "icons": [
+    {
+      "src": "ico/favicon-16x16.png",
+      "sizes": "16x16",
+      "type": "image/png"
+    },
+    {
+      "src": "ico/favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "ico/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "ico/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "ico/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Résidents",
+      "short_name": "Résidents",
+      "url": "./#residents",
+      "description": "Liste des résidents"
+    },
+    {
+      "name": "Nouvelle consultation",
+      "short_name": "Consultation",
+      "url": "./#consultations",
+      "description": "Enregistrer une consultation"
+    },
+    {
+      "name": "Alertes",
+      "short_name": "Alertes",
+      "url": "./#alertes",
+      "description": "Voir les alertes actives"
+    }
+  ]
+}

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="St Hugh's Anglican Home — Gestion médicale des résidents">
+  <meta name="theme-color" content="#124848" id="meta-theme">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/x-icon" href="ico/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="ico/favicon-16x16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="ico/favicon-32x32.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="ico/apple-touch-icon.png">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="style.css">
+  <title>St Hugh's — Gestion Médicale</title>
+</head>
+<body>
+
+  <!-- ══ LOGIN ════════════════════════════════════════════════ -->
+  <div id="login-page" class="login-page hidden">
+    <div class="login-box">
+      <div class="login-logo"><i class="bi bi-shield-lock-fill"></i></div>
+      <h1>St Hugh's</h1>
+      <p><span data-i18n="ui.medicalMgmt">Gestion Médicale</span> — <span data-i18n="ui.secureAccess">Accès sécurisé</span></p>
+      <div class="form-group" style="text-align:left">
+        <label class="form-label" data-i18n="ui.emailLabel">Adresse email</label>
+        <input type="email" id="login-email" class="form-control" placeholder="admin@sthughs.mu" autocomplete="email">
+      </div>
+      <div class="form-group" style="text-align:left">
+        <label class="form-label" data-i18n="ui.passwordLabel">Mot de passe</label>
+        <input type="password" id="login-password" class="form-control" placeholder="••••••••••" autocomplete="current-password">
+      </div>
+      <button id="login-btn" class="btn btn-primary btn-lg" style="width:100%;justify-content:center">
+        <span data-i18n="ui.loginBtn">Se connecter</span>
+      </button>
+      <div id="login-err" class="login-err" style="display:none"></div>
+      <p class="login-note" data-i18n="ui.loginNote">Contactez votre administrateur pour obtenir un accès.</p>
+    </div>
+  </div>
+
+  <!-- ══ BIENVENUE (après login) ════════════════════════════════ -->
+  <div id="welcome-screen" class="welcome-screen hidden">
+    <div class="welcome-inner">
+      <div class="welcome-icon"><i class="bi bi-heart-pulse-fill"></i></div>
+      <div class="welcome-text">
+        <span class="welcome-greeting" id="welcome-greeting">Bonjour !</span>
+        <span class="welcome-name" id="welcome-name"></span>
+        <span class="welcome-role" id="welcome-role"></span>
+      </div>
+      <div class="welcome-bar"><span></span></div>
+    </div>
+  </div>
+
+  <!-- ══ SPLASH ════════════════════════════════════════════════ -->
+  <div id="splash" class="splash">
+    <div class="splash-inner">
+      <div class="splash-icon"><i class="bi bi-heart-pulse-fill"></i></div>
+      <div class="splash-brand">
+        <span class="splash-title">St Hugh's Anglican Home</span>
+        <span class="splash-subtitle" data-i18n="ui.splashSubtitle">Système de Gestion Médicale</span>
+      </div>
+      <div class="splash-bar"><span></span></div>
+    </div>
+  </div>
+
+  <!-- ══ APP ═══════════════════════════════════════════════════ -->
+  <div id="app" class="app hidden">
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <span class="logo-icon"><i class="bi bi-heart-pulse-fill"></i></span>
+          <div class="logo-text">
+            <span class="logo-name">St Hugh's</span>
+            <span class="logo-desc" data-i18n="ui.medicalMgmt">Gestion Médicale</span>
+          </div>
+        </div>
+        <button id="btn-sidebar-collapse" class="btn-icon" title="Réduire">
+          <i class="bi bi-layout-sidebar-reverse"></i>
+        </button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="#dashboard"     class="nav-link" data-page="dashboard">
+          <i class="bi bi-grid-1x2-fill"></i><span data-i18n="nav.dashboard">Tableau de bord</span>
+        </a>
+        <a href="#residents"     class="nav-link" data-page="residents">
+          <i class="bi bi-people-fill"></i><span data-i18n="nav.residents">Résidents</span>
+        </a>
+        <a href="#medecins"      class="nav-link" data-page="medecins">
+          <i class="bi bi-person-badge-fill"></i><span data-i18n="nav.medecins">Médecins</span>
+        </a>
+        <a href="#traitements"   class="nav-link" data-page="traitements">
+          <i class="bi bi-capsule-pill"></i><span data-i18n="nav.traitements">Traitements</span>
+          <span class="nav-badge" id="badge-traitements" style="display:none">!</span>
+        </a>
+        <a href="#consultations" class="nav-link" data-page="consultations">
+          <i class="bi bi-journal-medical"></i><span data-i18n="nav.consultations">Consultations</span>
+        </a>
+        <a href="#rendez-vous"   class="nav-link" data-page="rendez-vous">
+          <i class="bi bi-calendar3"></i><span data-i18n="nav.rdv">Rendez-vous</span>
+        </a>
+        <a href="#planification" class="nav-link" data-page="planification">
+          <i class="bi bi-list-ol"></i><span data-i18n="nav.planification">Planification</span>
+        </a>
+        <a href="#visites" class="nav-link" data-page="visites">
+          <i class="bi bi-person-walking"></i><span data-i18n="nav.visites">Visites</span>
+          <span class="nav-badge" id="badge-visites" style="display:none">0</span>
+        </a>
+        <a href="#departs" class="nav-link" data-page="departs">
+          <i class="bi bi-box-arrow-right"></i><span data-i18n="nav.departs">Sorties &amp; Décès</span>
+        </a>
+        <a href="#courses" class="nav-link" data-page="courses">
+          <i class="bi bi-bag-fill"></i><span data-i18n="nav.courses">Courses</span>
+          <span class="nav-badge" id="badge-courses" style="display:none">0</span>
+        </a>
+        <div class="nav-divider"></div>
+        <a href="#anniversaires" class="nav-link" data-page="anniversaires">
+          <i class="bi bi-balloon-heart-fill"></i><span data-i18n="nav.anniversaires">Anniversaires</span>
+          <span class="nav-badge nav-badge-gold" id="badge-anniversaires" style="display:none">0</span>
+        </a>
+        <a href="#alertes"       class="nav-link" data-page="alertes">
+          <i class="bi bi-bell-fill"></i><span data-i18n="nav.alertes">Alertes</span>
+          <span class="nav-badge" id="badge-alertes" style="display:none">0</span>
+        </a>
+        <a href="#statistiques"  class="nav-link" data-page="statistiques">
+          <i class="bi bi-bar-chart-fill"></i><span data-i18n="nav.statistiques">Statistiques</span>
+        </a>
+        <div class="nav-divider"></div>
+        <a href="#aide" class="nav-link" data-page="aide">
+          <i class="bi bi-question-circle-fill"></i><span data-i18n="nav.aide">Aide</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="lang-switcher" id="lang-switcher">
+          <button class="lang-btn active" data-lang="fr">FR</button>
+          <button class="lang-btn" data-lang="en">EN</button>
+        </div>
+        <button id="btn-theme" class="btn-theme">
+          <i class="bi bi-moon-fill" id="theme-icon"></i>
+          <span id="theme-label" data-i18n="ui.darkMode">Mode sombre</span>
+        </button>
+      </div>
+    </aside>
+
+    <div id="sidebar-overlay" class="sidebar-overlay hidden"></div>
+
+    <!-- ZONE PRINCIPALE -->
+    <div class="main-wrap">
+      <header class="topbar">
+        <button id="btn-mobile-menu" class="btn-icon topbar-menu-btn"><i class="bi bi-list"></i></button>
+        <h1 class="topbar-title" id="page-title">Tableau de bord</h1>
+        <div class="topbar-right">
+          <div id="net-status" class="badge-net online">
+            <i class="bi bi-wifi"></i><span>En ligne</span>
+          </div>
+          <div class="topbar-date" id="topbar-date"></div>
+          <div class="topbar-user-wrap" id="btn-my-profile" title="Mon profil"
+            style="cursor:pointer;border-radius:var(--radius-sm);padding:.25rem .5rem;transition:background .15s"
+            onmouseenter="this.style.background='var(--hover-bg)'" onmouseleave="this.style.background=''">
+            <div class="topbar-user-info">
+              <span id="topbar-user-name" class="topbar-username"></span>
+              <span id="topbar-user-role" class="topbar-role-badge"></span>
+            </div>
+            <i class="bi bi-person-circle" style="font-size:1.4rem;color:var(--teal-mid);margin-left:.4rem"></i>
+          </div>
+        </div>
+      </header>
+      <main id="page-content" class="page-content"></main>
+    </div>
+  </div>
+
+  <!-- MODAL -->
+  <div id="modal-overlay" class="modal-overlay hidden" role="dialog" aria-modal="true">
+    <div id="modal-box" class="modal-box">
+      <div class="modal-head">
+        <h2 id="modal-title" class="modal-title"></h2>
+        <button id="modal-close" class="btn-icon"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div id="modal-body" class="modal-body"></div>
+      <div id="modal-foot" class="modal-foot hidden"></div>
+    </div>
+  </div>
+
+  <!-- TOASTS -->
+  <div id="toasts" class="toast-container" aria-live="polite"></div>
+
+  <!-- IMPRESSION -->
+  <div id="print-zone" class="print-only"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+  <script type="module" src="script.js"></script>
+</body>
+</html>

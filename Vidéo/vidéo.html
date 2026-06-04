@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>St Hugh's Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Mulish:wght@500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#0e3531;overflow:hidden;}
+  #root{position:fixed;inset:0;}
+  *{box-sizing:border-box;}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<!-- ── LANGUAGE & TRANSLATIONS ─────────────────────────────────────────── -->
+<script type="text/babel">
+const LANG = (()=>{ try{ return (localStorage.getItem('sthughs_lang')||'fr').toLowerCase()==='en'?'en':'fr'; }catch{return 'fr';} })();
+const T = {
+  fr: {
+    guideSub:'Système de Gestion Médicale',
+    guideTag:'Le guide essentiel en deux minutes',
+    nav:[
+      ['grid-1x2-fill','Tableau de bord'],['people-fill','Résidents'],['person-badge-fill','Médecins'],
+      ['capsule-pill','Traitements'],['journal-medical','Consultations'],['calendar3','Rendez-vous'],
+      ['list-ol','Planification'],['person-walking','Visites'],['box-arrow-right','Sorties & Décès'],
+      ['bag-fill','Courses'],['balloon-heart-fill','Anniversaires'],['bell-fill','Alertes'],
+      ['bar-chart-fill','Statistiques'],['person-circle','Mon profil'],
+    ],
+    ch:[
+      {s:8, i:'01',name:'Connexion'},{s:16,i:'02',name:'Navigation'},{s:29,i:'03',name:'Dossier résident'},
+      {s:40,i:'04',name:'Consult. · Trait. · RDV'},{s:51,i:'05',name:'Visites & Courses'},
+      {s:63,i:'06',name:'Sorties & Décès'},{s:74,i:'07',name:'Anniversaires & Alertes'},
+      {s:84,i:'08',name:'Système de points'},{s:104,i:'09',name:'PDF & Droits'},
+    ],
+    s1:{ey:'01 · Connexion',h1:'Connectez-vous',
+        li1:'Email et mot de passe fournis par votre administrateur.',
+        li2:'Votre session reste active après fermeture de l\'onglet.',
+        tip:'Déconnectez-vous toujours sur un poste partagé.'},
+    s2:{ey:'02 · Navigation',h1:'Tout part du menu',
+        b1:'14 sections, une seule barre latérale',
+        b2:'Des badges en temps réel : visites, alertes, anniversaires',
+        b3:'Sur mobile, touchez l\'icône ☰ en haut à gauche'},
+    s3:{ey:'03 · Dossier d\'un résident',h1:'5 onglets, tout le suivi',
+        tabs:[
+          ['Infos','vcard-fill','Médecin traitant, allergies, mobilité, antécédents'],
+          ['Contacts','telephone-fill','Famille à prévenir, contact principal indiqué'],
+          ['Traitements','capsule-pill','Médicaments actifs, jours restants, alertes couleur'],
+          ['Consultations','journal-medical','Historique des visites + ordonnances jointes'],
+          ['RDV','calendar3','Rendez-vous passés et à venir du résident'],
+        ],
+        foot:'Historique vacances & courses inclus'},
+    s4:{ey:'04 · Consultations · Traitements · RDV',h1:'Le geste médical au quotidien',
+        cards:[
+          ['journal-plus','Consultation','Taille pré-remplie · joignez l\'ordonnance (PDF/JPG, 5 Mo)',41.0],
+          ['capsule-pill','Traitement','Alerte automatique 24 h avant la fin du traitement',42.0],
+          ['calendar-plus-fill','Rendez-vous','Cochez « Urgence » : le RDV s\'affiche en rouge',43.0],
+        ]},
+    s5:{ey:'05 · Visites & Courses',h1:'Qui entre, qui sort, tracé',
+        vSub:'Familles & proches, badge du jour',
+        vDesc:'Visiteur, résident, nombre de personnes, un seul numéro suffit.',
+        vC:[{label:'Planifiée',bg:'#dbeafe',fg:'#1d4ed8'},{label:'En cours',bg:'#dcfce7',fg:'#166534'},{label:'Terminée',bg:'rgba(184,150,62,.18)',fg:'#8a6d1f'}],
+        cSub:'Résidents autonomes uniquement',
+        cDesc:'Sortie commissions : heure de départ, articles, puis retour.',
+        cC:[{label:'Planifiée',bg:'#dbeafe',fg:'#1d4ed8'},{label:'Dehors',bg:'#fef3c7',fg:'#92400e'},{label:'Rentré(e)',bg:'#dcfce7',fg:'#15803d'}],
+        foot:'Tout l\'historique reste dans le dossier du résident'},
+    s6:{ey:'06 · Sorties & Décès',h1:'Trois façons de quitter le foyer',
+        cards:[
+          {ic:'luggage-fill',gl:null,title:'Vacances',sub:'Sortie temporaire',acc:'#2563eb',tint:'rgba(37,99,235,.07)',desc:'Reste actif, badge « En vacances ». Bouton Retour au foyer.',role:'Tous les rôles',roleC:'#1f5c52',st:64.4},
+          {ic:'door-open-fill',gl:null,title:'Départ définitif',sub:'La famille reprend',acc:'#6b7280',tint:'rgba(107,114,128,.08)',desc:'Passe en archivé, visible dans « Partis ».',role:'Super Admin',roleC:'#b3261e',st:65.0},
+          {ic:null,gl:'✝',title:'Décès',sub:'Données conservées',acc:'#b3261e',tint:'rgba(179,38,30,.06)',desc:'Archivé dans « Décédés ». Cause facultative.',role:'Super Admin',roleC:'#b3261e',st:65.6},
+        ],
+        foot:'Profil archivé = dossier en lecture seule'},
+    s7:{ey:'07 · Anniversaires & Alertes',h1:'Rien ne vous échappe',
+        aSub:'Classés par urgence',
+        ann:[
+          {label:'Aujourd\'hui',bg:'#b8963e',fg:'#fff',desc:'carte dorée + badge menu',st:75.0},
+          {label:'Demain',bg:'#fde9c8',fg:'#92400e',desc:'préavis 24 h',st:75.6},
+          {label:'Dans X jours',bg:'#e7e0cf',fg:'#5a655f',desc:'à venir cette semaine',st:76.2},
+        ],
+        alSub:'Générer chaque matin · maj 60 s',
+        al:[
+          {label:'Médicament < 24h',bg:'#fde0de',fg:'#b3261e',ic:'capsule',st:76.6},
+          {label:'Médicament < 3j',bg:'#fef0d4',fg:'#b45309',ic:'capsule',st:77.1},
+          {label:'Non vu 30j +',bg:'#fef0d4',fg:'#b45309',ic:'eye-slash-fill',st:77.6},
+          {label:'Anniversaire',bg:'rgba(184,150,62,.18)',fg:'#8a6d1f',ic:'balloon-heart-fill',st:78.1},
+          {label:'Urgence',bg:'#fde0de',fg:'#b3261e',ic:'exclamation-triangle-fill',st:78.6},
+        ]},
+    s8:{ey:'08 · Système de points',q:'Qui voit le médecin en premier ?',
+        eq:'= score de priorité',sub:'Calculé automatiquement, trois facteurs additionnés',
+        bB:'Trois facteurs, un score',
+        fa:{letter:'A',color:'#2f6fe0',title:'Jours sans consultation',max:'max +80',
+          rows:[{pts:'+80',txt:'Jamais vu depuis l\'entrée'},{pts:'+60',txt:'Plus de 30 jours'},{pts:'+35',txt:'Plus de 21 jours'},{pts:'+15',txt:'Plus de 14 jours'}]},
+        fb:{letter:'B',color:'#dc2626',title:'Médicaments urgents',max:'max +50',
+          rows:[{pts:'+50',txt:'Expire dans moins de 24 h'},{pts:'+25',txt:'Expire dans moins de 3 jours'},{pts:'0',txt:'Aucune urgence'}]},
+        fc:{letter:'C',color:'#b8963e',title:'Priorité manuelle',max:'max +40',
+          rows:[{pts:'+40',txt:'P1 Urgente'},{pts:'+20',txt:'P2 Élevée'},{pts:'0',txt:'P3 Normale'}]},
+        leg:[['#159a55','< 30, normal'],['#d97706','30 à 60, à surveiller'],['#dc2626','> 60, priorité']],
+        bC:'Un exemple concret',
+        exN:'Mme Dupont',exR:'Cas prioritaire',exA:'jamais vue',exB:'méd. demain',exC:'P1',exL:'> 60 = priorité'},
+    s9:{ey:'09 · Export PDF & Droits',h1:'Exporter & qui peut quoi',
+        pdfs:[
+          {ic:'file-earmark-medical-fill',gl:null,title:'Dossier médical',acc:'#1f5c52',desc:'Résidents actifs · 5 dernières consultations',st:105.0},
+          {ic:null,gl:'✝',title:'Dossier de décès',acc:'#b3261e',desc:'En-tête rouge · historique complet',st:105.5},
+          {ic:'archive-fill',gl:null,title:'Dossier archivé',acc:'#6b7280',desc:'En-tête gris · date de départ',st:106.0},
+        ],
+        foot:'Chaque page indique « Exporté par : Nom (email) »',
+        adm:['Consultations & traitements','Médecins & rendez-vous','Visites, courses, vacances','Export PDF'],
+        sa:['Ajouter / retirer un résident','Départ définitif & décès','Modifier les contacts famille','Comptes utilisateurs'],
+        aLab:'✓ Admin',sLab:'★ Super Admin'},
+    outro:'Tout le guide est dans le menu Aide',
+  },
+  en: {
+    guideSub:'Medical Management System',
+    guideTag:'The essential guide in two minutes',
+    nav:[
+      ['grid-1x2-fill','Dashboard'],['people-fill','Residents'],['person-badge-fill','Doctors'],
+      ['capsule-pill','Treatments'],['journal-medical','Consultations'],['calendar3','Appointments'],
+      ['list-ol','Planning'],['person-walking','Visits'],['box-arrow-right','Exits & Deaths'],
+      ['bag-fill','Shopping'],['balloon-heart-fill','Birthdays'],['bell-fill','Alerts'],
+      ['bar-chart-fill','Statistics'],['person-circle','My profile'],
+    ],
+    ch:[
+      {s:8, i:'01',name:'Login'},{s:16,i:'02',name:'Navigation'},{s:29,i:'03',name:'Resident file'},
+      {s:40,i:'04',name:'Consult. · Treat. · Appt.'},{s:51,i:'05',name:'Visits & Shopping'},
+      {s:63,i:'06',name:'Exits & Deaths'},{s:74,i:'07',name:'Birthdays & Alerts'},
+      {s:84,i:'08',name:'Priority score'},{s:104,i:'09',name:'PDF & Rights'},
+    ],
+    s1:{ey:'01 · Login',h1:'Sign in',
+        li1:'Email and password provided by your administrator.',
+        li2:'Your session stays active after closing the tab.',
+        tip:'Always log out on a shared computer.'},
+    s2:{ey:'02 · Navigation',h1:'Everything starts from the menu',
+        b1:'14 sections, one sidebar',
+        b2:'Real-time badges: visits, alerts, birthdays',
+        b3:'On mobile, tap the ☰ icon at the top left'},
+    s3:{ey:'03 · Resident file',h1:'5 tabs, full tracking',
+        tabs:[
+          ['Info','vcard-fill','Attending doctor, allergies, mobility, history'],
+          ['Contacts','telephone-fill','Emergency family, primary contact shown'],
+          ['Treatments','capsule-pill','Active meds, days remaining, colour alerts'],
+          ['Consultations','journal-medical','Visit history + attached prescriptions'],
+          ['Appointments','calendar3','Past and upcoming appointments'],
+        ],
+        foot:'Vacation & shopping history included'},
+    s4:{ey:'04 · Consult. · Treatments · Appt.',h1:'Daily medical actions',
+        cards:[
+          ['journal-plus','Consultation','Height pre-filled · attach prescription (PDF/JPG, 5 MB)',41.0],
+          ['capsule-pill','Treatment','Auto-alert 24 h before end of treatment',42.0],
+          ['calendar-plus-fill','Appointment','Check « Emergency » : appointment shown in red',43.0],
+        ]},
+    s5:{ey:'05 · Visits & Shopping',h1:'Who enters, who leaves, tracked',
+        vSub:'Families & friends, today\'s badge',
+        vDesc:'Visitor, resident, number of people, one phone number is enough.',
+        vC:[{label:'Scheduled',bg:'#dbeafe',fg:'#1d4ed8'},{label:'In progress',bg:'#dcfce7',fg:'#166534'},{label:'Done',bg:'rgba(184,150,62,.18)',fg:'#8a6d1f'}],
+        cSub:'Independent residents only',
+        cDesc:'Shopping trip: departure time, items, then return.',
+        cC:[{label:'Planned',bg:'#dbeafe',fg:'#1d4ed8'},{label:'Out',bg:'#fef3c7',fg:'#92400e'},{label:'Returned',bg:'#dcfce7',fg:'#15803d'}],
+        foot:'Full history stays in the resident\'s file'},
+    s6:{ey:'06 · Exits & Deaths',h1:'Three ways to leave the home',
+        cards:[
+          {ic:'luggage-fill',gl:null,title:'Vacation',sub:'Temporary leave',acc:'#2563eb',tint:'rgba(37,99,235,.07)',desc:'Stays active, "On leave" badge. Return to home button.',role:'All roles',roleC:'#1f5c52',st:64.4},
+          {ic:'door-open-fill',gl:null,title:'Permanent departure',sub:'Family takes over',acc:'#6b7280',tint:'rgba(107,114,128,.08)',desc:'Archived, visible in "Departed" filter.',role:'Super Admin',roleC:'#b3261e',st:65.0},
+          {ic:null,gl:'✝',title:'Death',sub:'Data preserved',acc:'#b3261e',tint:'rgba(179,38,30,.06)',desc:'Archived in "Deceased". Cause optional.',role:'Super Admin',roleC:'#b3261e',st:65.6},
+        ],
+        foot:'Archived profile = read-only file'},
+    s7:{ey:'07 · Birthdays & Alerts',h1:'Nothing gets missed',
+        aSub:'Sorted by urgency',
+        ann:[
+          {label:'Today',bg:'#b8963e',fg:'#fff',desc:'gold card + menu badge',st:75.0},
+          {label:'Tomorrow',bg:'#fde9c8',fg:'#92400e',desc:'24 h notice',st:75.6},
+          {label:'In X days',bg:'#e7e0cf',fg:'#5a655f',desc:'upcoming this week',st:76.2},
+        ],
+        alSub:'Generate every morning · refresh 60 s',
+        al:[
+          {label:'Medication < 24h',bg:'#fde0de',fg:'#b3261e',ic:'capsule',st:76.6},
+          {label:'Medication < 3d',bg:'#fef0d4',fg:'#b45309',ic:'capsule',st:77.1},
+          {label:'Not seen 30d+',bg:'#fef0d4',fg:'#b45309',ic:'eye-slash-fill',st:77.6},
+          {label:'Birthday',bg:'rgba(184,150,62,.18)',fg:'#8a6d1f',ic:'balloon-heart-fill',st:78.1},
+          {label:'Emergency',bg:'#fde0de',fg:'#b3261e',ic:'exclamation-triangle-fill',st:78.6},
+        ]},
+    s8:{ey:'08 · Priority score',q:'Who sees the doctor first?',
+        eq:'= priority score',sub:'Calculated automatically, three factors added',
+        bB:'Three factors, one score',
+        fa:{letter:'A',color:'#2f6fe0',title:'Days without a consultation',max:'max +80',
+          rows:[{pts:'+80',txt:'Never seen since admission'},{pts:'+60',txt:'More than 30 days'},{pts:'+35',txt:'More than 21 days'},{pts:'+15',txt:'More than 14 days'}]},
+        fb:{letter:'B',color:'#dc2626',title:'Urgent medications',max:'max +50',
+          rows:[{pts:'+50',txt:'Expires in less than 24 h'},{pts:'+25',txt:'Expires in less than 3 days'},{pts:'0',txt:'No urgency'}]},
+        fc:{letter:'C',color:'#b8963e',title:'Manual priority',max:'max +40',
+          rows:[{pts:'+40',txt:'P1 Urgent'},{pts:'+20',txt:'P2 High'},{pts:'0',txt:'P3 Normal'}]},
+        leg:[['#159a55','< 30, normal'],['#d97706','30 to 60, monitor'],['#dc2626','> 60, priority']],
+        bC:'A concrete example',
+        exN:'Mrs Dupont',exR:'Priority case',exA:'never seen',exB:'med. tomorrow',exC:'P1',exL:'> 60 = priority'},
+    s9:{ey:'09 · PDF Export & Rights',h1:'Export & who can do what',
+        pdfs:[
+          {ic:'file-earmark-medical-fill',gl:null,title:'Medical file',acc:'#1f5c52',desc:'Active residents · last 5 consultations',st:105.0},
+          {ic:null,gl:'✝',title:'Death record',acc:'#b3261e',desc:'Red header · full history',st:105.5},
+          {ic:'archive-fill',gl:null,title:'Archived file',acc:'#6b7280',desc:'Grey header · departure date',st:106.0},
+        ],
+        foot:'Each page shows "Exported by: Name (email)"',
+        adm:['Consultations & treatments','Doctors & appointments','Visits, shopping, vacation','PDF export'],
+        sa:['Add / remove residents','Permanent departure & death','Edit family contacts','User accounts'],
+        aLab:'✓ Admin',sLab:'★ Super Admin'},
+    outro:'The full guide is in the Help menu',
+  },
+};
+window.LANG = LANG;
+window.L = T[LANG];
+</script>
+
+<!-- ── ANIMATIONS ENGINE ──────────────────────────────────────────────────── -->
+<script type="text/babel">
+const Easing = {
+  linear:(t)=>t,
+  easeInQuad:(t)=>t*t, easeOutQuad:(t)=>t*(2-t),
+  easeInCubic:(t)=>t*t*t, easeOutCubic:(t)=>(--t)*t*t+1,
+  easeInOutCubic:(t)=>t<0.5?4*t*t*t:(t-1)*(2*t-2)*(2*t-2)+1,
+  easeOutBack:(t)=>{ const c1=1.70158,c3=c1+1; return 1+c3*Math.pow(t-1,3)+c1*Math.pow(t-1,2); },
+  easeInBack:(t)=>{ const c1=1.70158,c3=c1+1; return c3*t*t*t-c1*t*t; },
+  easeOutExpo:(t)=>t===1?1:1-Math.pow(2,-10*t),
+};
+const clamp=(v,mn,mx)=>Math.max(mn,Math.min(mx,v));
+function interpolate(input,output,ease=Easing.linear){ return (t)=>{ if(t<=input[0])return output[0]; if(t>=input[input.length-1])return output[output.length-1]; for(let i=0;i<input.length-1;i++){if(t>=input[i]&&t<=input[i+1]){const span=input[i+1]-input[i];const local=span===0?0:(t-input[i])/span;const easeFn=Array.isArray(ease)?(ease[i]||Easing.linear):ease;return output[i]+(output[i+1]-output[i])*easeFn(local);}} return output[output.length-1]; }; }
+function animate({from=0,to=1,start=0,end=1,ease=Easing.easeOutCubic}){ return (t)=>{ if(t<=start)return from; if(t>=end)return to; return from+(to-from)*ease((t-start)/(end-start)); }; }
+
+const TimelineContext=React.createContext({time:0,duration:10,playing:false});
+const useTime=()=>React.useContext(TimelineContext).time;
+const useTimeline=()=>React.useContext(TimelineContext);
+const SpriteContext=React.createContext({localTime:0,progress:0,duration:0});
+const useSprite=()=>React.useContext(SpriteContext);
+
+function Sprite({start=0,end=Infinity,children,keepMounted=false}){
+  const {time}=useTimeline();
+  const visible=time>=start&&time<=end;
+  if(!visible&&!keepMounted)return null;
+  const duration=end-start;
+  const localTime=Math.max(0,time-start);
+  const progress=duration>0&&isFinite(duration)?clamp(localTime/duration,0,1):0;
+  const value={localTime,progress,duration,visible};
+  return <SpriteContext.Provider value={value}>{typeof children==='function'?children(value):children}</SpriteContext.Provider>;
+}
+
+function IconButton({children,onClick,title}){
+  const [hover,setHover]=React.useState(false);
+  return <button onClick={onClick} title={title}
+    onMouseEnter={()=>setHover(true)} onMouseLeave={()=>setHover(false)}
+    style={{width:30,height:30,display:'flex',alignItems:'center',justifyContent:'center',
+      background:hover?'rgba(216,189,118,0.22)':'rgba(216,189,118,0.08)',
+      border:'1px solid rgba(216,189,118,0.28)',borderRadius:6,
+      color:hover?'#d8bd76':'rgba(245,242,232,0.75)',cursor:'pointer',padding:0,transition:'background 120ms, color 120ms'}}
+  >{children}</button>;
+}
+
+function PlaybackBar({time,duration,playing,onPlayPause,onReset,onSeek,onHover}){
+  const trackRef=React.useRef(null);
+  const [dragging,setDragging]=React.useState(false);
+  const [isFs,setIsFs]=React.useState(false);
+
+  const timeFromEvent=React.useCallback((e)=>{ const r=trackRef.current.getBoundingClientRect(); return clamp((e.clientX-r.left)/r.width,0,1)*duration; },[duration]);
+  const onTrackMove=(e)=>{ if(!trackRef.current)return; const t=timeFromEvent(e); if(dragging)onSeek(t); else onHover(t); };
+  const onTrackLeave=()=>{ if(!dragging)onHover(null); };
+  const onTrackDown=(e)=>{ setDragging(true); onSeek(timeFromEvent(e)); onHover(null); };
+  React.useEffect(()=>{ if(!dragging)return; const onUp=()=>setDragging(false); const onMove=(e)=>{ if(trackRef.current)onSeek(timeFromEvent(e)); }; window.addEventListener('mouseup',onUp); window.addEventListener('mousemove',onMove); return ()=>{ window.removeEventListener('mouseup',onUp); window.removeEventListener('mousemove',onMove); }; },[dragging,timeFromEvent,onSeek]);
+
+  React.useEffect(()=>{
+    const onFsChange=()=>setIsFs(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange',onFsChange);
+    return ()=>document.removeEventListener('fullscreenchange',onFsChange);
+  },[]);
+
+  const toggleFs=()=>{
+    if(document.fullscreenElement){ document.exitFullscreen(); }
+    else { (document.documentElement.requestFullscreen||document.documentElement.webkitRequestFullscreen).call(document.documentElement); }
+  };
+
+  const pct=duration>0?(time/duration)*100:0;
+  const fmt=(t)=>{ const s=Math.floor(Math.max(0,t)%60); const m=Math.floor(Math.max(0,t)/60); const cs=Math.floor((Math.max(0,t)*100)%100); return `${m}:${String(s).padStart(2,'0')}.${String(cs).padStart(2,'0')}`; };
+  const mono='JetBrains Mono,ui-monospace,monospace';
+  return (
+    <div style={{display:'flex',alignItems:'center',gap:10,padding:'7px 14px',
+      background:'rgba(14,53,49,0.98)',borderTop:'1px solid rgba(216,189,118,0.20)',
+      width:'100%',color:'#f5f2e8',userSelect:'none',flexShrink:0}}>
+      <IconButton onClick={onReset} title="Retour au début">
+        <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M3 2v10M12 2L5 7l7 5V2z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round"/></svg>
+      </IconButton>
+      <IconButton onClick={onPlayPause} title="Lecture / Pause (espace)">
+        {playing
+          ? <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><rect x="3" y="2" width="3" height="10" fill="currentColor"/><rect x="8" y="2" width="3" height="10" fill="currentColor"/></svg>
+          : <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M3 2l9 5-9 5V2z" fill="currentColor"/></svg>}
+      </IconButton>
+      <div style={{fontFamily:mono,fontSize:11,fontVariantNumeric:'tabular-nums',width:60,textAlign:'right',color:'rgba(245,242,232,0.9)'}}>{fmt(time)}</div>
+      <div ref={trackRef} onMouseMove={onTrackMove} onMouseLeave={onTrackLeave} onMouseDown={onTrackDown}
+        style={{flex:1,height:22,position:'relative',cursor:'pointer',display:'flex',alignItems:'center'}}>
+        <div style={{position:'absolute',left:0,right:0,height:4,background:'rgba(255,255,255,0.12)',borderRadius:2}}/>
+        <div style={{position:'absolute',left:0,width:`${pct}%`,height:4,background:'linear-gradient(90deg,#b8963e,#d8bd76)',borderRadius:2}}/>
+        <div style={{position:'absolute',left:`${pct}%`,top:'50%',width:12,height:12,marginLeft:-6,marginTop:-6,
+          background:'#d8bd76',borderRadius:6,boxShadow:'0 1px 4px rgba(14,53,49,0.5)'}}/>
+      </div>
+      <div style={{fontFamily:mono,fontSize:11,fontVariantNumeric:'tabular-nums',width:60,textAlign:'left',color:'rgba(245,242,232,0.4)'}}>{fmt(duration)}</div>
+      <IconButton onClick={toggleFs} title={isFs ? 'Réduire' : 'Plein écran'}>
+        {isFs
+          ? <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M5 1v4H1M5 5 1 1  M9 1v4h4M9 5l4-4  M5 13v-4H1M5 9 1 13  M9 13v-4h4M9 9l4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          : <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M1 5V1h4M1 1l4 4  M13 5V1h-4M13 1-4 4  M1 9v4h4M1 13l4-4  M13 9v4h-4M13 13l-4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+      </IconButton>
+    </div>
+  );
+}
+
+function Stage({width=1280,height=720,duration=10,background='#0e3531',loop=true,autoplay=true,persistKey='animstage',children}){
+  const [time,setTime]=React.useState(()=>{ try{ const v=parseFloat(localStorage.getItem(persistKey+':t')||'0'); return isFinite(v)?clamp(v,0,duration):0; }catch{return 0;} });
+  const [playing,setPlaying]=React.useState(autoplay);
+  const [hoverTime,setHoverTime]=React.useState(null);
+  const [scale,setScale]=React.useState(1);
+  const stageRef=React.useRef(null);
+  const rafRef=React.useRef(null);
+  const lastTsRef=React.useRef(null);
+  React.useEffect(()=>{ try{localStorage.setItem(persistKey+':t',String(time));}catch{} },[time,persistKey]);
+  React.useEffect(()=>{ if(!stageRef.current)return; const el=stageRef.current; const measure=()=>{ const barH=46; const s=Math.min(el.clientWidth/width,(el.clientHeight-barH)/height); setScale(Math.max(0.05,s)); }; measure(); const ro=new ResizeObserver(measure); ro.observe(el); window.addEventListener('resize',measure); return()=>{ ro.disconnect(); window.removeEventListener('resize',measure); }; },[width,height]);
+  React.useEffect(()=>{ if(!playing){lastTsRef.current=null;return;} const step=(ts)=>{ if(lastTsRef.current==null)lastTsRef.current=ts; const dt=(ts-lastTsRef.current)/1000; lastTsRef.current=ts; setTime(t=>{ let n=t+dt; if(n>=duration){if(loop)n=n%duration;else{n=duration;setPlaying(false);}} return n; }); rafRef.current=requestAnimationFrame(step); }; rafRef.current=requestAnimationFrame(step); return()=>{ if(rafRef.current)cancelAnimationFrame(rafRef.current); lastTsRef.current=null; }; },[playing,duration,loop]);
+  React.useEffect(()=>{ const onKey=(e)=>{ if(e.target&&(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'))return; if(e.code==='Space'){e.preventDefault();setPlaying(p=>!p);} else if(e.code==='ArrowLeft')setTime(t=>clamp(t-(e.shiftKey?1:0.1),0,duration)); else if(e.code==='ArrowRight')setTime(t=>clamp(t+(e.shiftKey?1:0.1),0,duration)); else if(e.key==='0'||e.code==='Home')setTime(0); }; window.addEventListener('keydown',onKey); return()=>window.removeEventListener('keydown',onKey); },[duration]);
+  const displayTime=hoverTime!=null?hoverTime:time;
+  const ctxValue=React.useMemo(()=>({time:displayTime,duration,playing,setTime,setPlaying}),[displayTime,duration,playing]);
+  return (
+    <div ref={stageRef} style={{position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',background:'#0e3531'}}>
+      <div style={{flex:1,width:'100%',display:'flex',alignItems:'center',justifyContent:'center',overflow:'hidden',minHeight:0}}>
+        <div style={{width,height,background,position:'relative',transform:`scale(${scale})`,transformOrigin:'center',flexShrink:0,overflow:'hidden'}}>
+          <TimelineContext.Provider value={ctxValue}>{children}</TimelineContext.Provider>
+        </div>
+      </div>
+      <PlaybackBar time={displayTime} actualTime={time} duration={duration} playing={playing}
+        onPlayPause={()=>setPlaying(p=>!p)} onReset={()=>setTime(0)}
+        onSeek={(t)=>setTime(t)} onHover={(t)=>setHoverTime(t)}/>
+    </div>
+  );
+}
+
+Object.assign(window,{Easing,interpolate,animate,clamp,TimelineContext,useTime,useTimeline,Sprite,SpriteContext,useSprite,Stage,PlaybackBar});
+</script>
+
+<!-- ── SCENES CORE ───────────────────────────────────────────────────────── -->
+<script type="text/babel">
+const C={cream:'#f5f2e8',creamHi:'#fbf9f1',card:'#fffdf8',beige:'#e7e0cf',teal:'#1f5c52',tealMid:'#164a43',tealDeep:'#0e3531',tealAbyss:'#0a2926',gold:'#b8963e',goldSoft:'#d8bd76',goldHi:'#e6d29a',ink:'#21302b',mid:'#5a655f',faint:'#9aa39c',blue:'#2563eb',gray:'#6b7280',red:'#b3261e',green:'#159a55',orange:'#d97706',line:'#e4ddcc'};
+const F={disp:"'Plus Jakarta Sans',system-ui,sans-serif",body:"'Mulish',system-ui,sans-serif",mono:"'JetBrains Mono',ui-monospace,monospace"};
+const ILLO=(n)=>`../src/composants/${n}.png`;
+
+const ICONS={'heart-pulse-fill':'<path d="M12 20.5C6.2 17 2.5 13.2 2.5 8.9 2.5 6.1 4.6 4 7.1 4c1.8 0 3.5 1 4.4 2.6h.9"/><path d="M12 6.6C12.9 5 14.6 4 16.4 4c2.5 0 4.6 2.1 4.6 4.9 0 1.4-.4 2.7-1.1 3.9"/><path d="M9 13.5h2.4L13 11l2 4 1.4-2.2H20"/>','list':'<path d="M4 6.5h16M4 12h16M4 17.5h16"/>','envelope-fill':'<rect x="3" y="5.5" width="18" height="13" rx="2.2"/><path d="M4.2 7.2 12 13l7.8-5.8"/>','arrow-repeat':'<path d="M4 11.5A8 8 0 0 1 17.5 6.4L20 8.5"/><path d="M20 3.8v4.7h-4.7"/><path d="M20 12.5A8 8 0 0 1 6.5 17.6L4 15.5"/><path d="M4 20.2v-4.7h4.7"/>','shield-lock-fill':'<path d="M12 3.2 19 5.6v5.2c0 4.9-3.1 8.3-7 9.7-3.9-1.4-7-4.8-7-9.7V5.6z"/><rect x="9.4" y="11.2" width="5.2" height="4.4" rx="0.9"/><path d="M10.3 11.2v-1.3a1.7 1.7 0 0 1 3.4 0v1.3"/>','grid-1x2-fill':'<rect x="3.5" y="3.5" width="7" height="17" rx="1.6"/><rect x="13.5" y="3.5" width="7" height="7.3" rx="1.6"/><rect x="13.5" y="13.2" width="7" height="7.3" rx="1.6"/>','people-fill':'<circle cx="9" cy="8" r="3.3"/><path d="M2.7 20c0-3.5 2.8-5.7 6.3-5.7s6.3 2.2 6.3 5.7"/><path d="M16 5.2a3.3 3.3 0 0 1 0 6.3"/><path d="M17.2 14.5c2.6.5 4.3 2.5 4.3 5.5"/>','person-badge-fill':'<rect x="3.6" y="3.6" width="16.8" height="16.8" rx="3"/><circle cx="12" cy="9.4" r="2.6"/><path d="M7.8 16.6c.8-1.7 2.3-2.5 4.2-2.5s3.4.8 4.2 2.5"/>','capsule-pill':'<rect x="3.4" y="8.4" width="17.2" height="7.2" rx="3.6"/><path d="M12 8.4v7.2"/>','capsule':'<rect x="3.4" y="8.4" width="17.2" height="7.2" rx="3.6"/><path d="M12 8.4v7.2"/>','journal-medical':'<rect x="5.5" y="3.5" width="13" height="17" rx="2.2"/><path d="M9.2 3.5v17"/><path d="M14 10.2h-1.2V9h-1.3v1.2H10.3v1.3h1.2v1.2h1.3v-1.2H14z"/>','journal-plus':'<rect x="5.5" y="3.5" width="13" height="17" rx="2.2"/><path d="M9.2 3.5v17"/><path d="M12.6 9.1v4.6M10.3 11.4h4.6"/>','calendar3':'<rect x="3.6" y="5" width="16.8" height="15.4" rx="2.2"/><path d="M3.6 9.3h16.8"/><path d="M8 3.4v3.2M16 3.4v3.2"/>','calendar-plus-fill':'<rect x="3.6" y="5" width="16.8" height="15.4" rx="2.2"/><path d="M3.6 9.3h16.8"/><path d="M8 3.4v3.2M16 3.4v3.2"/><path d="M12 12.2v5M9.5 14.7h5"/>','list-ol':'<path d="M9 6.5h11M9 12h11M9 17.5h11"/><path d="M4.4 4.8h1v3.8M4 8.6h2"/><path d="M4.2 13.3h1.9v1.1l-1.9 1.7v.6h2.1"/>','person-walking':'<circle cx="13.2" cy="4.4" r="2"/><path d="M13 7.2 11 11.4l3 1.8 1 6.4"/><path d="M11 11.4 7.6 12.6 5.6 16.6"/><path d="M14 12.8l3.2 1.1"/>','box-arrow-right':'<path d="M13.5 5.5H6.6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h6.9"/><path d="M11.5 12H21M17 8l4 4-4 4"/>','bag-fill':'<path d="M6 8h12l-1 11.4a1.6 1.6 0 0 1-1.6 1.4H8.6A1.6 1.6 0 0 1 7 19.4z"/><path d="M9 8V6.6a3 3 0 0 1 6 0V8"/>','balloon-heart-fill':'<path d="M12 12.8C8.2 11 6.2 8.7 6.2 6.4 6.2 4.7 7.5 3.4 9.2 3.4c1.1 0 2.1.6 2.8 1.7.7-1.1 1.7-1.7 2.8-1.7 1.7 0 3 1.3 3 3 0 2.3-2 4.6-5.8 6.4z"/><path d="M12 12.8v3.2M11 18.8a1 1 0 0 0 2 0c0-.8-1-1.3-1-2.8"/>','bell-fill':'<path d="M5.8 16.2V11a6.2 6.2 0 0 1 12.4 0v5.2l1.6 2.2H4.2z"/><path d="M9.8 19.6a2.2 2.2 0 0 0 4.4 0"/>','bar-chart-fill':'<rect x="4" y="12" width="3.6" height="8" rx="1"/><rect x="10.2" y="6.8" width="3.6" height="13.2" rx="1"/><rect x="16.4" y="9.5" width="3.6" height="10.5" rx="1"/>','person-circle':'<circle cx="12" cy="12" r="9.2"/><circle cx="12" cy="9.8" r="3.1"/><path d="M6.2 18.8c1-2.5 3.2-3.7 5.8-3.7s4.8 1.2 5.8 3.7"/>','ui-checks-grid':'<rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/><path d="M5 14.6l1.6 1.6 3-3.1"/><path d="M14 6h6.5M14 9h4.5M14 15h6.5M14 18h4.5"/>','phone':'<rect x="6.8" y="3" width="10.4" height="18" rx="2.6"/><path d="M10.6 18h2.8"/>','telephone-fill':'<path d="M6.6 4.4 9.6 5l1 3-1.7 1.6c.9 2 2.4 3.5 4.4 4.4L15 16.3l3 1 .6 3c0 .8-.7 1.5-1.5 1.4C11.9 21 5 14.1 5 8.4 5 7.6 5.7 6.9 6.6 6.9z"/>','vcard-fill':'<rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="8.6" cy="11" r="2.2"/><path d="M5.4 16c.5-1.4 1.7-2.2 3.2-2.2s2.7.8 3.2 2.2"/><path d="M14 9.6h4M14 12.4h4M14 15.2h3"/>','luggage-fill':'<rect x="6" y="7.5" width="12" height="12.5" rx="2"/><path d="M9.4 7.5V5.6A1.6 1.6 0 0 1 11 4h2a1.6 1.6 0 0 1 1.6 1.6v1.9"/><path d="M10 11v5M14 11v5"/>','clock-history':'<circle cx="12" cy="12" r="8.4"/><path d="M12 7v5.2l3.4 2"/>','arrow-right-short':'<path d="M5 12h12.5M12.5 6.8l5.2 5.2-5.2 5.2"/>','door-open-fill':'<path d="M3.5 20.2h17"/><path d="M6.5 20.2V5.2l8-2v17"/><circle cx="11.6" cy="12" r="0.7" fill="currentColor" stroke="none"/>','lock-fill':'<rect x="4.6" y="10" width="14.8" height="10" rx="2.2"/><path d="M7.6 10V7.6a4.4 4.4 0 0 1 8.8 0V10"/>','person-lock':'<circle cx="9.6" cy="8" r="3.3"/><path d="M3.5 20c0-3.4 2.7-5.5 6.1-5.5.9 0 1.7.13 2.5.4"/><rect x="14.4" y="14" width="7" height="6" rx="1.2"/><path d="M16 14v-1.4a1.9 1.9 0 0 1 3.8 0V14"/>','eye-slash-fill':'<path d="M3 12s3.6-6 9-6c1.6 0 3.1.5 4.3 1.3M21 12s-3.6 6-9 6c-1.6 0-3.1-.5-4.3-1.3"/><circle cx="12" cy="12" r="2.7"/><path d="M3.6 3.6 20.4 20.4"/>','exclamation-triangle-fill':'<path d="M12 4 21 19.4H3z"/><path d="M12 10v4.2"/><circle cx="12" cy="16.8" r="0.6" fill="currentColor" stroke="none"/>','file-earmark-medical-fill':'<path d="M6 3.5h7l5 5v12a1.5 1.5 0 0 1-1.5 1.5H6A1.5 1.5 0 0 1 4.5 20.5V5A1.5 1.5 0 0 1 6 3.5z"/><path d="M13 3.5V8.5h5"/><path d="M12 12v5M9.5 14.5h5"/>','archive-fill':'<rect x="3.5" y="4.5" width="17" height="4.2" rx="1.2"/><path d="M5.2 8.7v9.8a1.6 1.6 0 0 0 1.6 1.6h10.4a1.6 1.6 0 0 0 1.6-1.6V8.7"/><path d="M9.6 12.6h4.8"/>','check-circle-fill':'<circle cx="12" cy="12" r="8.5"/><path d="M8 12.2l2.6 2.6 5.2-5.6"/>','person-fill':'<circle cx="12" cy="8" r="3.9"/><path d="M4.5 20.5c0-4.2 3.4-6.7 7.5-6.7s7.5 2.5 7.5 6.7"/>','question-circle-fill':'<circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.7a2.5 2.5 0 0 1 4.6 1.4c0 1.6-2 2-2 3.4"/><circle cx="12" cy="16.6" r="0.6" fill="currentColor" stroke="none"/>','people-fill':'<circle cx="9" cy="8" r="3.3"/><path d="M2.7 20c0-3.5 2.8-5.7 6.3-5.7s6.3 2.2 6.3 5.7"/><path d="M16 5.2a3.3 3.3 0 0 1 0 6.3"/><path d="M17.2 14.5c2.6.5 4.3 2.5 4.3 5.5"/>','_fallback':'<circle cx="12" cy="12" r="7"/>'};
+
+function Icon({name,size=24,color=C.teal,style={}}){
+  return <svg viewBox="0 0 24 24" width={size} height={size} style={{display:'inline-block',flexShrink:0,color,...style}} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" dangerouslySetInnerHTML={{__html:ICONS[name]||ICONS._fallback}}/>;
+}
+
+function Reveal({start,end,x,y,dy=20,dur=0.55,exit=0.4,origin='top left',center=false,children,style={}}){
+  return <Sprite start={start} end={end}>{({localTime,duration})=>{
+    const exitStart=duration-exit; let op=1,ty=0,sc=1;
+    if(localTime<dur){const t=Easing.easeOutCubic(clamp(localTime/dur,0,1));op=t;ty=(1-t)*dy;sc=0.985+0.015*t;}
+    else if(localTime>exitStart){const t=clamp((localTime-exitStart)/exit,0,1);op=1-t;ty=-t*12;}
+    const pos=center?{left:0,right:0,textAlign:'center'}:{left:x};
+    return <div style={{position:'absolute',top:y,opacity:op,transform:`translateY(${ty}px) scale(${sc})`,transformOrigin:center?'top center':origin,willChange:'transform,opacity',...pos,...style}}>{children}</div>;
+  }}</Sprite>;
+}
+
+function Pop({start,end,x,y,dur=0.5,exit=0.35,center=false,children,style={}}){
+  return <Sprite start={start} end={end}>{({localTime,duration})=>{
+    const exitStart=duration-exit; let op=1,sc=1;
+    if(localTime<dur){const t=clamp(localTime/dur,0,1);op=Easing.easeOutCubic(t);sc=Easing.easeOutBack(t)*0.4+0.6;}
+    else if(localTime>exitStart){const t=clamp((localTime-exitStart)/exit,0,1);op=1-t;sc=1-0.1*t;}
+    if(center)return <div style={{position:'absolute',left:0,right:0,top:y,opacity:op,display:'flex',justifyContent:'center',willChange:'transform,opacity'}}><div style={{transform:`scale(${sc})`,transformOrigin:'center',...style}}>{children}</div></div>;
+    return <div style={{position:'absolute',left:x,top:y,opacity:op,transform:`scale(${sc})`,transformOrigin:'center',willChange:'transform,opacity',...style}}>{children}</div>;
+  }}</Sprite>;
+}
+
+function Illo({src,x,y,w,h,start,end,radius=24,kb=true,entry=0.65,exit=0.5,rotate=0,style={}}){
+  return <Sprite start={start} end={end}>{({localTime,duration})=>{
+    const exitStart=duration-exit; let op=1,sc=1,ty=0;
+    if(localTime<entry){const t=Easing.easeOutCubic(clamp(localTime/entry,0,1));op=t;sc=0.92+0.08*t;ty=(1-t)*26;}
+    else if(localTime>exitStart){const t=clamp((localTime-exitStart)/exit,0,1);op=1-t;ty=-t*16;sc=1+0.02*t;}
+    const holdSpan=Math.max(0.01,exitStart-entry);
+    const holdT=clamp((localTime-entry)/holdSpan,0,1);
+    const kbScale=kb?1+0.055*holdT:1;
+    return <div style={{position:'absolute',left:x,top:y,width:w,height:h,opacity:op,transform:`translateY(${ty}px) rotate(${rotate}deg) scale(${sc})`,transformOrigin:'center',borderRadius:radius,overflow:'hidden',background:C.card,boxShadow:'0 30px 70px -24px rgba(14,53,49,0.5),0 2px 8px rgba(14,53,49,0.12)',border:`1px solid ${C.line}`,willChange:'transform,opacity',...style}}>
+      <div style={{width:'100%',height:'100%',transform:`scale(${kbScale})`,transformOrigin:'center'}}>
+        <img src={src} alt="" style={{width:'100%',height:'100%',objectFit:'cover',display:'block'}}/>
+      </div>
+    </div>;
+  }}</Sprite>;
+}
+
+function Scene({start,end,bg,fade=0.45,drift=true,children}){
+  return <Sprite start={start} end={end}>{({localTime,duration})=>{
+    const exitStart=duration-fade; let op=1;
+    if(localTime<fade)op=clamp(localTime/fade,0,1);
+    else if(localTime>exitStart)op=1-clamp((localTime-exitStart)/fade,0,1);
+    const sc=drift?1+0.012*(localTime/duration):1;
+    return <div style={{position:'absolute',inset:0,opacity:op,background:bg,overflow:'hidden'}}>
+      <div style={{position:'absolute',inset:0,transform:`scale(${sc})`,transformOrigin:'center'}}>{children}</div>
+    </div>;
+  }}</Sprite>;
+}
+
+function CreamBg({tone='cream'}){
+  return <div style={{position:'absolute',inset:0,overflow:'hidden'}}>
+    <div style={{position:'absolute',inset:0,background:tone==='cream'?`radial-gradient(1100px 700px at 82% -8%,${C.creamHi},transparent 60%),${C.cream}`:C.cream}}/>
+    <div style={{position:'absolute',right:-120,top:-120,width:420,height:420,borderRadius:'50%',background:'rgba(184,150,62,0.06)'}}/>
+    <div style={{position:'absolute',left:-160,bottom:-160,width:520,height:520,borderRadius:'50%',background:'rgba(31,92,82,0.05)'}}/>
+  </div>;
+}
+function TealBg(){
+  return <div style={{position:'absolute',inset:0,overflow:'hidden'}}>
+    <div style={{position:'absolute',inset:0,background:`radial-gradient(1200px 800px at 78% -10%,${C.tealMid},${C.tealDeep} 55%,${C.tealAbyss})`}}/>
+    <div style={{position:'absolute',right:-140,top:-100,width:480,height:480,borderRadius:'50%',background:'rgba(184,150,62,0.10)',filter:'blur(8px)'}}/>
+    <div style={{position:'absolute',left:-180,bottom:-180,width:560,height:560,borderRadius:'50%',background:'rgba(216,189,118,0.06)'}}/>
+  </div>;
+}
+
+function Eyebrow({text,color=C.gold,x,y,start,end}){
+  return <Reveal start={start} end={end} x={x} y={y} dur={0.5}>
+    <div style={{display:'flex',alignItems:'center',gap:10}}>
+      <div style={{width:26,height:2,background:color,borderRadius:2}}/>
+      <span style={{fontFamily:F.disp,fontWeight:700,fontSize:15,letterSpacing:'0.22em',textTransform:'uppercase',color}}>{text}</span>
+    </div>
+  </Reveal>;
+}
+
+function ProgressLine({duration}){
+  const t=useTime();
+  const pct=clamp(t/duration,0,1)*100;
+  return <div style={{position:'absolute',top:0,left:0,right:0,height:4,background:'rgba(0,0,0,0.06)',zIndex:50}}>
+    <div style={{height:'100%',width:`${pct}%`,background:`linear-gradient(90deg,${C.gold},${C.goldSoft})`}}/>
+  </div>;
+}
+
+function ChapterHUD({chapters,hudStart,hudEnd,total}){
+  const t=useTime();
+  if(t<hudStart||t>hudEnd)return null;
+  let cur=chapters[0];
+  for(const c of chapters)if(t>=c.s)cur=c;
+  const dark=(t>=84&&t<104);
+  const fg=dark?C.creamHi:C.ink; const sub=dark?'rgba(245,242,232,0.6)':C.mid;
+  let op=1;
+  if(t<hudStart+0.5)op=clamp((t-hudStart)/0.5,0,1);
+  else if(t>hudEnd-0.5)op=clamp((hudEnd-t)/0.5,0,1);
+  return <div style={{position:'absolute',top:0,left:0,right:0,height:62,zIndex:40,opacity:op,display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 40px',fontFamily:F.disp}}>
+    <div style={{display:'flex',alignItems:'center',gap:11}}>
+      <div style={{width:30,height:30,borderRadius:9,background:dark?'rgba(216,189,118,0.16)':C.teal,display:'flex',alignItems:'center',justifyContent:'center'}}>
+        <Icon name="heart-pulse-fill" size={16} color={dark?C.goldHi:C.creamHi}/>
+      </div>
+      <span style={{fontWeight:800,fontSize:16,color:fg,letterSpacing:'-0.01em'}}>St&nbsp;Hugh's</span>
+      <span style={{fontWeight:600,fontSize:13,color:sub,letterSpacing:'0.04em'}}>{LANG==='en'?'· Guide':'· Guide'}</span>
+    </div>
+    <div style={{display:'flex',alignItems:'center',gap:10,whiteSpace:'nowrap'}}>
+      <span style={{fontFamily:F.mono,fontSize:12,fontWeight:600,color:C.gold,letterSpacing:'0.05em'}}>{cur.i}/09</span>
+      <span style={{fontWeight:700,fontSize:14,color:fg}}>{cur.name}</span>
+    </div>
+  </div>;
+}
+
+Object.assign(window,{C,F,ILLO,Icon,Reveal,Pop,Illo,Scene,CreamBg,TealBg,Eyebrow,ProgressLine,ChapterHUD});
+</script>
+
+<!-- ── SCENES 1 ───────────────────────────────────────────────────────────── -->
+<script type="text/babel">
+function SceneIntro(){
+  const l=L;
+  return <Scene start={0} end={8} bg={C.tealDeep}>
+    <TealBg/>
+    <Pop start={0.4} end={8} y={188} dur={0.7} center>
+      <div style={{width:96,height:96,borderRadius:28,background:'rgba(216,189,118,0.14)',border:'1px solid rgba(216,189,118,0.3)',display:'flex',alignItems:'center',justifyContent:'center'}}>
+        <Icon name="heart-pulse-fill" size={50} color={C.goldHi}/>
+      </div>
+    </Pop>
+    <Reveal start={1.1} end={8} y={312} dur={0.6} center>
+      <div style={{fontFamily:F.disp,fontWeight:700,fontSize:17,letterSpacing:'0.34em',textTransform:'uppercase',color:C.goldSoft}}>St Hugh's Anglican Home</div>
+    </Reveal>
+    <Reveal start={1.5} end={8} y={350} dur={0.7} center>
+      <div style={{fontFamily:F.disp,fontWeight:800,fontSize:62,color:C.creamHi,letterSpacing:'-0.02em',lineHeight:1.04,whiteSpace:'nowrap'}}>{l.guideSub}</div>
+    </Reveal>
+    <Reveal start={2.2} end={8} y={446} dur={0.6} center>
+      <div style={{display:'inline-block',width:130,height:3,background:C.gold,borderRadius:2}}/>
+    </Reveal>
+    <Reveal start={2.6} end={8} y={480} dur={0.6} center>
+      <div style={{fontFamily:F.body,fontWeight:500,fontSize:25,color:'rgba(245,242,232,0.82)'}}>{l.guideTag}</div>
+    </Reveal>
+  </Scene>;
+}
+
+function SceneConnexion(){
+  const s=L.s1;
+  return <Scene start={8} end={16} bg={C.cream}>
+    <CreamBg/>
+    <Eyebrow text={s.ey} x={90} y={150} start={8.3} end={16}/>
+    <Reveal start={8.6} end={16} x={90} y={188} dur={0.6}>
+      <div style={{fontFamily:F.disp,fontWeight:800,fontSize:58,color:C.ink,letterSpacing:'-0.02em'}}>{s.h1}</div>
+    </Reveal>
+    <Reveal start={9.2} end={16} x={92} y={296} dur={0.55}>
+      <div style={{display:'flex',alignItems:'center',gap:14,width:520}}>
+        <div style={{width:42,height:42,borderRadius:12,background:'rgba(31,92,82,0.1)',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center'}}><Icon name="envelope-fill" size={20}/></div>
+        <div style={{fontFamily:F.body,fontSize:22,color:C.ink,lineHeight:1.35}} dangerouslySetInnerHTML={{__html:s.li1.replace(/Email/,'<b>Email</b>').replace(/password|mot de passe/,'<b style="font-weight:800">$&</b>')}}/>
+      </div>
+    </Reveal>
+    <Reveal start={9.9} end={16} x={92} y={372} dur={0.55}>
+      <div style={{display:'flex',alignItems:'center',gap:14,width:520}}>
+        <div style={{width:42,height:42,borderRadius:12,background:'rgba(31,92,82,0.1)',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center'}}><Icon name="arrow-repeat" size={20}/></div>
+        <div style={{fontFamily:F.body,fontSize:22,color:C.ink,lineHeight:1.35}}>{s.li2}</div>
+      </div>
+    </Reveal>
+    <Reveal start={10.8} end={16} x={90} y={452} dur={0.55}>
+      <div style={{display:'flex',alignItems:'flex-start',gap:13,width:540,padding:'16px 20px',background:'rgba(184,150,62,0.1)',border:'1px solid rgba(184,150,62,0.3)',borderRadius:16}}>
+        <Icon name="shield-lock-fill" size={22} color={C.gold} style={{marginTop:2}}/>
+        <div style={{fontFamily:F.body,fontSize:20,color:C.ink,lineHeight:1.4,fontWeight:600}}>{s.tip}</div>
+      </div>
+    </Reveal>
+    <Illo src={ILLO('01-connexion')} x={748} y={150} w={448} h={430} start={8.5} end={16}/>
+  </Scene>;
+}
+
+function SceneNavigation(){
+  const s=L.s2; const nav=L.nav;
+  const sx=78,sy=96,sw=406,rowH=33,listTop=sy+74;
+  return <Scene start={16} end={29} bg={C.cream}>
+    <CreamBg/>
+    <Reveal start={16.2} end={29} x={sx} y={sy} dur={0.6} dy={0} origin="left center">
+      <div style={{width:sw,height:548,borderRadius:24,overflow:'hidden',background:`linear-gradient(180deg,${C.tealMid},${C.tealDeep})`,boxShadow:'0 30px 70px -24px rgba(14,53,49,0.5)',border:'1px solid rgba(255,255,255,0.06)'}}>
+        <div style={{display:'flex',alignItems:'center',gap:11,padding:'20px 22px 16px'}}>
+          <Icon name="list" size={22} color={C.goldHi}/>
+          <span style={{fontFamily:F.disp,fontWeight:800,fontSize:19,color:C.creamHi,letterSpacing:'-0.01em'}}>St Hugh's</span>
+        </div>
+        <div style={{height:1,background:'rgba(255,255,255,0.08)',margin:'0 18px'}}/>
+      </div>
+    </Reveal>
+    {nav.map(([ic,label],i)=>{
+      const start=16.8+i*0.36; const active=i===0;
+      return <Reveal key={i} start={start} end={29} x={sx+14} y={listTop+i*rowH} dur={0.4} dy={6}>
+        <div style={{display:'flex',alignItems:'center',gap:13,width:sw-28,height:rowH-5,padding:'0 12px',borderRadius:10,background:active?'rgba(216,189,118,0.16)':'transparent'}}>
+          {active&&<div style={{position:'absolute',left:-12,top:6,width:3,height:rowH-17,background:C.goldHi,borderRadius:2}}/>}
+          <Icon name={ic} size={16} color={active?C.goldHi:'rgba(245,242,232,0.7)'}/>
+          <span style={{fontFamily:F.body,fontSize:15,fontWeight:active?800:600,whiteSpace:'nowrap',color:active?C.creamHi:'rgba(245,242,232,0.82)'}}>{label}</span>
+        </div>
+      </Reveal>;
+    })}
+    <Eyebrow text={s.ey} x={560} y={150} start={16.5} end={29}/>
+    <Reveal start={16.8} end={29} x={560} y={188} dur={0.6}>
+      <div style={{fontFamily:F.disp,fontWeight:800,fontSize:54,color:C.ink,letterSpacing:'-0.02em',lineHeight:1.05,width:600}}>{s.h1}</div>
+    </Reveal>
+    {[[s.b1,18.6],[s.b2,19.4],[s.b3,20.2]].map(([txt,st],i)=>(
+      <Reveal key={i} start={st} end={29} x={562} y={306+i*78} dur={0.5}>
+        <div style={{display:'flex',alignItems:'center',gap:14,width:610}}>
+          <div style={{width:44,height:44,borderRadius:12,background:'rgba(31,92,82,0.1)',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center'}}>
+            <Icon name={['ui-checks-grid','bell-fill','phone'][i]} size={20}/>
+          </div>
+          <div style={{fontFamily:F.body,fontSize:22,color:C.ink,fontWeight:600,lineHeight:1.3}}>{txt}</div>
+        </div>
+      </Reveal>
+    ))}
+  </Scene>;
+}
+
+function SceneDossier(){
+  const s=L.s3;
+  return <Scene start={29} end={40} bg={C.cream}>
+    <CreamBg/>
+    <Eyebrow text={s.ey} x={90} y={150} start={29.3} end={40}/>
+    <Reveal start={29.6} end={40} x={90} y={188} dur={0.6}>
+      <div style={{fontFamily:F.disp,fontWeight:800,fontSize:54,color:C.ink,letterSpacing:'-0.02em'}}>{s.h1}</div>
+    </Reveal>
+    {s.tabs.map(([name,ic,desc],i)=>{
+      const start=30.1+i*0.82;
+      return <Reveal key={i} start={start} end={40} x={90} y={290+i*72} dur={0.5} dy={14}>
+        <div style={{display:'flex',alignItems:'center',gap:16,width:600,padding:'12px 18px',background:C.card,border:`1px solid ${C.line}`,borderRadius:16,boxShadow:'0 10px 26px -16px rgba(14,53,49,0.3)'}}>
+          <div style={{width:46,height:46,borderRadius:12,background:'rgba(31,92,82,0.1)',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center'}}><Icon name={ic} size={22}/></div>
+          <div>
+            <div style={{fontFamily:F.disp,fontWeight:800,fontSize:20,color:C.teal}}>{name}</div>
+            <div style={{fontFamily:F.body,fontSize:16.5,color:C.mid,fontWeight:600,marginTop:1}}>{desc}</div>
+          </div>
+        </div>
+      </Reveal>;
+    })}
+    <Illo src={ILLO('03-dossier-resident')} x={740} y={188} w={456} h={392} start={29.6} end={40}/>
+    <Reveal start={34.5} end={40} x={740} y={596} dur={0.5}>
+      <div style={{display:'flex',alignItems:'center',gap:11,width:456,justifyContent:'center',fontFamily:F.body,fontSize:18,color:C.mid,fontWeight:600}}>
+        <Icon name="luggage-fill" size={18} color={C.gold}/> {s.foot}
+      </div>
+    </Reveal>
+  </Scene>;
+}
+
+Object.assign(window,{SceneIntro,SceneConnexion,SceneNavigation,SceneDossier});
+</script>
+
+<!-- ── SCENES 2 ───────────────────────────────────────────────────────────── -->
+<script type="text/babel">
+function Badge({label,bg,fg,icon}){
+  return <div style={{display:'inline-flex',alignItems:'center',gap:7,padding:'7px 14px',borderRadius:999,background:bg,color:fg,fontFamily:F.disp,fontWeight:800,fontSize:16,whiteSpace:'nowrap'}}>
+    {icon&&<Icon name={icon} size={14} color={fg}/>}{label}
+  </div>;
+}
+
+function SceneActions(){
+  const s=L.s4;
+  return <Scene start={40} end={51} bg={C.cream}>
+    <CreamBg/>
+    <Eyebrow text={s.ey} x={90} y={150} start={40.3} end={51}/>
+    <Reveal start={40.6} end={51} x={90} y={188} dur={0.6}>
+      <div style={{fontFamily:F.disp,fontWeight:800,fontSize:50,color:C.ink,letterSpacing:'-0.02em',width:600,lineHeight:1.05}}>{s.h1}</div>
+    </Reveal>
+    {s.cards.map(([ic,title,desc,st],i)=>(
+      <Reveal key={i} start={st} end={51} x={90} y={296+i*106} dur={0.5} dy={16}>
+        <div style={{display:'flex',alignItems:'center',gap:18,width:600,padding:'18px 22px',background:C.card,border:`1px solid ${C.line}`,borderRadius:18,boxShadow:'0 12px 30px -18px rgba(14,53,49,0.32)'}}>
+          <div style={{width:56,height:56,borderRadius:15,background:C.teal,flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center'}}><Icon name={ic} size={26} color={C.creamHi}/></div>
+          <div>
+            <div style={{fontFamily:F.disp,fontWeight:800,fontSize:23,color:C.ink}}>{title}</div>
+            <div style={{fontFamily:F.body,fontSize:17.5,color:C.mid,fontWeight:600,marginTop:2,width:480}}>{desc}</div>
+          </div>
+        </div>
+      </Reveal>
+    ))}
+    <Illo src={ILLO('12-consultations')} x={740} y={210} w={456} h={372} start={40.6} end={51}/>
+  </Scene>;
+}
+
+function FlowChips({chips,x,y,baseStart,end}){
+  return <div style={{position:'absolute',left:x,top:y,display:'flex',alignItems:'center',gap:9}}>
+    {chips.map((c,i)=>(
+      <React.Fragment key={i}>
+        <Pop start={baseStart+i*0.5} end={end} x={0} y={0} dur={0.45} style={{position:'relative'}}>
+          <Badge label={c.label} bg={c.bg} fg={c.fg}/>
+        </Pop>
+        {i<chips.length-1&&(
+          <Reveal start={baseStart+i*0.5+0.25} end={end} x={0} y={0} dur={0.35} style={{position:'relative'}}>
+            <Icon name="arrow-right-short" size={26} color={C.faint}/>
+          </Reveal>
+        )}
+      </React.Fragment>
+    ))}
+  </div>;
+}
+
+function Panel({x,y,w,h,start,end,children}){
+  return <Reveal start={start} end={end} x={x} y={y} dur={0.6} dy={18}>
+    <div style={{width:w,height:h,background:C.card,border:`1px solid ${C.line}`,borderRadius:22,boxShadow:'0 20px 50px -26px rgba(14,53,49,0.4)',overflow:'hidden'}}>{children}</div>
+  </Reveal>;
+}
+
+function PanelHead({illo,ic,title,sub}){
+  return <div style={{display:'flex',alignItems:'center',gap:16,padding:'18px 22px',borderBottom:`1px solid ${C.line}`}}>
+    <div style={{width:64,height:64,borderRadius:16,overflow:'hidden',flexShrink:0,border:`1px solid ${C.line}`}}>
+      <img src={illo} alt="" style={{width:'100%',height:'100%',objectFit:'cover',display:'block'}}/>
+    </div>
+    <div>
+      <div style={{display:'flex',alignItems:'center',gap:9}}>
+        <Icon name={ic} size={20}/><span style={{fontFamily:F.disp,fontWeight:800,fontSize:24,color:C.ink}}>{title}</span>
+      </div>
+      <div style={{fontFamily:F.body,fontSize:16,color:C.mid,fontWeight:600,marginTop:1}}>{sub}</div>
+    </div>
+  </div>;
+}
+
+function SceneVisitesCourses(){
+  const s=L.s5;
+  const vTitle=LANG==='en'?'Visits':'Visites';
+  const cTitle=LANG==='en'?'Shopping':'Courses';
+  return <Scene start={51} end={63} bg={C.cream}>
+    <CreamBg/>
+    <Eyebrow text={s.ey} x={90} y={146} start={51.3} end={63}/>
+    <Reveal start={51.6} end={63} x={90} y={184} dur={0.6}>
+      <div style={{fontFamily:F.disp,fontWeight:800,fontSize:50,color:C.ink,letterSpacing:'-0.02em'}}>{s.h1}</div>
+    </Reveal>
+    <Panel x={80} y={300} w={540} h={300} start={51.8} end={63}>
+      <PanelHead illo={ILLO('08-visites-familles')} ic="person-walking" title={vTitle} sub={s.vSub}/>
+      <div style={{padding:'22px'}}>
+        <div style={{fontFamily:F.body,fontSize:18,color:C.ink,fontWeight:600,marginBottom:18,lineHeight:1.4}}>{s.vDesc}</div>
+      </div>
+    </Panel>
+    <FlowChips x={102} y={520} baseStart={53.2} end={63} chips={s.vC}/>
+    <Panel x={660} y={300} w={540} h={300} start={52.2} end={63}>
+      <PanelHead illo={ILLO('04-courses-commissions')} ic="bag-fill" title={cTitle} sub={s.cSub}/>
+      <div style={{padding:'22px'}}>
+        <div style={{fontFamily:F.body,fontSize:18,color:C.ink,fontWeight:600,marginBottom:18,lineHeight:1.4}}>{s.cDesc}</div>
+      </div>
+    </Panel>
+    <FlowChips x={682} y={520} baseStart={54.4} end={63} chips={s.cC}/>
+    <Reveal start={57} end={63} y={636} dur={0.5} center>
+      <div style={{display:'inline-flex',alignItems:'center',gap:10,fontFamily:F.body,fontSize:18,color:C.mid,fontWeight:700}}>
+        <Icon name="clock-history" size={18} color={C.gold}/> {s.foot}
+      </div>
+    </Reveal>
+  </Scene>;
+}
+
+function SceneSorties(){
+  const s=L.s6;
+  return <Scene start={63} end={74} bg={C.cream}>
+    <CreamBg/>
+    <Eyebrow text={s.ey} x={90} y={146} start={63.3} end={74}/>
+    <Reveal start={63.6} end={74} x={90} y={184} dur={0.6}>
+      <div style={{fontFamily:F.disp,fontWeight:800,fontSize:50,color:C.ink,letterSpacing:'-0.02em'}}>{s.h1}</div>
+    </Reveal>
+    {s.cards.map((c,i)=>(
+      <Reveal key={i} start={c.st} end={74} x={80+i*375} y={288} dur={0.55} dy={22}>
+        <div style={{width:350,height:300,background:C.card,borderRadius:22,overflow:'hidden',border:`1px solid ${C.line}`,boxShadow:'0 20px 50px -26px rgba(14,53,49,0.4)'}}>
+          <div style={{height:6,background:c.acc}}/>
+          <div style={{padding:'24px 24px 0'}}>
+            <div style={{width:60,height:60,borderRadius:16,background:c.tint,display:'flex',alignItems:'center',justifyContent:'center',marginBottom:16}}>
+              {c.gl?<span style={{fontSize:32,color:c.acc,lineHeight:1}}>{c.gl}</span>:<Icon name={c.ic} size={30} color={c.acc}/>}
+            </div>
+            <div style={{fontFamily:F.disp,fontWeight:800,fontSize:26,color:C.ink}}>{c.title}</div>
+            <div style={{fontFamily:F.body,fontSize:16,color:c.acc,fontWeight:800,marginTop:1}}>{c.sub}</div>
+            <div style={{fontFamily:F.body,fontSize:17,color:C.mid,fontWeight:600,marginTop:12,lineHeight:1.4}}>{c.desc}</div>
+            <div style={{marginTop:16,display:'inline-flex',alignItems:'center',gap:7,padding:'6px 12px',whiteSpace:'nowrap',borderRadius:999,background:'rgba(0,0,0,0.04)',fontFamily:F.disp,fontWeight:800,fontSize:14,color:c.roleC}}>
+              <Icon name={c.role==='Super Admin'?'person-lock':'people-fill'} size={13} color={c.roleC}/>{c.role}
+            </div>
+          </div>
+        </div>
+      </Reveal>
+    ))}
+    <Reveal start={68.5} end={74} y={624} dur={0.5} center>
+      <div style={{display:'inline-flex',alignItems:'center',gap:10,padding:'12px 22px',whiteSpace:'nowrap',background:'rgba(31,92,82,0.08)',borderRadius:14,fontFamily:F.body,fontSize:18,color:C.ink,fontWeight:700}}>
+        <Icon name="lock-fill" size={18} color={C.teal}/> {s.foot}
+      </div>
+    </Reveal>
+  </Scene>;
+}
+
+function SceneAnnivAlertes(){
+  const s=L.s7;
+  const annTitle=LANG==='en'?'Birthdays':'Anniversaires';
+  const alTitle=LANG==='en'?'Alerts':'Alertes';
+  return <Scene start={74} end={84} bg={C.cream}>
+    <CreamBg/>
+    <Eyebrow text={s.ey} x={90} y={142} start={74.3} end={84}/>
+    <Reveal start={74.6} end={84} x={90} y={180} dur={0.6}>
+      <div style={{fontFamily:F.disp,fontWeight:800,fontSize:50,color:C.ink,letterSpacing:'-0.02em'}}>{s.h1}</div>
+    </Reveal>
+    <Panel x={80} y={290} w={540} h={320} start={74.8} end={84}>
+      <PanelHead illo={ILLO('06-anniversaires')} ic="balloon-heart-fill" title={annTitle} sub={s.aSub}/>
+      <div style={{padding:'18px 22px',display:'flex',flexDirection:'column',gap:13}}>
+        {s.ann.map((a,i)=>(
+          <Reveal key={i} start={a.st} end={84} x={0} y={0} dur={0.4} dy={8} style={{position:'relative'}}>
+            <div style={{display:'flex',alignItems:'center',gap:14}}>
+              <Badge label={a.label} bg={a.bg} fg={a.fg}/>
+              <span style={{fontFamily:F.body,fontSize:17,color:C.mid,fontWeight:600}}>{a.desc}</span>
+            </div>
+          </Reveal>
+        ))}
+      </div>
+    </Panel>
+    <Panel x={660} y={290} w={540} h={320} start={75.2} end={84}>
+      <PanelHead illo={ILLO('05-alertes-medicaments')} ic="bell-fill" title={alTitle} sub={s.alSub}/>
+      <div style={{padding:'16px 22px',display:'flex',flexWrap:'wrap',gap:10}}>
+        {s.al.map((a,i)=>(
+          <Pop key={i} start={a.st} end={84} x={0} y={0} dur={0.4} style={{position:'relative'}}>
+            <Badge label={a.label} bg={a.bg} fg={a.fg} icon={a.ic}/>
+          </Pop>
+        ))}
+      </div>
+    </Panel>
+  </Scene>;
+}
+
+Object.assign(window,{Badge,SceneActions,SceneVisitesCourses,SceneSorties,SceneAnnivAlertes});
+</script>
+
+<!-- ── SCENES 3 ───────────────────────────────────────────────────────────── -->
+<script type="text/babel">
+function FactorCard({fdata,x,start,end}){
+  return <Reveal start={start} end={end} x={x} y={272} dur={0.6} dy={26}>
+    <div style={{width:356,height:316,borderRadius:22,background:'rgba(255,255,255,0.055)',border:'1px solid rgba(255,255,255,0.12)',overflow:'hidden',backdropFilter:'blur(2px)'}}>
+      <div style={{display:'flex',alignItems:'center',gap:13,padding:'18px 20px',borderBottom:'1px solid rgba(255,255,255,0.1)'}}>
+        <div style={{width:42,height:42,borderRadius:12,background:fdata.color,flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:F.disp,fontWeight:800,fontSize:22,color:'#fff'}}>{fdata.letter}</div>
+        <div style={{flex:1}}>
+          <div style={{fontFamily:F.disp,fontWeight:800,fontSize:18.5,color:C.creamHi,lineHeight:1.1}}>{fdata.title}</div>
+        </div>
+        <div style={{fontFamily:F.mono,fontWeight:700,fontSize:14,color:C.goldHi,whiteSpace:'nowrap'}}>{fdata.max}</div>
+      </div>
+      <div style={{padding:'14px 20px',display:'flex',flexDirection:'column',gap:11}}>
+        {fdata.rows.map((r,i)=>(
+          <div key={i} style={{display:'flex',alignItems:'center',gap:12}}>
+            <div style={{minWidth:52,textAlign:'center',padding:'4px 0',borderRadius:8,background:r.pts==='0'?'rgba(255,255,255,0.08)':fdata.color+'33',border:`1px solid ${r.pts==='0'?'rgba(255,255,255,0.12)':fdata.color+'66'}`,fontFamily:F.mono,fontWeight:700,fontSize:15,color:r.pts==='0'?'rgba(245,242,232,0.6)':C.goldHi}}>{r.pts}</div>
+            <div style={{fontFamily:F.body,fontSize:15.5,color:'rgba(245,242,232,0.9)',fontWeight:600,lineHeight:1.25}}>{r.txt}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </Reveal>;
+}
+
+function ExampleCalc({start,end,s}){
+  return <Sprite start={start} end={end}>{({localTime,duration})=>{
+    const exit=0.5,exitStart=duration-exit; let op=1,ty=0;
+    if(localTime<0.6){const t=Easing.easeOutCubic(clamp(localTime/0.6,0,1));op=t;ty=(1-t)*30;}
+    else if(localTime>exitStart){const t=clamp((localTime-exitStart)/exit,0,1);op=1-t;ty=-t*14;}
+    const cp=clamp((localTime-0.7)/2.0,0,1);
+    const eased=Easing.easeOutCubic(cp);
+    const sum=Math.round(eased*170);
+    const barW=eased*100;
+    return <div style={{position:'absolute',left:280,top:262,width:720,opacity:op,transform:`translateY(${ty}px)`}}>
+      <div style={{background:'rgba(255,255,255,0.06)',border:'1px solid rgba(255,255,255,0.14)',borderRadius:24,padding:'30px 36px'}}>
+        <div style={{display:'flex',alignItems:'center',gap:14,marginBottom:22}}>
+          <div style={{width:56,height:56,borderRadius:'50%',background:'rgba(216,189,118,0.18)',display:'flex',alignItems:'center',justifyContent:'center'}}><Icon name="person-fill" size={28} color={C.goldHi}/></div>
+          <div>
+            <div style={{fontFamily:F.disp,fontWeight:800,fontSize:26,color:C.creamHi}}>{s.exN}</div>
+            <div style={{fontFamily:F.body,fontSize:16,color:'rgba(245,242,232,0.7)',fontWeight:600}}>{s.exR}</div>
+          </div>
+        </div>
+        <div style={{display:'flex',alignItems:'center',gap:14,fontFamily:F.disp,fontWeight:800,fontSize:30,color:C.creamHi}}>
+          <span style={{color:'#7fb3ff'}}>+80</span><span style={{opacity:0.5,fontWeight:600}}>{s.exA}</span>
+          <span style={{opacity:0.4}}>+</span>
+          <span style={{color:'#ff9a93'}}>+50</span><span style={{opacity:0.5,fontWeight:600}}>{s.exB}</span>
+          <span style={{opacity:0.4}}>+</span>
+          <span style={{color:C.goldHi}}>+40</span><span style={{opacity:0.5,fontWeight:600}}>{s.exC}</span>
+        </div>
+        <div style={{display:'flex',alignItems:'center',gap:20,marginTop:24}}>
+          <div style={{fontFamily:F.disp,fontWeight:800,fontSize:64,color:'#ff7a72',lineHeight:1,fontVariantNumeric:'tabular-nums',minWidth:170}}>{sum}<span style={{fontSize:26,color:'rgba(245,242,232,0.6)',fontWeight:700}}> pts</span></div>
+          <div style={{flex:1}}>
+            <div style={{height:18,borderRadius:10,background:'rgba(255,255,255,0.1)',overflow:'hidden'}}>
+              <div style={{height:'100%',width:`${barW}%`,borderRadius:10,background:'linear-gradient(90deg,#159a55,#d97706 50%,#dc2626)'}}/>
+            </div>
+            <div style={{display:'flex',justifyContent:'space-between',marginTop:7,fontFamily:F.mono,fontSize:13,color:'rgba(245,242,232,0.55)'}}>
+              <span>0</span><span style={{color:'#ff9a93',fontWeight:700}}>{s.exL}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>;
+  }}</Sprite>;
+}
+
+function SceneScore(){
+  const s=L.s8;
+  return <Scene start={84} end={104} bg={C.tealDeep}>
+    <TealBg/>
+    <Reveal start={84.4} end={89} y={150} dur={0.6} center>
+      <div style={{fontFamily:F.disp,fontWeight:700,fontSize:15,letterSpacing:'0.22em',textTransform:'uppercase',color:C.goldSoft,marginBottom:14}}>{s.ey}</div>
+      <div style={{fontFamily:F.disp,fontWeight:800,fontSize:52,color:C.creamHi,letterSpacing:'-0.02em',lineHeight:1.1}}>{s.q}</div>
+    </Reveal>
+    <Reveal start={85.6} end={89} y={360} dur={0.6} center>
+      <div style={{display:'inline-flex',alignItems:'center',gap:18,fontFamily:F.disp,fontWeight:800,fontSize:40,color:C.creamHi}}>
+        <span style={{color:'#7fb3ff'}}>A</span><span style={{opacity:0.5}}>+</span>
+        <span style={{color:'#ff9a93'}}>B</span><span style={{opacity:0.5}}>+</span>
+        <span style={{color:C.goldHi}}>C</span>
+        <span style={{opacity:0.5,fontWeight:600,fontSize:30,marginLeft:8}}>{s.eq}</span>
+      </div>
+    </Reveal>
+    <Reveal start={86.0} end={89} y={446} dur={0.6} center>
+      <div style={{fontFamily:F.body,fontSize:21,color:'rgba(245,242,232,0.72)',fontWeight:500}}>{s.sub}</div>
+    </Reveal>
+    <Reveal start={89.4} end={99.2} y={150} dur={0.5} center>
+      <div style={{fontFamily:F.disp,fontWeight:800,fontSize:40,color:C.creamHi,letterSpacing:'-0.02em'}}>{s.bB}</div>
+    </Reveal>
+    <FactorCard fdata={s.fa} x={88} start={89.8} end={99.2}/>
+    <FactorCard fdata={s.fb} x={462} start={90.2} end={99.2}/>
+    <FactorCard fdata={s.fc} x={836} start={90.6} end={99.2}/>
+    <Reveal start={95.5} end={99.2} y={618} dur={0.5} center>
+      <div style={{display:'inline-flex',gap:26,padding:'12px 26px',background:'rgba(255,255,255,0.06)',borderRadius:14,border:'1px solid rgba(255,255,255,0.1)'}}>
+        {s.leg.map(([color,text],i)=>(
+          <div key={i} style={{display:'flex',alignItems:'center',gap:9,fontFamily:F.body,fontWeight:700,fontSize:17,color:'rgba(245,242,232,0.9)'}}>
+            <span style={{width:13,height:13,borderRadius:'50%',background:color}}/>{text}
+          </div>
+        ))}
+      </div>
+    </Reveal>
+    <Reveal start={99.6} end={104} y={150} dur={0.5} center>
+      <div style={{fontFamily:F.disp,fontWeight:800,fontSize:40,color:C.creamHi,letterSpacing:'-0.02em'}}>{s.bC}</div>
+    </Reveal>
+    <ExampleCalc start={99.8} end={104} s={s}/>
+  </Scene>;
+}
+
+function ScenePdfDroits(){
+  const s=L.s9;
+  return <Scene start={104} end={113} bg={C.cream}>
+    <CreamBg/>
+    <Eyebrow text={s.ey} x={90} y={140} start={104.3} end={113}/>
+    <Reveal start={104.6} end={113} x={90} y={178} dur={0.6}>
+      <div style={{fontFamily:F.disp,fontWeight:800,fontSize:48,color:C.ink,letterSpacing:'-0.02em'}}>{s.h1}</div>
+    </Reveal>
+    {s.pdfs.map((p,i)=>(
+      <Reveal key={i} start={p.st} end={113} x={80} y={284+i*102} dur={0.5} dy={16}>
+        <div style={{display:'flex',alignItems:'center',gap:16,width:560,padding:'16px 20px',background:C.card,border:`1px solid ${C.line}`,borderLeft:`5px solid ${p.acc}`,borderRadius:16,boxShadow:'0 10px 26px -16px rgba(14,53,49,0.3)'}}>
+          <div style={{width:48,height:48,borderRadius:12,background:p.acc+'18',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center'}}>
+            {p.gl?<span style={{fontSize:24,color:p.acc}}>{p.gl}</span>:<Icon name={p.ic} size={24} color={p.acc}/>}
+          </div>
+          <div>
+            <div style={{fontFamily:F.disp,fontWeight:800,fontSize:21,color:C.ink}}>{p.title}</div>
+            <div style={{fontFamily:F.body,fontSize:16,color:C.mid,fontWeight:600,marginTop:1}}>{p.desc}</div>
+          </div>
+        </div>
+      </Reveal>
+    ))}
+    <Reveal start={107.2} end={113} x={80} y={596} dur={0.5}>
+      <div style={{display:'flex',alignItems:'center',gap:10,width:560,fontFamily:F.body,fontSize:16,color:C.mid,fontWeight:700}}>
+        <Icon name="person-fill" size={16} color={C.gold}/> {s.foot}
+      </div>
+    </Reveal>
+    <Reveal start={106.4} end={113} x={680} y={282} dur={0.55} dy={18}>
+      <div style={{width:520,background:C.card,border:`1px solid ${C.line}`,borderRadius:20,overflow:'hidden',boxShadow:'0 18px 44px -24px rgba(14,53,49,0.36)'}}>
+        <div style={{display:'flex'}}>
+          <div style={{flex:1,padding:'18px 20px',borderRight:`1px solid ${C.line}`}}>
+            <div style={{fontFamily:F.disp,fontWeight:800,fontSize:15,color:C.teal,textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:14}}>{s.aLab}</div>
+            {s.adm.map((t,i)=>(
+              <div key={i} style={{display:'flex',gap:9,marginBottom:11,fontFamily:F.body,fontSize:15.5,color:C.ink,fontWeight:600,lineHeight:1.25}}>
+                <Icon name="check-circle-fill" size={15} color={C.green} style={{marginTop:2,flexShrink:0}}/>{t}
+              </div>
+            ))}
+          </div>
+          <div style={{flex:1,padding:'18px 20px',background:'rgba(179,38,30,0.03)'}}>
+            <div style={{fontFamily:F.disp,fontWeight:800,fontSize:15,color:C.red,textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:14}}>{s.sLab}</div>
+            {s.sa.map((t,i)=>(
+              <div key={i} style={{display:'flex',gap:9,marginBottom:11,fontFamily:F.body,fontSize:15.5,color:C.ink,fontWeight:600,lineHeight:1.25}}>
+                <Icon name="person-lock" size={15} color={C.red} style={{marginTop:2,flexShrink:0}}/>{t}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </Reveal>
+  </Scene>;
+}
+
+function SceneOutro(){
+  return <Scene start={113} end={118} bg={C.tealDeep} fade={0.5}>
+    <TealBg/>
+    <Pop start={113.4} end={118} y={216} dur={0.7} center>
+      <div style={{width:88,height:88,borderRadius:26,background:'rgba(216,189,118,0.14)',border:'1px solid rgba(216,189,118,0.3)',display:'flex',alignItems:'center',justifyContent:'center'}}>
+        <Icon name="question-circle-fill" size={44} color={C.goldHi}/>
+      </div>
+    </Pop>
+    <Reveal start={114.0} end={118} y={336} dur={0.6} center>
+      <div style={{fontFamily:F.disp,fontWeight:800,fontSize:46,color:C.creamHi,letterSpacing:'-0.02em',lineHeight:1.1}}>{L.outro}</div>
+    </Reveal>
+    <Reveal start={114.6} end={118} y={426} dur={0.6} center>
+      <div style={{display:'inline-flex',alignItems:'center',gap:11,fontFamily:F.disp,fontWeight:700,fontSize:18,letterSpacing:'0.2em',textTransform:'uppercase',color:C.goldSoft}}>
+        <Icon name="heart-pulse-fill" size={20} color={C.goldSoft}/> St Hugh's Anglican Home
+      </div>
+    </Reveal>
+  </Scene>;
+}
+
+Object.assign(window,{SceneScore,ScenePdfDroits,SceneOutro});
+</script>
+
+<!-- ── APP ────────────────────────────────────────────────────────────────── -->
+<script type="text/babel">
+const DURATION = 118;
+
+function App(){
+  return (
+    <Stage width={1280} height={720} duration={DURATION} background="#0e3531" persistKey="sthughs-guide">
+      <div style={{position:'absolute',inset:0}}>
+        <SceneIntro/>
+        <SceneConnexion/>
+        <SceneNavigation/>
+        <SceneDossier/>
+        <SceneActions/>
+        <SceneVisitesCourses/>
+        <SceneSorties/>
+        <SceneAnnivAlertes/>
+        <SceneScore/>
+        <ScenePdfDroits/>
+        <SceneOutro/>
+        <ChapterHUD chapters={L.ch} hudStart={8} hudEnd={113} total={DURATION}/>
+      </div>
+    </Stage>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
