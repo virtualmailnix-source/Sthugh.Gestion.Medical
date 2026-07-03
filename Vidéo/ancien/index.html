@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>St Hugh's — Guide en vidéo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Mulish:wght@500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#0a0a0a;overflow:hidden;}
+  #root{position:fixed;inset:0;}
+  *{box-sizing:border-box;}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="animations.jsx"></script>
+<script type="text/babel" src="scenes-core.jsx"></script>
+<script type="text/babel" src="scenes-1.jsx"></script>
+<script type="text/babel" src="scenes-2.jsx"></script>
+<script type="text/babel" src="scenes-3.jsx"></script>
+
+<script type="text/babel">
+const DURATION = 118;
+const CHAPTERS = [
+  {s:8,  i:'01', name:'Connexion'},
+  {s:16, i:'02', name:'Navigation'},
+  {s:29, i:'03', name:'Dossier résident'},
+  {s:40, i:'04', name:'Consultations · Traitements · RDV'},
+  {s:51, i:'05', name:'Visites & Courses'},
+  {s:63, i:'06', name:'Sorties & Décès'},
+  {s:74, i:'07', name:'Anniversaires & Alertes'},
+  {s:84, i:'08', name:'Système de points'},
+  {s:104,i:'09', name:'Export PDF & Droits'},
+];
+
+// Updates the canvas data-screen-label with current timestamp (for commenting)
+function TimeLabeler() {
+  const t = useTime();
+  React.useEffect(() => {
+    const el = document.getElementById('vid-root');
+    if (el) el.setAttribute('data-screen-label', `t=${t.toFixed(0)}s`);
+  }, [Math.floor(t)]);
+  return null;
+}
+
+function App() {
+  return (
+    <Stage width={1280} height={720} duration={DURATION} background="#0e3531" persistKey="sthughs-guide">
+      <div id="vid-root" data-screen-label="t=0s" style={{position:'absolute', inset:0}}>
+        <TimeLabeler/>
+        <SceneIntro/>
+        <SceneConnexion/>
+        <SceneNavigation/>
+        <SceneDossier/>
+        <SceneActions/>
+        <SceneVisitesCourses/>
+        <SceneSorties/>
+        <SceneAnnivAlertes/>
+        <SceneScore/>
+        <ScenePdfDroits/>
+        <SceneOutro/>
+        <ProgressLine duration={DURATION}/>
+        <ChapterHUD chapters={CHAPTERS} hudStart={8} hudEnd={113} total={DURATION}/>
+      </div>
+    </Stage>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
