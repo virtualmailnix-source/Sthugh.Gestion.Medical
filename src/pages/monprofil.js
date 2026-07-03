@@ -57,8 +57,8 @@ export function renderMonProfil(container) {
         </div>
       </div>
 
-      <div style="background:#fef3c7;border:1px solid #fbbf24;border-radius:var(--radius-sm);
-        padding:.65rem 1rem;margin-bottom:1.5rem;font-size:.82rem;color:#92400e;display:flex;gap:.5rem">
+      <div style="background:var(--tint-amber-bg);border:1px solid var(--tint-amber-border);border-radius:var(--radius-sm);
+        padding:.65rem 1rem;margin-bottom:1.5rem;font-size:.82rem;color:var(--tint-amber-fg);display:flex;gap:.5rem">
         <i class="bi bi-info-circle-fill" style="color:#d97706;flex-shrink:0;margin-top:.05rem"></i>
         <span>${t('monprofil.readOnly')}</span>
       </div>

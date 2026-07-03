@@ -36,6 +36,21 @@
   --status-blue:     #2563eb;
   --status-grey:     #6b7280;
 
+  /* Teintes adaptatives (fond pastel + texte contrasté, AA dans les 2 thèmes) */
+  --tint-blue-bg:    #dbeafe;
+  --tint-blue-fg:    #1d4ed8;
+  --tint-red-bg:     #fee2e2;
+  --tint-red-fg:     #991b1b;
+  --tint-red-border: #fca5a5;
+  --tint-gray-bg:    #f3f4f6;
+  --tint-gray-fg:    #374151;
+  --tint-gray-border:#d1d5db;
+  --tint-amber-bg:   #fef3c7;
+  --tint-amber-fg:   #92400e;
+  --tint-amber-border:#fbbf24;
+  --tint-green-bg:   #dcfce7;
+  --tint-green-fg:   #166534;
+
   /* Dimensions */
   --sidebar-w:       260px;
   --sidebar-w-mini:  68px;
@@ -68,6 +83,21 @@
   --shadow:          0 4px 32px rgba(0,0,0,.4);
   --shadow-deep:     0 12px 48px rgba(0,0,0,.55);
   --nav-bg-scroll:   rgba(10,46,46,.97);
+
+  /* Teintes adaptatives — versions sombres lisibles */
+  --tint-blue-bg:    #173a5e;
+  --tint-blue-fg:    #8ec4f8;
+  --tint-red-bg:     #4a1d1d;
+  --tint-red-fg:     #f3a8a8;
+  --tint-red-border: #7a3535;
+  --tint-gray-bg:    #2a3535;
+  --tint-gray-fg:    #c4d0d0;
+  --tint-gray-border:#3d4a4a;
+  --tint-amber-bg:   #433317;
+  --tint-amber-fg:   #eecf87;
+  --tint-amber-border:#7a5f24;
+  --tint-green-bg:   #1d3d2a;
+  --tint-green-fg:   #9fdfb8;
 }
 
 /* ========== RESET & BASE ========== */
@@ -1179,7 +1209,8 @@ select.form-control { cursor: pointer; }
 .aide-hero {
   display: flex; align-items: center; gap: 1.1rem;
   padding: 1.25rem 1.5rem;
-  background: linear-gradient(135deg, var(--teal-dark), var(--teal-mid));
+  /* --mission reste sombre dans les 2 thèmes (--teal-dark devient clair en dark) */
+  background: linear-gradient(135deg, var(--mission), var(--teal-mid));
   border-radius: var(--radius-lg); color: #fff;
   margin-bottom: 1.75rem;
 }
@@ -1312,8 +1343,8 @@ select.form-control { cursor: pointer; }
   padding: .15rem .55rem; border-radius: 20px;
   font-size: .75rem; font-weight: 700; white-space: nowrap;
 }
-.aide-badge.red    { background: #fee2e2; color: #b91c1c; }
-.aide-badge.orange { background: #ffedd5; color: #9a3412; }
+.aide-badge.red    { background: var(--tint-red-bg); color: var(--tint-red-fg); }
+.aide-badge.orange { background: var(--tint-amber-bg); color: var(--tint-amber-fg); }
 
 .aide-tabs-preview {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -1420,7 +1451,7 @@ select.form-control { cursor: pointer; }
 /* ========== ÉCRAN DE BIENVENUE (après login) ========== */
 .welcome-screen {
   position: fixed; inset: 0; z-index: 2000;
-  background: linear-gradient(135deg, var(--teal-dark) 0%, var(--teal-mid) 100%);
+  background: linear-gradient(135deg, var(--mission) 0%, var(--teal-mid) 100%);
   display: flex; align-items: center; justify-content: center;
   animation: welcome-fade-in .35s ease;
 }

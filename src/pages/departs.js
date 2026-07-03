@@ -94,20 +94,20 @@ async function _load() {
 
   if (vacances.length && (_filter === 'all' || _filter === 'vacances')) {
     html += _section(
-      `<i class="bi bi-luggage-fill" style="color:#2563eb"></i> ${t('depart.filterVacances')} (${vacances.length})`,
-      '#dbeafe', vacances, 'vacances'
+      `<i class="bi bi-luggage-fill"></i> ${t('depart.filterVacances')} (${vacances.length})`,
+      'blue', vacances, 'vacances'
     );
   }
   if (departs.length && (_filter === 'all' || _filter === 'depart')) {
     html += _section(
-      `<i class="bi bi-door-open-fill" style="color:#6b7280"></i> ${t('depart.filterDeparts')} (${departs.length})`,
-      '#f3f4f6', departs, 'depart'
+      `<i class="bi bi-door-open-fill"></i> ${t('depart.filterDeparts')} (${departs.length})`,
+      'gray', departs, 'depart'
     );
   }
   if (deces.length && (_filter === 'all' || _filter === 'deces')) {
     html += _section(
-      `<span style="color:#991b1b;font-weight:700">✝</span> ${t('depart.filterDeces')} (${deces.length})`,
-      '#fee2e2', deces, 'deces'
+      `<span style="font-weight:700">✝</span> ${t('depart.filterDeces')} (${deces.length})`,
+      'red', deces, 'deces'
     );
   }
 
@@ -130,12 +130,12 @@ async function _load() {
   };
 }
 
-function _section(title, bgColor, rows, type) {
+function _section(title, tint, rows, type) {
   return `
     <div style="margin-bottom:2rem">
       <div style="display:flex;align-items:center;gap:.6rem;font-family:Georgia,serif;font-size:1rem;font-weight:700;
-        color:var(--teal-dark);margin-bottom:1rem;padding:.6rem .9rem;
-        background:${bgColor};border-radius:var(--radius-sm);">
+        color:var(--tint-${tint}-fg);margin-bottom:1rem;padding:.6rem .9rem;
+        background:var(--tint-${tint}-bg);border-radius:var(--radius-sm);">
         ${title}
       </div>
       <div class="table-wrap"><table class="table">

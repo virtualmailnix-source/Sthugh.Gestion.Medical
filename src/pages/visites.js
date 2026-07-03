@@ -107,7 +107,7 @@ function _visitCard(v) {
 
   const statusBadge = {
     planifiee:  `<span class="badge badge-planifie">${t('visites.statusPlanifiee')}</span>`,
-    en_cours:   `<span class="badge" style="background:#dcfce7;color:#166534">${t('visites.statusEnCours')}</span>`,
+    en_cours:   `<span class="badge" style="background:var(--tint-green-bg);color:var(--tint-green-fg)">${t('visites.statusEnCours')}</span>`,
     terminee:   `<span class="badge badge-confirme">${t('visites.statusTerminee')}</span>`,
     annulee:    `<span class="badge badge-annule">${t('visites.statusAnnulee')}</span>`,
   }[v.statut] || `<span class="badge badge-teal">${v.statut}</span>`;

@@ -103,11 +103,11 @@ function _fr() { return `
           <p style="font-size:.78rem;margin:0;color:var(--text-light)">Sortie enregistrée, heure de départ non encore renseignée</p>
         </div>
         <div style="padding:.6rem .8rem;background:rgba(245,158,11,.07);border-radius:var(--radius-sm);border-left:3px solid #f59e0b">
-          <div style="font-weight:700;font-size:.82rem;color:#92400e;margin-bottom:.2rem"><span class="badge badge-attente">Dehors</span></div>
+          <div style="font-weight:700;font-size:.82rem;color:var(--tint-amber-fg);margin-bottom:.2rem"><span class="badge badge-attente">Dehors</span></div>
           <p style="font-size:.78rem;margin:0;color:var(--text-light)">Résident sorti, pas encore revenu</p>
         </div>
         <div style="padding:.6rem .8rem;background:rgba(22,163,74,.06);border-radius:var(--radius-sm);border-left:3px solid #16a34a">
-          <div style="font-weight:700;font-size:.82rem;color:#15803d;margin-bottom:.2rem"><span class="badge badge-actif">Rentré(e)</span></div>
+          <div style="font-weight:700;font-size:.82rem;color:var(--tint-green-fg);margin-bottom:.2rem"><span class="badge badge-actif">Rentré(e)</span></div>
           <p style="font-size:.78rem;margin:0;color:var(--text-light)">Résident de retour, sortie terminée</p>
         </div>
       </div>
@@ -123,15 +123,15 @@ function _fr() { return `
       <p>Depuis le <strong>dossier d'un résident actif</strong>, le bouton de sortie permet d'enregistrer l'une des 3 situations suivantes :</p>
       <div class="aide-col3-lg">
         <div style="padding:.75rem;background:rgba(37,99,235,.06);border-radius:var(--radius-sm);border-left:3px solid #2563eb">
-          <div style="font-weight:700;color:#1d4ed8;margin-bottom:.3rem"><i class="bi bi-luggage-fill"></i> Vacances / Sortie temporaire</div>
+          <div style="font-weight:700;color:var(--tint-blue-fg);margin-bottom:.3rem"><i class="bi bi-luggage-fill"></i> Vacances / Sortie temporaire</div>
           <p style="font-size:.82rem;margin:0">Le résident revient. Il reste <strong>actif</strong> avec le badge "En vacances". Bouton <strong>Retour au foyer</strong> pour le réintégrer. <em>Accessible à tous les rôles.</em></p>
         </div>
         <div style="padding:.75rem;background:rgba(107,114,128,.08);border-radius:var(--radius-sm);border-left:3px solid #6b7280">
-          <div style="font-weight:700;color:#374151;margin-bottom:.3rem"><i class="bi bi-door-open-fill"></i> Départ définitif</div>
+          <div style="font-weight:700;color:var(--tint-gray-fg);margin-bottom:.3rem"><i class="bi bi-door-open-fill"></i> Départ définitif</div>
           <p style="font-size:.82rem;margin:0">La famille reprend le résident. Il passe en <strong>archivé</strong>, visible dans le filtre "Partis". <em>Super Admin uniquement.</em></p>
         </div>
         <div style="padding:.75rem;background:rgba(153,27,27,.06);border-radius:var(--radius-sm);border-left:3px solid #991b1b">
-          <div style="font-weight:700;color:#991b1b;margin-bottom:.3rem"><span style="font-size:1rem">✝</span> Décès</div>
+          <div style="font-weight:700;color:var(--tint-red-fg);margin-bottom:.3rem"><span style="font-size:1rem">✝</span> Décès</div>
           <p style="font-size:.82rem;margin:0">Le résident est archivé dans le filtre "Décédés". Toutes ses données sont conservées. Cause du décès facultative. <em>Super Admin uniquement.</em></p>
         </div>
       </div>
@@ -155,7 +155,7 @@ function _fr() { return `
         <li>Définissez la date et l'heure d'arrivée, cochez <strong>Planifier</strong> pour une visite future</li>
         <li>L'heure de départ peut être renseignée plus tard en cliquant <strong>Fin de visite</strong></li>
       </ol>
-      <p style="margin-top:.5rem">Les statuts : <span class="badge badge-planifie">Planifiée</span> → <span class="badge" style="background:#dcfce7;color:#166534">En cours</span> → <span class="badge badge-confirme">Terminée</span>. Le badge dans le menu indique le nombre de visites du jour.</p>
+      <p style="margin-top:.5rem">Les statuts : <span class="badge badge-planifie">Planifiée</span> → <span class="badge" style="background:var(--tint-green-bg);color:var(--tint-green-fg)">En cours</span> → <span class="badge badge-confirme">Terminée</span>. Le badge dans le menu indique le nombre de visites du jour.</p>
       <div class="aide-tip" style="margin-top:.75rem">
         <i class="bi bi-list-ol"></i> <strong>Planification :</strong> la page <strong>Planification</strong> gère la rotation des visites médicales (2×/semaine). Les résidents y sont triés par score de priorité pour optimiser chaque passage du médecin.
       </div>
@@ -251,11 +251,11 @@ function _fr() { return `
           <p style="font-size:.78rem;margin:0;color:var(--text-light)">Résidents actifs, informations complètes + traitements en cours + 5 dernières consultations + historique vacances + historique courses</p>
         </div>
         <div style="padding:.6rem .8rem;background:rgba(153,27,27,.06);border-radius:var(--radius-sm);border-top:3px solid #991b1b">
-          <div style="font-weight:700;font-size:.82rem;color:#991b1b;margin-bottom:.2rem">✝ Dossier de Décès</div>
+          <div style="font-weight:700;font-size:.82rem;color:var(--tint-red-fg);margin-bottom:.2rem">✝ Dossier de Décès</div>
           <p style="font-size:.78rem;margin:0;color:var(--text-light)">En-tête rouge, date et cause de décès + historique complet (10 consultations) + historique vacances + courses</p>
         </div>
         <div style="padding:.6rem .8rem;background:rgba(107,114,128,.07);border-radius:var(--radius-sm);border-top:3px solid #6b7280">
-          <div style="font-weight:700;font-size:.82rem;color:#374151;margin-bottom:.2rem"><i class="bi bi-door-open-fill"></i> Dossier Archivé</div>
+          <div style="font-weight:700;font-size:.82rem;color:var(--tint-gray-fg);margin-bottom:.2rem"><i class="bi bi-door-open-fill"></i> Dossier Archivé</div>
           <p style="font-size:.78rem;margin:0;color:var(--text-light)">En-tête gris, date de départ + historique traitements + consultations + vacances + courses</p>
         </div>
       </div>
@@ -516,11 +516,11 @@ function _en() { return `
           <p style="font-size:.78rem;margin:0;color:var(--text-light)">Trip logged, departure time not yet set</p>
         </div>
         <div style="padding:.6rem .8rem;background:rgba(245,158,11,.07);border-radius:var(--radius-sm);border-left:3px solid #f59e0b">
-          <div style="font-weight:700;font-size:.82rem;color:#92400e;margin-bottom:.2rem"><span class="badge badge-attente">Out</span></div>
+          <div style="font-weight:700;font-size:.82rem;color:var(--tint-amber-fg);margin-bottom:.2rem"><span class="badge badge-attente">Out</span></div>
           <p style="font-size:.78rem;margin:0;color:var(--text-light)">Resident is out, not yet returned</p>
         </div>
         <div style="padding:.6rem .8rem;background:rgba(22,163,74,.06);border-radius:var(--radius-sm);border-left:3px solid #16a34a">
-          <div style="font-weight:700;font-size:.82rem;color:#15803d;margin-bottom:.2rem"><span class="badge badge-actif">Returned</span></div>
+          <div style="font-weight:700;font-size:.82rem;color:var(--tint-green-fg);margin-bottom:.2rem"><span class="badge badge-actif">Returned</span></div>
           <p style="font-size:.78rem;margin:0;color:var(--text-light)">Resident is back, trip complete</p>
         </div>
       </div>
@@ -536,15 +536,15 @@ function _en() { return `
       <p>From an <strong>active resident file</strong>, the exit button records one of 3 situations:</p>
       <div class="aide-col3-lg">
         <div style="padding:.75rem;background:rgba(37,99,235,.06);border-radius:var(--radius-sm);border-left:3px solid #2563eb">
-          <div style="font-weight:700;color:#1d4ed8;margin-bottom:.3rem"><i class="bi bi-luggage-fill"></i> Vacation / Temporary leave</div>
+          <div style="font-weight:700;color:var(--tint-blue-fg);margin-bottom:.3rem"><i class="bi bi-luggage-fill"></i> Vacation / Temporary leave</div>
           <p style="font-size:.82rem;margin:0">The resident will return. They stay <strong>active</strong> with the "On leave" badge. Use <strong>Return to home</strong> when they come back. <em>All roles.</em></p>
         </div>
         <div style="padding:.75rem;background:rgba(107,114,128,.08);border-radius:var(--radius-sm);border-left:3px solid #6b7280">
-          <div style="font-weight:700;color:#374151;margin-bottom:.3rem"><i class="bi bi-door-open-fill"></i> Permanent departure</div>
+          <div style="font-weight:700;color:var(--tint-gray-fg);margin-bottom:.3rem"><i class="bi bi-door-open-fill"></i> Permanent departure</div>
           <p style="font-size:.82rem;margin:0">Family takes the resident home. They become <strong>archived</strong>, visible in the "Departed" filter. <em>Super Admin only.</em></p>
         </div>
         <div style="padding:.75rem;background:rgba(153,27,27,.06);border-radius:var(--radius-sm);border-left:3px solid #991b1b">
-          <div style="font-weight:700;color:#991b1b;margin-bottom:.3rem"><span style="font-size:1rem">✝</span> Death</div>
+          <div style="font-weight:700;color:var(--tint-red-fg);margin-bottom:.3rem"><span style="font-size:1rem">✝</span> Death</div>
           <p style="font-size:.82rem;margin:0">The resident is moved to the "Deceased" archive. All data is preserved. Cause of death is optional. <em>Super Admin only.</em></p>
         </div>
       </div>
@@ -568,7 +568,7 @@ function _en() { return `
         <li>Set the date and arrival time, check <strong>Schedule</strong> for a future visit</li>
         <li>Departure time can be set later by clicking <strong>End visit</strong></li>
       </ol>
-      <p style="margin-top:.5rem">Statuses: <span class="badge badge-planifie">Scheduled</span> → <span class="badge" style="background:#dcfce7;color:#166534">In progress</span> → <span class="badge badge-confirme">Completed</span>. The menu badge shows today's visit count.</p>
+      <p style="margin-top:.5rem">Statuses: <span class="badge badge-planifie">Scheduled</span> → <span class="badge" style="background:var(--tint-green-bg);color:var(--tint-green-fg)">In progress</span> → <span class="badge badge-confirme">Completed</span>. The menu badge shows today's visit count.</p>
       <div class="aide-tip" style="margin-top:.75rem">
         <i class="bi bi-list-ol"></i> <strong>Planning:</strong> the <strong>Planning</strong> page manages the medical visit rotation (2×/week). Residents are sorted by priority score to optimise each doctor visit.
       </div>
@@ -664,11 +664,11 @@ function _en() { return `
           <p style="font-size:.78rem;margin:0;color:var(--text-light)">Active residents, full info + current treatments + last 5 consultations + vacation history + shopping history</p>
         </div>
         <div style="padding:.6rem .8rem;background:rgba(153,27,27,.06);border-radius:var(--radius-sm);border-top:3px solid #991b1b">
-          <div style="font-weight:700;font-size:.82rem;color:#991b1b;margin-bottom:.2rem">✝ Death Record</div>
+          <div style="font-weight:700;font-size:.82rem;color:var(--tint-red-fg);margin-bottom:.2rem">✝ Death Record</div>
           <p style="font-size:.78rem;margin:0;color:var(--text-light)">Red header, date & cause of death + full history (10 consultations) + vacation history + shopping history</p>
         </div>
         <div style="padding:.6rem .8rem;background:rgba(107,114,128,.07);border-radius:var(--radius-sm);border-top:3px solid #6b7280">
-          <div style="font-weight:700;font-size:.82rem;color:#374151;margin-bottom:.2rem"><i class="bi bi-door-open-fill"></i> Archived File</div>
+          <div style="font-weight:700;font-size:.82rem;color:var(--tint-gray-fg);margin-bottom:.2rem"><i class="bi bi-door-open-fill"></i> Archived File</div>
           <p style="font-size:.78rem;margin:0;color:var(--text-light)">Grey header, departure date + treatment & consultation history + vacation + shopping</p>
         </div>
       </div>

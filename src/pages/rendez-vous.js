@@ -85,7 +85,7 @@ function _renderCal() {
     const isSel=ds===_selectedDate, isToday=ds===today;
     html+=`<button class="cal-day" data-date="${ds}" style="
       padding:.3rem .1rem;border-radius:50%;font-size:.82rem;cursor:pointer;
-      background:${isSel?'var(--teal-dark)':'transparent'};
+      background:${isSel?'var(--mission)':'transparent'};
       color:${isSel?'var(--gold-light)':isToday?'var(--teal-dark)':'var(--text-dark)'};
       font-weight:${isSel||isToday?'700':'400'};
       border:${isToday&&!isSel?'1.5px solid var(--teal-light)':'1.5px solid transparent'};
@@ -219,7 +219,7 @@ export async function openFormRdv(id, prefillResidentId, isUrgence=false) {
   const urgence=isUrgence||r.est_urgence;
 
   const body=`<form id="form-rdv">
-    ${urgence?`<div style="background:#fee2e2;border:1px solid #fca5a5;border-radius:var(--radius);padding:.75rem 1rem;margin-bottom:1rem;color:#b91c1c;font-weight:600;font-size:.9rem"><i class="bi bi-exclamation-triangle-fill"></i> ${t('appointments.urgentBanner')}</div>`:''}
+    ${urgence?`<div style="background:var(--tint-red-bg);border:1px solid var(--tint-red-border);border-radius:var(--radius);padding:.75rem 1rem;margin-bottom:1rem;color:var(--tint-red-fg);font-weight:600;font-size:.9rem"><i class="bi bi-exclamation-triangle-fill"></i> ${t('appointments.urgentBanner')}</div>`:''}
     <div class="form-group">
       <label class="form-label">Résident <span class="required">*</span></label>
       <select class="form-control" name="resident_id" required><option value="">—</option>${resOpts}</select>

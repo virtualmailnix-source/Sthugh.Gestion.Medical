@@ -138,9 +138,9 @@ function _tableAccueilHTML(rows) {
         <td>${formatAge(r.date_naissance)} / ${r.sexe ? r.sexe[0] : '—'}</td>
         <td style="font-size:.83rem">
           ${r.statut_depart === 'vacances'
-            ? `<span class="badge" style="background:#dbeafe;color:#1d4ed8"><i class="bi bi-luggage-fill"></i> ${t('depart.badgeVacances')}</span>`
+            ? `<span class="badge" style="background:var(--tint-blue-bg);color:var(--tint-blue-fg)"><i class="bi bi-luggage-fill"></i> ${t('depart.badgeVacances')}</span>`
             : r.statut_depart === 'depart'
-            ? `<span class="badge" style="background:#f3f4f6;color:#374151"><i class="bi bi-door-open-fill"></i> ${t('depart.badgeDeparture')}</span>`
+            ? `<span class="badge" style="background:var(--tint-gray-bg);color:var(--tint-gray-fg)"><i class="bi bi-door-open-fill"></i> ${t('depart.badgeDeparture')}</span>`
             : `<span class="badge badge-actif">${t('residents.statusPresent')}</span>`}
         </td>
         <td><div class="table-actions">
@@ -178,11 +178,11 @@ function _tableHTML(rows) {
         <td style="font-size:.85rem">${r.medecin_nom ? (r.medecin_titre || 'Dr.') + ' ' + r.medecin_nom : '—'}</td>
         <td style="font-size:.83rem">
           ${r.statut_depart === 'vacances'
-            ? `<span class="badge" style="background:#dbeafe;color:#1d4ed8"><i class="bi bi-luggage-fill"></i> ${t('depart.badgeVacances')}</span>`
+            ? `<span class="badge" style="background:var(--tint-blue-bg);color:var(--tint-blue-fg)"><i class="bi bi-luggage-fill"></i> ${t('depart.badgeVacances')}</span>`
             : r.statut_depart === 'depart'
-            ? `<span class="badge" style="background:#f3f4f6;color:#374151"><i class="bi bi-door-open-fill"></i> ${t('depart.badgeDeparture')}</span>`
+            ? `<span class="badge" style="background:var(--tint-gray-bg);color:var(--tint-gray-fg)"><i class="bi bi-door-open-fill"></i> ${t('depart.badgeDeparture')}</span>`
             : r.statut_depart === 'deces'
-            ? `<span class="badge" style="background:#fee2e2;color:#991b1b">✝ ${t('depart.badgeDeath')}</span>`
+            ? `<span class="badge" style="background:var(--tint-red-bg);color:var(--tint-red-fg)">✝ ${t('depart.badgeDeath')}</span>`
             : r.derniere_consultation
             ? `${formatDate(r.derniere_consultation)} <span style="color:${r.jours_sans_consultation > 30 ? '#dc2626' : r.jours_sans_consultation > 14 ? '#d97706' : 'var(--text-light)'};font-size:.75rem">(${r.jours_sans_consultation}${t('residents.daysAgo')})</span>`
             : `<span style="color:#dc2626;font-weight:600">${t('residents.never')}</span>`}
@@ -615,24 +615,24 @@ async function _openProfile(id) {
 
   // Bannière de statut pour dossiers archivés
   const archiveBanner = r.statut_depart === 'deces' ? `
-    <div style="background:#fee2e2;border:1px solid #fca5a5;border-radius:var(--radius-sm);padding:.8rem 1rem;margin:.5rem 0 .25rem;display:flex;align-items:center;gap:.75rem">
-      <span style="font-size:1.5rem;color:#991b1b;line-height:1">✝</span>
+    <div style="background:var(--tint-red-bg);border:1px solid var(--tint-red-border);border-radius:var(--radius-sm);padding:.8rem 1rem;margin:.5rem 0 .25rem;display:flex;align-items:center;gap:.75rem">
+      <span style="font-size:1.5rem;color:var(--tint-red-fg);line-height:1">✝</span>
       <div style="flex:1">
-        <div style="font-weight:700;color:#991b1b">${t('depart.profileDeceased')}</div>
-        ${r.date_sortie ? `<div style="font-size:.82rem;color:#7f1d1d;margin-top:.1rem">${t('depart.deceasedOn')} ${formatDate(r.date_sortie)}</div>` : ''}
-        ${r.motif_deces ? `<div style="font-size:.82rem;color:#7f1d1d;margin-top:.2rem;font-style:italic">${escapeHtml(r.motif_deces)}</div>` : ''}
+        <div style="font-weight:700;color:var(--tint-red-fg)">${t('depart.profileDeceased')}</div>
+        ${r.date_sortie ? `<div style="font-size:.82rem;color:var(--tint-red-fg);margin-top:.1rem">${t('depart.deceasedOn')} ${formatDate(r.date_sortie)}</div>` : ''}
+        ${r.motif_deces ? `<div style="font-size:.82rem;color:var(--tint-red-fg);margin-top:.2rem;font-style:italic">${escapeHtml(r.motif_deces)}</div>` : ''}
       </div>
-      <span class="badge" style="background:#fecaca;color:#991b1b;font-size:.78rem;white-space:nowrap"><i class="bi bi-lock-fill"></i> ${t('depart.archivedReadOnly')}</span>
+      <span class="badge" style="background:var(--tint-red-border);color:var(--tint-red-fg);font-size:.78rem;white-space:nowrap"><i class="bi bi-lock-fill"></i> ${t('depart.archivedReadOnly')}</span>
     </div>
   ` : r.statut_depart === 'depart' ? `
-    <div style="background:#f3f4f6;border:1px solid #d1d5db;border-radius:var(--radius-sm);padding:.8rem 1rem;margin:.5rem 0 .25rem;display:flex;align-items:center;gap:.75rem">
-      <i class="bi bi-door-open-fill" style="font-size:1.4rem;color:#6b7280"></i>
+    <div style="background:var(--tint-gray-bg);border:1px solid var(--tint-gray-border);border-radius:var(--radius-sm);padding:.8rem 1rem;margin:.5rem 0 .25rem;display:flex;align-items:center;gap:.75rem">
+      <i class="bi bi-door-open-fill" style="font-size:1.4rem;color:var(--tint-gray-fg)"></i>
       <div style="flex:1">
-        <div style="font-weight:700;color:#374151">${t('depart.profileDeparted')}</div>
-        ${r.date_sortie ? `<div style="font-size:.82rem;color:#6b7280;margin-top:.1rem">${t('depart.departedOn')} ${formatDate(r.date_sortie)}</div>` : ''}
-        ${r.motif_sortie ? `<div style="font-size:.82rem;color:#6b7280;margin-top:.2rem;font-style:italic">${escapeHtml(r.motif_sortie)}</div>` : ''}
+        <div style="font-weight:700;color:var(--tint-gray-fg)">${t('depart.profileDeparted')}</div>
+        ${r.date_sortie ? `<div style="font-size:.82rem;color:var(--tint-gray-fg);margin-top:.1rem">${t('depart.departedOn')} ${formatDate(r.date_sortie)}</div>` : ''}
+        ${r.motif_sortie ? `<div style="font-size:.82rem;color:var(--tint-gray-fg);margin-top:.2rem;font-style:italic">${escapeHtml(r.motif_sortie)}</div>` : ''}
       </div>
-      <span class="badge" style="background:#e5e7eb;color:#374151;font-size:.78rem;white-space:nowrap"><i class="bi bi-lock-fill"></i> ${t('depart.archivedReadOnly')}</span>
+      <span class="badge" style="background:var(--tint-gray-border);color:var(--tint-gray-fg);font-size:.78rem;white-space:nowrap"><i class="bi bi-lock-fill"></i> ${t('depart.archivedReadOnly')}</span>
     </div>
   ` : '';
 
@@ -673,7 +673,7 @@ async function _openProfile(id) {
       <table style="width:100%;font-size:.9rem">
         ${_row(t('residents.treatingDoctor'), r.medecin_nom ? (r.medecin_titre || 'Dr.') + ' ' + r.medecin_prenom + ' ' + r.medecin_nom : '—')}
         ${_row(t('residents.profileLabelAdmission'), formatDate(r.date_entree))}
-        ${r.statut_depart === 'deces' && r.date_sortie ? _row(t('depart.deceasedOn'), `<strong style="color:#991b1b">${formatDate(r.date_sortie)}</strong>`) : ''}
+        ${r.statut_depart === 'deces' && r.date_sortie ? _row(t('depart.deceasedOn'), `<strong style="color:var(--tint-red-fg)">${formatDate(r.date_sortie)}</strong>`) : ''}
         ${r.statut_depart === 'deces' && r.motif_deces ? _row(getLang() === 'en' ? 'Cause of death' : 'Cause du décès', escapeHtml(r.motif_deces)) : ''}
         ${r.statut_depart === 'depart' && r.date_sortie ? _row(t('depart.departedOn'), formatDate(r.date_sortie)) : ''}
         ${r.statut_depart === 'depart' && r.motif_sortie ? _row(getLang() === 'en' ? 'Reason' : 'Motif', escapeHtml(r.motif_sortie)) : ''}
@@ -1039,9 +1039,9 @@ function _alerteBadge(s, jours) {
 // ── Choix du contenu à exporter ─────────────────────────────
 function _openExportChoice(r, cons, trais, contacts, histSorties, histCourses) {
   const choices = [
-    { mode: 'medical', icon: 'bi-heart-pulse-fill',      color: '#1b6b6b', label: t('residents.exportMedical'), desc: t('residents.exportMedicalDesc') },
-    { mode: 'admin',   icon: 'bi-folder2-open',          color: '#b8963e', label: t('residents.exportAdmin'),   desc: t('residents.exportAdminDesc') },
-    { mode: 'complet', icon: 'bi-file-earmark-pdf-fill', color: '#6b7280', label: t('residents.exportFull'),    desc: t('residents.exportFullDesc') },
+    { mode: 'medical', icon: 'bi-heart-pulse-fill',      color: 'var(--teal-mid)',      label: t('residents.exportMedical'), desc: t('residents.exportMedicalDesc') },
+    { mode: 'admin',   icon: 'bi-folder2-open',          color: 'var(--gold)',          label: t('residents.exportAdmin'),   desc: t('residents.exportAdminDesc') },
+    { mode: 'complet', icon: 'bi-file-earmark-pdf-fill', color: 'var(--tint-gray-fg)',  label: t('residents.exportFull'),    desc: t('residents.exportFullDesc') },
   ];
 
   const body = `
@@ -1395,8 +1395,8 @@ export function _openDepartModal(r) {
   const body = `<form id="form-depart">
     <div class="form-group">
       <label class="form-label">${t('depart.typeLabel')} <span class="required">*</span></label>
-      ${!sa ? `<div style="background:#fef3c7;border:1px solid #fbbf24;border-radius:var(--radius-sm);padding:.6rem .9rem;margin-bottom:.65rem;font-size:.82rem;color:#92400e">
-        <i class="bi bi-info-circle-fill" style="color:#d97706"></i> ${t('depart.adminOnlyVacances')}
+      ${!sa ? `<div style="background:var(--tint-amber-bg);border:1px solid var(--tint-amber-border);border-radius:var(--radius-sm);padding:.6rem .9rem;margin-bottom:.65rem;font-size:.82rem;color:var(--tint-amber-fg)">
+        <i class="bi bi-info-circle-fill"></i> ${t('depart.adminOnlyVacances')}
       </div>` : ''}
       <div style="display:flex;flex-direction:column;gap:.5rem;margin-top:.25rem">
         <label style="display:flex;align-items:center;gap:.65rem;cursor:pointer;padding:.6rem .9rem;border:1px solid var(--card-border);border-radius:var(--radius-sm)">
@@ -1407,12 +1407,12 @@ export function _openDepartModal(r) {
         ${sa ? `
         <label style="display:flex;align-items:center;gap:.65rem;cursor:pointer;padding:.6rem .9rem;border:1px solid var(--card-border);border-radius:var(--radius-sm)">
           <input type="radio" name="type_sortie" value="depart">
-          <i class="bi bi-door-open-fill" style="color:#6b7280"></i>
+          <i class="bi bi-door-open-fill" style="color:var(--text-mid)"></i>
           <span>${t('depart.typeDeparture')}</span>
         </label>
         <label style="display:flex;align-items:center;gap:.65rem;cursor:pointer;padding:.6rem .9rem;border:1px solid var(--card-border);border-radius:var(--radius-sm)">
           <input type="radio" name="type_sortie" value="deces">
-          <span style="color:#991b1b;font-size:1.15rem;font-weight:700;line-height:1;width:16px;text-align:center">✝</span>
+          <span style="color:var(--tint-red-fg);font-size:1.15rem;font-weight:700;line-height:1;width:16px;text-align:center">✝</span>
           <span>${t('depart.typeDeath')}</span>
         </label>
         ` : ''}
