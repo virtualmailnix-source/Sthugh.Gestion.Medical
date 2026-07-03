@@ -33,6 +33,7 @@ export async function renderTraitements(container) {
         <button class="chip" data-f="bientot">${t('treatments.filterSoon')}</button>
         <button class="chip" data-f="expire">${t('treatments.filterExpired')}</button>
         <button class="chip" data-f="chronique">${t('treatments.filterChronic')}</button>
+        <button class="chip" data-f="stock"><i class="bi bi-box-seam"></i> ${t('treatments.filterStock')}</button>
       </div>
     </div>
 
@@ -65,6 +66,7 @@ async function _load(filter, search) {
   if (filter === 'bientot')  query = query.in('statut_alerte',['alerte_24h','alerte_3j','expire_aujourd_hui']);
   if (filter === 'expire')   query = query.eq('statut_alerte','expire');
   if (filter === 'chronique') query = query.eq('statut_alerte','chronique');
+  if (filter === 'stock')    query = query.in('statut_stock',['orange','rouge']).eq('actif',true);
 
   if (search) query = query.or(
     `resident_nom.ilike.%${search}%,resident_prenom.ilike.%${search}%,nom_medicament.ilike.%${search}%`
@@ -85,6 +87,7 @@ async function _load(filter, search) {
       <th>${t('treatments.colMed')}</th><th>${t('treatments.colDosage')}</th>
       <th>${t('treatments.colStart')}</th><th>${t('treatments.colEnd')}</th>
       <th>${t('treatments.colDays')}</th><th>${t('treatments.colStatus')}</th>
+      <th>${t('treatments.colStock')}</th>
       <th style="text-align:right">&nbsp;</th>
     </tr></thead>
     <tbody>
@@ -108,7 +111,9 @@ async function _load(filter, search) {
               </span>`}
         </td>
         <td>${_alerteBadge(r.statut_alerte)}</td>
+        <td>${_stockBadge(r)}</td>
         <td><div class="table-actions">
+          <button class="btn-icon" data-action="restock" title="${t('treatments.restock')}" style="color:var(--teal-mid)"><i class="bi bi-box-seam"></i></button>
           <button class="btn-icon" data-action="renew"  title="${t('treatments.renew')}" style="color:var(--teal-dark)"><i class="bi bi-arrow-clockwise"></i></button>
           <button class="btn-icon" data-action="edit"   title="${t('common.modify')}"><i class="bi bi-pencil-fill"></i></button>
           <button class="btn-icon" data-action="stop"   title="${t('treatments.stop')}" style="color:#d97706"><i class="bi bi-stop-circle-fill"></i></button>
@@ -125,10 +130,71 @@ async function _load(filter, search) {
     if (!row) return;
     const tid = row.dataset.id;
     const trow = rows.find(r=>r.id===tid);
-    if (btn.dataset.action==='edit')   openFormTraitement(tid, null);
-    if (btn.dataset.action==='renew')  _renewTraitement(trow);
-    if (btn.dataset.action==='stop')   _stopTraitement(tid);
+    if (btn.dataset.action==='edit')    openFormTraitement(tid, null);
+    if (btn.dataset.action==='renew')   _renewTraitement(trow);
+    if (btn.dataset.action==='stop')    _stopTraitement(tid);
+    if (btn.dataset.action==='restock') _openRestock(trow);
   };
+}
+
+// Badge stock : vert (OK) / orange (à racheter) / rouge (épuisé ou < 2 j)
+function _stockBadge(r) {
+  if (!r.statut_stock) return '<span style="color:var(--text-light);font-size:.8rem">—</span>';
+  const rest = r.stock_restant !== null && r.stock_restant !== undefined
+    ? `<br><small style="color:var(--text-light)">${Math.round(r.stock_restant)} ${r.unite || ''}</small>` : '';
+  if (r.statut_stock === 'rouge')
+    return `<span class="badge badge-expire"><i class="bi bi-exclamation-triangle-fill"></i> ${r.autonomie_jours !== null && r.autonomie_jours > 0 ? r.autonomie_jours + t('residents.daysAgo') : t('treatments.outOfStock')}</span>${rest}`;
+  if (r.statut_stock === 'orange')
+    return `<span class="badge badge-alerte-3j"><i class="bi bi-cart-plus"></i> ${t('treatments.statusOrange')}${r.autonomie_jours !== null ? ' · ' + r.autonomie_jours + t('residents.daysAgo') : ''}</span>${rest}`;
+  return `<span class="badge badge-ok">${r.autonomie_jours !== null ? r.autonomie_jours + t('residents.daysAgo') : 'OK'}</span>${rest}`;
+}
+
+// ── Réapprovisionnement ───────────────────────────────────
+function _openRestock(trow) {
+  if (!trow) return;
+  const condOk = trow.unites_par_plaquette > 0 && trow.plaquettes_par_boite > 0;
+  const parBoite = condOk ? trow.unites_par_plaquette * trow.plaquettes_par_boite : 0;
+
+  const body = `<form id="form-restock">
+    <p style="margin-bottom:.75rem">
+      <strong>${trow.nom_medicament}</strong> — ${trow.resident_prenom} ${trow.resident_nom}
+    </p>
+    <div style="font-size:.85rem;color:var(--text-light);margin-bottom:1rem">
+      ${t('treatments.restockCurrent')} : <strong>${trow.stock_restant !== null ? Math.round(trow.stock_restant) : '—'} ${trow.unite || ''}</strong>
+      ${trow.autonomie_jours !== null ? ` (${trow.autonomie_jours} ${t('treatments.days')})` : ''}
+    </div>
+    <div class="form-row">
+      ${condOk ? `<div class="form-group">
+        <label class="form-label">${t('treatments.restockBoxes')}</label>
+        <input class="form-control" type="number" name="boites" min="0" step="1" placeholder="2">
+        <div class="form-hint">1 ${t('treatments.box')} = ${parBoite} ${trow.unite || t('treatments.unitsShort')}</div>
+      </div>` : ''}
+      <div class="form-group">
+        <label class="form-label">${t('treatments.restockUnits')}</label>
+        <input class="form-control" type="number" name="unites" min="0" step="0.5" placeholder="20">
+      </div>
+    </div>
+  </form>`;
+
+  openModal(`<i class="bi bi-box-seam"></i> ${t('treatments.restockTitle')}`, body, [
+    { label: t('common.cancel'), cls:'btn btn-secondary', action: closeModal },
+    { label: t('treatments.restock'), cls:'btn btn-primary', action: async () => {
+      const fd = new FormData(document.getElementById('form-restock'));
+      const boites = parseInt(fd.get('boites')) || null;
+      const unites = parseFloat(fd.get('unites')) || null;
+      if (!boites && !unites) { toastError(t('treatments.restockQtyRequired')); return; }
+      const { error } = await db.rpc('fn_reapprovisionner', {
+        p_traitement_id: trow.id,
+        p_boites: boites,
+        p_unites: unites,
+      });
+      if (error) { toastError(error.message); return; }
+      toastSuccess(t('treatments.restockOk'));
+      closeModal();
+      const container = document.getElementById('page-content');
+      if (container) renderTraitements(container);
+    }}
+  ], 'modal-sm');
 }
 
 function _joursCls(j) {
@@ -208,6 +274,59 @@ export async function openFormTraitement(id, prefillResidentId) {
       <label class="form-label">${t('treatments.posology')} <span class="required">*</span></label>
       <input class="form-control" name="posologie" placeholder="${t('treatments.posologyPlaceholder')}" value="${escapeHtml(tData.posologie||'')}" required>
     </div>
+
+    <div class="form-section">
+      <div class="form-section-title"><i class="bi bi-box-seam"></i> ${t('treatments.secStock')}</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">${t('treatments.dosePerIntake')}</label>
+          <input class="form-control stock-field" type="number" name="dose_par_prise" min="0" step="0.5" value="${tData.dose_par_prise||''}" placeholder="1">
+        </div>
+        <div class="form-group">
+          <label class="form-label">${t('treatments.intakesPerDay')}</label>
+          <input class="form-control stock-field" type="number" name="prises_par_jour" min="0" step="0.5" value="${tData.prises_par_jour||''}" placeholder="2">
+        </div>
+        <div class="form-group">
+          <label class="form-label">${t('treatments.unit')}</label>
+          <select class="form-control" name="unite">
+            <option value="">—</option>
+            <option value="comprimé" ${tData.unite==='comprimé'?'selected':''}>${t('treatments.unitCp')}</option>
+            <option value="sachet" ${tData.unite==='sachet'?'selected':''}>${t('treatments.unitSachet')}</option>
+            <option value="ml" ${tData.unite==='ml'?'selected':''}>${t('treatments.unitMl')}</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">${t('treatments.unitsPerBlister')}</label>
+          <input class="form-control stock-field" type="number" name="unites_par_plaquette" min="1" value="${tData.unites_par_plaquette||''}" placeholder="10">
+        </div>
+        <div class="form-group">
+          <label class="form-label">${t('treatments.blistersPerBox')}</label>
+          <input class="form-control stock-field" type="number" name="plaquettes_par_boite" min="1" value="${tData.plaquettes_par_boite||''}" placeholder="2">
+        </div>
+        <div class="form-group">
+          <label class="form-label">${t('treatments.stockBoxes')}</label>
+          <input class="form-control stock-field" type="number" name="stock_boites" min="0" step="0.5" placeholder="1">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">${t('treatments.stockUnits')}</label>
+          <input class="form-control stock-field" type="number" name="stock_initial_unites" min="0" step="0.5" value="${tData.stock_initial_unites||''}" placeholder="20">
+          <div class="form-hint">${t('treatments.stockUnitsHint')}</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">${t('treatments.safetyMargin')}</label>
+          <input class="form-control stock-field" type="number" name="marge_securite_jours" min="0" value="${tData.marge_securite_jours??7}">
+        </div>
+      </div>
+      <div class="form-hint" id="stock-preview" style="font-weight:600"></div>
+      <div class="form-group" style="margin-top:.6rem">
+        <label class="form-label">${t('treatments.estimatedEnd')}</label>
+        <input class="form-control" type="date" name="date_fin_estimee" value="${tData.date_fin_estimee||''}">
+      </div>
+    </div>
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">${t('treatments.startDate')} <span class="required">*</span></label>
@@ -243,9 +362,15 @@ export async function openFormTraitement(id, prefillResidentId) {
     body,
     [
       { label: t('common.cancel'), cls:'btn btn-secondary', action: closeModal },
-      { label: id ? t('common.modify') : t('common.save'), cls:'btn btn-primary', action: () => _submitTrt(id) }
+      { label: id ? t('common.modify') : t('common.save'), cls:'btn btn-primary', action: () => _submitTrt(id, tData) }
     ], 'modal-lg'
   );
+
+  // Prévisualisation autonomie du stock
+  document.querySelectorAll('#form-trt .stock-field').forEach(el =>
+    el.addEventListener('input', _previewStock)
+  );
+  _previewStock();
 
   // Toggle chronique
   const toggle = document.getElementById('toggle-chronique');
@@ -272,6 +397,32 @@ export async function openFormTraitement(id, prefillResidentId) {
   });
 }
 
+// Calcule stock total (unités) + autonomie depuis les champs du formulaire
+function _stockFromForm() {
+  const g = n => parseFloat(document.querySelector(`#form-trt [name="${n}"]`)?.value) || 0;
+  const dose   = g('dose_par_prise');
+  const prises = g('prises_par_jour');
+  const upp    = g('unites_par_plaquette');
+  const ppb    = g('plaquettes_par_boite');
+  const boites = g('stock_boites');
+  let unites   = g('stock_initial_unites');
+  // Les boîtes priment si le conditionnement est complet
+  if (boites > 0 && upp > 0 && ppb > 0) unites = boites * ppb * upp;
+  const conso = dose * prises;
+  return { unites, conso, autonomie: conso > 0 && unites > 0 ? Math.floor(unites / conso) : null };
+}
+
+function _previewStock() {
+  const prev = document.getElementById('stock-preview');
+  if (!prev) return;
+  const { unites, conso, autonomie } = _stockFromForm();
+  if (autonomie === null) { prev.textContent = ''; return; }
+  const fin = new Date();
+  fin.setDate(fin.getDate() + autonomie);
+  const locale = getLang() === 'en' ? 'en-MU' : 'fr-MU';
+  prev.textContent = `${t('treatments.stockPreview')}: ${unites} ${t('treatments.unitsShort')} ÷ ${conso}/j → ${autonomie} ${t('treatments.days')} (${fin.toLocaleDateString(locale)})`;
+}
+
 function _previewDateFin() {
   const duree  = +document.getElementById('f-duree')?.value;
   const debut  = document.querySelector('[name="date_debut"]')?.value;
@@ -287,7 +438,7 @@ function _previewDateFin() {
   }
 }
 
-async function _submitTrt(id) {
+async function _submitTrt(id, prev = {}) {
   const form = document.getElementById('form-trt');
   if (!form.checkValidity()) { form.reportValidity(); return; }
   const fd = new FormData(form);
@@ -296,6 +447,22 @@ async function _submitTrt(id) {
   data.traitement_chronique = data.traitement_chronique === 'true';
   data.alerte_renouvellement = !!document.getElementById('alerte-check')?.checked;
   if (data.traitement_chronique) { delete data.duree_jours; }
+
+  // Stock : les boîtes sont un raccourci de saisie, pas une colonne
+  const { unites } = _stockFromForm();
+  delete data.stock_boites;
+  if (unites > 0) {
+    data.stock_initial_unites = unites;
+    // Création : le stock correspond au début du traitement.
+    // Édition : si la quantité change, le décompte repart d'aujourd'hui.
+    if (!id) {
+      data.date_stock = data.date_debut || new Date().toISOString().slice(0,10);
+    } else if (String(unites) !== String(prev.stock_initial_unites ?? '')) {
+      data.date_stock = new Date().toISOString().slice(0,10);
+    }
+  } else {
+    data.stock_initial_unites = null;
+  }
 
   const { error } = id
     ? await db.from('traitements').update(data).eq('id',id)

@@ -6,9 +6,9 @@ import { t }         from '../i18n.js';
 export async function renderDashboard(container) {
   container.innerHTML = _sk();
 
-  let statsRes, urgentsRes, rdvRes, alertesRes, medTraitRes;
+  let statsRes, urgentsRes, rdvRes, alertesRes, medTraitRes, stockRes;
   try {
-    [statsRes, urgentsRes, rdvRes, alertesRes, medTraitRes] = await Promise.all([
+    [statsRes, urgentsRes, rdvRes, alertesRes, medTraitRes, stockRes] = await Promise.all([
       db.rpc('fn_dashboard_stats'),
       db.from('v_residents_priorite').select('*').gte('score_priorite', 30).limit(8),
       db.from('v_rdv_detail').select('*')
@@ -19,6 +19,9 @@ export async function renderDashboard(container) {
           .eq('lue',false).eq('traitee',false).order('created_at',{ascending:false}).limit(6),
       db.from('v_traitements_actifs').select('*')
           .in('statut_alerte',['alerte_24h','expire','expire_aujourd_hui']).limit(6),
+      db.from('v_traitements_actifs').select('*')
+          .eq('actif', true).in('statut_stock',['rouge','orange'])
+          .order('autonomie_jours', { ascending: true, nullsFirst: false }).limit(8),
     ]);
   } catch (err) {
     container.innerHTML = `
@@ -33,7 +36,7 @@ export async function renderDashboard(container) {
     return;
   }
 
-  [statsRes, urgentsRes, rdvRes, alertesRes, medTraitRes].forEach(r => {
+  [statsRes, urgentsRes, rdvRes, alertesRes, medTraitRes, stockRes].forEach(r => {
     if (r.error) console.warn('Dashboard query error:', r.error);
   });
 
@@ -42,6 +45,7 @@ export async function renderDashboard(container) {
   const rdvs    = rdvRes.data     || [];
   const alertes = alertesRes.data || [];
   const meds    = medTraitRes.data || [];
+  const aRacheter = stockRes.data || [];
 
   container.innerHTML = `
     <div class="page-header">
@@ -69,6 +73,34 @@ export async function renderDashboard(container) {
       ${_stat('bi-person-exclamation', t('dashboard.urgentP1'),         stats.residents_urgents   ?? 0, stats.residents_urgents > 0 ? '#dc2626' : null)}
       ${_stat('bi-person-badge-fill',  t('dashboard.activeDoctors'),    stats.total_doctors       ?? 0, null)}
     </div>
+
+    ${aRacheter.length ? `
+    <div class="card" style="border-top:3px solid #d97706;margin-bottom:1.5rem">
+      <div class="card-header">
+        <div class="card-title" style="color:#d97706">
+          <i class="bi bi-cart-plus-fill"></i> ${t('dashboard.toBuy')}
+          <span style="background:#d97706;color:#fff;border-radius:9px;font-size:.72rem;font-weight:700;padding:.05rem .45rem;margin-left:.35rem">${aRacheter.length}</span>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="window.navigate('traitements')">${t('common.seeAll')}</button>
+      </div>
+      <div class="card-body" style="padding:0">
+        <div class="table-wrap"><table class="table">
+          <thead><tr><th>${t('dashboard.resident')}</th><th>${t('common.room')}</th><th>${t('dashboard.medication')}</th><th>${t('dashboard.stockLeft')}</th><th>${t('dashboard.autonomy')}</th><th>${t('dashboard.status')}</th></tr></thead>
+          <tbody>
+            ${aRacheter.map(m=>`<tr>
+              <td style="font-weight:600">${fullName(m.resident_nom,m.resident_prenom)}</td>
+              <td><span class="badge badge-teal">${m.numero_chambre||'—'}</span></td>
+              <td>${m.nom_medicament}${m.dosage?' — '+m.dosage:''}</td>
+              <td>${m.stock_restant !== null ? Math.round(m.stock_restant)+' '+(m.unite||'') : '—'}</td>
+              <td>${m.autonomie_jours !== null ? m.autonomie_jours+' '+t('common.days') : (m.date_epuisement ? formatDate(m.date_epuisement) : '—')}</td>
+              <td>${m.statut_stock === 'rouge'
+                ? `<span class="badge badge-expire"><i class="bi bi-exclamation-triangle-fill"></i> ${t('dashboard.stockCritical')}</span>`
+                : `<span class="badge badge-alerte-3j"><i class="bi bi-cart-plus"></i> ${t('dashboard.stockToBuy')}</span>`}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table></div>
+      </div>
+    </div>` : ''}
 
     ${meds.length ? `
     <div class="card" style="border-top:3px solid #dc2626;margin-bottom:1.5rem">
