@@ -9,7 +9,7 @@ const T = {
       traitements:'Traitements', consultations:'Consultations', rdv:'Rendez-vous',
       planification:'Planification', alertes:'Alertes', statistiques:'Statistiques',
       aide:'Aide', anniversaires:'Anniversaires', visites:'Visites', departs:'Sorties',
-      courses:'Courses',
+      courses:'Courses', manager:'Gestion Panel',
     },
     ui: {
       darkMode:'Mode sombre', lightMode:'Mode clair',
@@ -471,7 +471,7 @@ const T = {
       traitements:'Treatments', consultations:'Consultations', rdv:'Appointments',
       planification:'Planning', alertes:'Alerts', statistiques:'Statistics',
       aide:'Help', anniversaires:'Birthdays', visites:'Visits', departs:'Exits',
-      courses:'Shopping',
+      courses:'Shopping', manager:'Management Panel',
     },
     ui: {
       darkMode:'Dark mode', lightMode:'Light mode',

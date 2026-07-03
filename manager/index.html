@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>St Hugh's — Gestion des accès</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ══ LOGIN ═══════════════════════════════════════════════ -->
+  <div id="login-page" class="login-page">
+    <div class="login-box">
+      <div class="login-logo"><i class="bi bi-shield-lock-fill"></i></div>
+      <h1>St Hugh's</h1>
+      <p class="login-sub" data-mgr-i18n="adminPanel">Panneau d'administration — Super Admin</p>
+      <div class="form-group">
+        <label class="form-label" data-mgr-i18n="emailLabel">Adresse email</label>
+        <input type="email" id="login-email" class="form-control" placeholder="admin@sthughs.mu" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-mgr-i18n="passwordLabel">Mot de passe</label>
+        <input type="password" id="login-password" class="form-control" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button id="login-btn" class="btn btn-primary btn-full" data-mgr-i18n="loginBtn">Se connecter</button>
+      <div id="login-err" class="login-err hidden"></div>
+    </div>
+  </div>
+
+  <!-- ══ APPLICATION ══════════════════════════════════════════ -->
+  <div id="app" class="hidden">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="topbar-brand">
+        <i class="bi bi-shield-check-fill"></i>
+        <span>St Hugh's — Administration</span>
+      </div>
+      <div class="topbar-user">
+        <i class="bi bi-person-fill"></i>
+        <span id="topbar-name">—</span>
+        <span class="role-chip" data-mgr-i18n="roleSuper">Super Admin</span>
+        <div class="mgr-lang-switcher" id="mgr-lang-switcher">
+          <button class="mgr-lang-btn active" data-lang="fr">FR</button>
+          <button class="mgr-lang-btn" data-lang="en">EN</button>
+        </div>
+        <button id="btn-logout" class="btn btn-ghost btn-sm">
+          <i class="bi bi-box-arrow-right"></i> <span id="lbl-logout" data-mgr-i18n="logout">Déconnexion</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Nav tabs -->
+    <nav class="main-nav">
+      <button class="nav-tab active" data-page="users">
+        <i class="bi bi-people-fill"></i> <span id="lbl-nav-users" data-mgr-i18n="navUsers">Utilisateurs</span>
+      </button>
+      <button class="nav-tab" data-page="journal">
+        <i class="bi bi-journal-text"></i> <span id="lbl-nav-journal" data-mgr-i18n="navJournal">Journal d'activité</span>
+      </button>
+      <button class="nav-tab" data-page="aide">
+        <i class="bi bi-question-circle-fill"></i> <span id="lbl-nav-aide" data-mgr-i18n="navAide">Aide</span>
+      </button>
+    </nav>
+
+    <!-- ── PAGE: UTILISATEURS ─────────────────────────────── -->
+    <section class="page-section" data-page="users">
+      <div class="section-header">
+        <h2><i class="bi bi-people-fill"></i> <span data-mgr-i18n="sectionUsers">Utilisateurs</span></h2>
+        <button id="btn-add-user" class="btn btn-primary">
+          <i class="bi bi-person-plus-fill"></i> <span data-mgr-i18n="newUser">Nouvel utilisateur</span>
+        </button>
+      </div>
+
+      <div class="card">
+        <table class="data-table" id="users-table">
+          <thead>
+            <tr>
+              <th style="width:40px"></th>
+              <th data-mgr-i18n="colNamePost">Nom / Poste</th>
+              <th data-mgr-i18n="colEmail">Email</th>
+              <th data-mgr-i18n="colPhone">Téléphone</th>
+              <th data-mgr-i18n="colRole">Rôle</th>
+              <th data-mgr-i18n="colStatus">Statut</th>
+              <th style="width:160px" data-mgr-i18n="colActions">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="users-table-body">
+            <tr><td colspan="7" class="table-loading" data-mgr-i18n="loading">Chargement…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── PAGE: JOURNAL ─────────────────────────────────── -->
+    <section class="page-section hidden" data-page="journal">
+      <div class="section-header">
+        <h2><i class="bi bi-journal-text"></i> <span data-mgr-i18n="sectionJournal">Journal d'activité</span></h2>
+        <button class="btn btn-ghost btn-sm" id="btn-refresh-audit">
+          <i class="bi bi-arrow-clockwise"></i> <span data-mgr-i18n="refresh">Actualiser</span>
+        </button>
+      </div>
+
+      <div class="card" style="margin-bottom:1rem">
+        <div class="filters">
+          <div class="form-group">
+            <label class="form-label" data-mgr-i18n="filterUser">Utilisateur</label>
+            <select id="filter-user" class="form-control">
+              <option value="" data-mgr-i18n="allUsers">Tous les utilisateurs</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" data-mgr-i18n="filterTable">Table</label>
+            <select id="filter-table" class="form-control">
+              <option value="">Toutes</option>
+              <option value="residents">Résidents</option>
+              <option value="doctors">Médecins</option>
+              <option value="traitements">Traitements</option>
+              <option value="consultations">Consultations</option>
+              <option value="rendez_vous">Rendez-vous</option>
+              <option value="planning_visites">Planification</option>
+              <option value="app_users">Utilisateurs</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" data-mgr-i18n="filterAction">Action</label>
+            <select id="filter-action" class="form-control">
+              <option value="">Toutes</option>
+              <option value="INSERT">Création</option>
+              <option value="UPDATE">Modification</option>
+              <option value="DELETE">Suppression</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" id="btn-apply-filters" style="align-self:flex-end">
+            <i class="bi bi-funnel-fill"></i> <span data-mgr-i18n="filter">Filtrer</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width:160px" data-mgr-i18n="colDate">Date / Heure</th>
+              <th data-mgr-i18n="colUser">Utilisateur</th>
+              <th style="width:110px" data-mgr-i18n="colAction">Action</th>
+              <th style="width:130px" data-mgr-i18n="colTable">Table</th>
+              <th data-mgr-i18n="colSummary">Résumé</th>
+            </tr>
+          </thead>
+          <tbody id="audit-body">
+            <tr><td colspan="5" class="table-loading" data-mgr-i18n="loading">Chargement…</td></tr>
+          </tbody>
+        </table>
+        <div style="text-align:center;padding:1rem">
+          <button id="btn-load-more" class="btn btn-ghost btn-sm hidden">
+            <i class="bi bi-chevron-down"></i> <span data-mgr-i18n="loadMore">Charger plus</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── PAGE: AIDE ───────────────────────────────────────── -->
+    <section class="page-section hidden" data-page="aide">
+      <div id="mgr-aide-content"></div>
+    </section>
+
+  </div>
+
+  <!-- ══ MODAL ════════════════════════════════════════════════ -->
+  <div id="modal-overlay" class="modal-overlay hidden">
+    <div class="modal-box">
+      <div class="modal-head">
+        <span id="modal-title">—</span>
+        <button id="modal-close" class="btn-icon"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+      <div class="modal-foot">
+        <button id="modal-cancel" class="btn btn-ghost" data-mgr-i18n="cancel">Annuler</button>
+        <button id="modal-save" class="btn btn-primary" data-mgr-i18n="save">Enregistrer</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
