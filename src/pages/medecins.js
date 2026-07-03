@@ -86,12 +86,13 @@ async function _load(search = '') {
       </div>`).join('')}
   </div>`;
 
-  wrap.addEventListener('click', e => {
+  // onclick : _load est rappelée sur le même élément, addEventListener empilerait
+  wrap.onclick = e => {
     const btn = e.target.closest('button[data-action]');
     if (!btn) return;
     if (btn.dataset.action === 'edit')   openFormMedecin(btn.dataset.id);
     if (btn.dataset.action === 'delete') _confirmDelete(btn.dataset.id);
-  });
+  };
 }
 
 export async function openFormMedecin(id) {

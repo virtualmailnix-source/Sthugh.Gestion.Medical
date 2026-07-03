@@ -128,11 +128,12 @@ async function _loadSlots() {
       </div>
     </div>`).join('');
 
-  wrap.addEventListener('click', e => {
+  // onclick : _loadSlots est rappelée sur le même élément, addEventListener empilerait
+  wrap.onclick = e => {
     const btn = e.target.closest('button[data-action]');
     if (!btn) return;
     if (btn.dataset.action === 'open') _openSlotDetail(btn.dataset.id);
-  });
+  };
 }
 
 async function _openSlotDetail(slotId) {
@@ -189,7 +190,9 @@ async function _openSlotDetail(slotId) {
     'modal-xl'
   );
 
-  document.getElementById('modal-body').addEventListener('click', async e => {
+  // onclick : #modal-body est un élément permanent et _openSlotDetail se rappelle
+  // après chaque action — addEventListener empilerait un handler par action
+  document.getElementById('modal-body').onclick = async e => {
     const btn = e.target.closest('button[data-action]');
     if (!btn) return;
     if (btn.dataset.action==='remove-pr') {
@@ -211,7 +214,7 @@ async function _openSlotDetail(slotId) {
       toastSuccess(t('planning.addedToSlot'));
       _openSlotDetail(slotId);
     }
-  });
+  };
 }
 
 async function _openFormSlot() {

@@ -3,7 +3,7 @@ import { openModal, closeModal }       from '../../script.js';
 import { toastSuccess, toastError }    from '../toast.js';
 import {
   formatDate, formatAge, initials, fullName,
-  escapeHtml, debounce
+  escapeHtml, debounce, nowLocalInput
 } from '../utils.js';
 import { openFormConsultation }        from './consultations.js';
 import { openFormRdv }                 from './rendez-vous.js';
@@ -90,7 +90,9 @@ async function _loadResidents() {
   wrap.innerHTML = _tableHTML(data || []);
   _renderPagination(count || 0);
 
-  wrap.addEventListener('click', e => {
+  // onclick (et non addEventListener) : _loadResidents est rappelée à chaque
+  // filtre/recherche sur le même élément — les listeners s'empileraient
+  wrap.onclick = e => {
     const btn = e.target.closest('button[data-action]');
     const row = e.target.closest('tr[data-id]');
     if (btn?.dataset.action === 'view')    { _openProfile(row.dataset.id); return; }
@@ -99,7 +101,7 @@ async function _loadResidents() {
     if (btn?.dataset.action === 'rdv')     { openFormRdv(null, row.dataset.id); return; }
     if (btn?.dataset.action === 'delete')  { _confirmDelete(row.dataset.id, row.dataset.name); return; }
     if (row) _openProfile(row.dataset.id);
-  });
+  };
 }
 
 function _tableHTML(rows) {
@@ -189,10 +191,10 @@ function _renderPagination(total) {
     ).join('')}
     <button class="page-btn" ${_page === pages ? 'disabled' : ''} data-p="${_page + 1}"><i class="bi bi-chevron-right"></i></button>
   </div>`;
-  wrap.addEventListener('click', e => {
+  wrap.onclick = e => {
     const btn = e.target.closest('[data-p]');
     if (btn && !btn.disabled) { _page = +btn.dataset.p; _loadResidents(); }
-  });
+  };
 }
 
 // ── Formulaire résident ─────────────────────────────────────
@@ -760,8 +762,8 @@ async function _openProfile(id) {
     ...(sa && r.statut_depart !== 'deces' ? [{ label: t('common.modify'), cls: 'btn btn-secondary btn-sm', action: () => { closeModal(); openFormResident(id); } }] : []),
     // Nouvelle consultation : actif ou vacances seulement
     ...(isActive || isVacances ? [{ label: t('residents.newConsult'), cls: 'btn btn-primary btn-sm', action: () => { closeModal(); openFormConsultation(null, id); } }] : []),
-    // PDF : toujours visible, libellé selon statut
-    { label: pdfLabel, cls: 'btn btn-secondary btn-sm', action: () => _exportPDF(r, cons, trais, contacts, histSorties, histCourses) },
+    // PDF : toujours visible, libellé selon statut — ouvre le choix du contenu
+    { label: pdfLabel, cls: 'btn btn-secondary btn-sm', action: () => _openExportChoice(r, cons, trais, contacts, histSorties, histCourses) },
     // Retour au foyer (vacances)
     ...(isVacances ? [{ label: `<i class="bi bi-house-fill"></i> ${t('depart.btnRestore')}`, cls: 'btn btn-success btn-sm', action: () => { closeModal(); _openRestoreModal(r); } }] : []),
     // Gérer sortie : actif + super_admin → toutes options; actif + admin → vacances uniquement
@@ -780,7 +782,8 @@ async function _openProfile(id) {
 
   document.getElementById('btn-add-trait')?.addEventListener('click', e => {
     closeModal();
-    _openFormTraitement(null, e.target.dataset.rid);
+    // currentTarget : un clic sur l'icône <i> du bouton ne porte pas data-rid
+    _openFormTraitement(null, e.currentTarget.dataset.rid);
   });
 
   document.getElementById('btn-edit-contacts')?.addEventListener('click', () => {
@@ -809,8 +812,50 @@ function _alerteBadge(s, jours) {
   return map[s] || s;
 }
 
-function _exportPDF(r, cons, trais, contacts, histSorties = [], histCourses = []) {
+// ── Choix du contenu à exporter ─────────────────────────────
+function _openExportChoice(r, cons, trais, contacts, histSorties, histCourses) {
+  const choices = [
+    { mode: 'medical', icon: 'bi-heart-pulse-fill',      color: '#1b6b6b', label: t('residents.exportMedical'), desc: t('residents.exportMedicalDesc') },
+    { mode: 'admin',   icon: 'bi-folder2-open',          color: '#b8963e', label: t('residents.exportAdmin'),   desc: t('residents.exportAdminDesc') },
+    { mode: 'complet', icon: 'bi-file-earmark-pdf-fill', color: '#6b7280', label: t('residents.exportFull'),    desc: t('residents.exportFullDesc') },
+  ];
+
+  const body = `
+    <p style="font-size:.88rem;color:var(--text-light);margin-bottom:1rem">
+      ${t('residents.exportChoiceSub')} — <strong>${fullName(r.nom, r.prenom)}</strong>
+    </p>
+    <div style="display:flex;flex-direction:column;gap:.6rem">
+      ${choices.map(c => `
+        <button type="button" class="export-choice" data-mode="${c.mode}"
+          style="display:flex;align-items:center;gap:.9rem;padding:.9rem 1rem;border:1px solid var(--card-border);border-left:3px solid ${c.color};border-radius:var(--radius-sm);background:var(--bg-alt);cursor:pointer;text-align:left;width:100%">
+          <i class="bi ${c.icon}" style="font-size:1.5rem;color:${c.color};flex-shrink:0"></i>
+          <span>
+            <span style="display:block;font-weight:700">${c.label}</span>
+            <span style="display:block;font-size:.8rem;color:var(--text-light);margin-top:.15rem">${c.desc}</span>
+          </span>
+        </button>`).join('')}
+    </div>`;
+
+  openModal(
+    `<i class="bi bi-file-earmark-pdf-fill"></i> ${t('residents.exportChoiceTitle')}`,
+    body,
+    [{ label: `<i class="bi bi-arrow-left"></i> ${t('residents.backToProfile')}`, cls: 'btn btn-secondary btn-sm', action: () => { closeModal(); _openProfile(r.id); } }],
+    ''
+  );
+
+  document.querySelectorAll('.export-choice').forEach(btn =>
+    btn.addEventListener('click', () => {
+      _exportPDF(r, cons, trais, contacts, histSorties, histCourses, btn.dataset.mode);
+      closeModal();
+      _openProfile(r.id);
+    })
+  );
+}
+
+function _exportPDF(r, cons, trais, contacts, histSorties = [], histCourses = [], mode = 'complet') {
   if (!window.jspdf) { alert('Bibliothèque PDF non chargée. Vérifiez votre connexion.'); return; }
+  const withMedical = mode !== 'admin';    // sections médicales
+  const withAdmin   = mode !== 'medical';  // sections non médicales
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const W = 210, M = 14;
@@ -876,7 +921,12 @@ function _exportPDF(r, cons, trais, contacts, histSorties = [], histCourses = []
   doc.setFontSize(8.5);
   doc.text('Rose Hill, Mauritius  |  Tel: 4641124  |  Diocese Anglican de Maurice', M, 28);
 
-  const docType = isDeces ? 'DOSSIER DE DECES' : isDepart ? 'DOSSIER ARCHIVE' : 'DOSSIER MEDICAL';
+  const modeLabel = mode === 'medical' ? 'MEDICAL' : mode === 'admin' ? 'ADMINISTRATIF' : 'COMPLET';
+  const docType = isDeces
+    ? `DOSSIER DE DECES${mode !== 'complet' ? ' — ' + modeLabel : ''}`
+    : isDepart
+    ? `DOSSIER ARCHIVE${mode !== 'complet' ? ' — ' + modeLabel : ''}`
+    : `DOSSIER ${modeLabel}`;
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8);
   doc.text(docType, W - M, 14, { align: 'right' });
@@ -919,9 +969,12 @@ function _exportPDF(r, cons, trais, contacts, histSorties = [], histCourses = []
   } else if (isDepart) {
     const dateDepart = r.date_sortie ? new Date(r.date_sortie).toLocaleDateString('fr-MU') : '—';
     doc.text(`Entree: ${entree}  |  Depart le: ${dateDepart}${r.motif_sortie ? '  |  ' + r.motif_sortie : ''}`, M, y);
-  } else {
+  } else if (withMedical) {
     const niv = r.niveau_priorite === 1 ? 'Urgente' : r.niveau_priorite === 2 ? 'Elevee' : 'Normale';
     doc.text(`Entree: ${entree}  |  Priorite: ${niv}  |  Score: ${r.score_priorite || 0}`, M, y);
+  } else {
+    // Mode administratif : pas de donnees medicales (priorite/score)
+    doc.text(`Entree: ${entree}`, M, y);
   }
 
   y += 8;
@@ -935,108 +988,116 @@ function _exportPDF(r, cons, trais, contacts, histSorties = [], histCourses = []
     ? `${r.medecin_titre || 'Dr.'} ${r.medecin_prenom || ''} ${r.medecin_nom}`.trim()
     : '—';
 
-  section(isDeces ? 'INFORMATIONS MEDICALES AU MOMENT DU DECES' : 'INFORMATIONS MEDICALES');
-  const infoRows = [
-    ['Medecin traitant',      medecin],
-    ['Groupe sanguin',        r.groupe_sanguin || '—'],
-    ['Mobilite',              r.mobilite || '—'],
-    ['Allergies',             r.allergies || '—'],
-    ['Conditions chroniques', r.conditions_chroniques || '—'],
-    ['Antecedents',           r.antecedents || '—'],
-    ...(r.notes_medicales ? [['Notes medicales', r.notes_medicales]] : []),
-  ];
-  if (!isDeces && !isDepart) {
-    const derniereC = r.derniere_consultation
-      ? `${new Date(r.derniere_consultation).toLocaleDateString('fr-MU')} (${r.jours_sans_consultation} j.)`
-      : 'Jamais';
-    infoRows.splice(1, 0, ['Derniere consultation', derniereC]);
+  if (withMedical) {
+    section(isDeces ? 'INFORMATIONS MEDICALES AU MOMENT DU DECES' : 'INFORMATIONS MEDICALES');
+    const infoRows = [
+      ['Medecin traitant',      medecin],
+      ['Groupe sanguin',        r.groupe_sanguin || '—'],
+      ['Mobilite',              r.mobilite || '—'],
+      ['Allergies',             r.allergies || '—'],
+      ['Conditions chroniques', r.conditions_chroniques || '—'],
+      ['Antecedents',           r.antecedents || '—'],
+      ...(r.notes_medicales ? [['Notes medicales', r.notes_medicales]] : []),
+    ];
+    if (!isDeces && !isDepart) {
+      const derniereC = r.derniere_consultation
+        ? `${new Date(r.derniere_consultation).toLocaleDateString('fr-MU')} (${r.jours_sans_consultation} j.)`
+        : 'Jamais';
+      infoRows.splice(1, 0, ['Derniere consultation', derniereC]);
+    }
+    doc.autoTable({ ...tableOpts, startY: y, columnStyles: { 0: { fontStyle: 'bold', cellWidth: 52, textColor: [50,50,50] } }, body: infoRows });
+    y = doc.lastAutoTable.finalY + 8;
   }
-  doc.autoTable({ ...tableOpts, startY: y, columnStyles: { 0: { fontStyle: 'bold', cellWidth: 52, textColor: [50,50,50] } }, body: infoRows });
-  y = doc.lastAutoTable.finalY + 8;
 
   // ── Contacts famille ───────────────────────────────────────
-  section('CONTACTS FAMILLE');
-  if (contacts.length) {
-    doc.autoTable({
-      ...tableOpts, startY: y,
-      head: [['Nom', 'Relation', 'Telephone', 'Principal']],
-      body: contacts.map(c => [c.nom || '—', c.relation || '—', c.telephone || '—', c.est_principal ? 'Oui' : '']),
-    });
-    y = doc.lastAutoTable.finalY + 8;
-  } else {
-    emptyLine('Aucun contact enregistre');
+  if (withAdmin) {
+    section('CONTACTS FAMILLE');
+    if (contacts.length) {
+      doc.autoTable({
+        ...tableOpts, startY: y,
+        head: [['Nom', 'Relation', 'Telephone', 'Principal']],
+        body: contacts.map(c => [c.nom || '—', c.relation || '—', c.telephone || '—', c.est_principal ? 'Oui' : '']),
+      });
+      y = doc.lastAutoTable.finalY + 8;
+    } else {
+      emptyLine('Aucun contact enregistre');
+    }
   }
 
   // ── Traitements ────────────────────────────────────────────
-  section(isDeces || isDepart ? 'HISTORIQUE DES TRAITEMENTS' : 'TRAITEMENTS EN COURS');
-  const traisActifs = trais.filter(tr => tr.actif !== false);
-  if (traisActifs.length) {
-    doc.autoTable({
-      ...tableOpts, startY: y,
-      head: [['Medicament', 'Dosage', 'Posologie', isDeces || isDepart ? 'Periode' : 'Fin / Statut']],
-      body: traisActifs.map(tr => [
-        tr.nom_medicament || '—', tr.dosage || '—', tr.posologie || '—',
-        tr.traitement_chronique ? 'Chronique' : (tr.date_fin ? new Date(tr.date_fin).toLocaleDateString('fr-MU') : '—'),
-      ]),
-    });
-    y = doc.lastAutoTable.finalY + 8;
-  } else {
-    emptyLine(isDeces || isDepart ? 'Aucun traitement enregistre' : 'Aucun traitement actif');
+  if (withMedical) {
+    section(isDeces || isDepart ? 'HISTORIQUE DES TRAITEMENTS' : 'TRAITEMENTS EN COURS');
+    const traisActifs = trais.filter(tr => tr.actif !== false);
+    if (traisActifs.length) {
+      doc.autoTable({
+        ...tableOpts, startY: y,
+        head: [['Medicament', 'Dosage', 'Posologie', isDeces || isDepart ? 'Periode' : 'Fin / Statut']],
+        body: traisActifs.map(tr => [
+          tr.nom_medicament || '—', tr.dosage || '—', tr.posologie || '—',
+          tr.traitement_chronique ? 'Chronique' : (tr.date_fin ? new Date(tr.date_fin).toLocaleDateString('fr-MU') : '—'),
+        ]),
+      });
+      y = doc.lastAutoTable.finalY + 8;
+    } else {
+      emptyLine(isDeces || isDepart ? 'Aucun traitement enregistre' : 'Aucun traitement actif');
+    }
+
+    // ── Consultations ────────────────────────────────────────
+    section(isDeces || isDepart ? 'HISTORIQUE DES CONSULTATIONS' : 'CONSULTATIONS RECENTES');
+    const consRecentes = cons.slice(0, isDeces || isDepart ? 10 : 5);
+    if (consRecentes.length) {
+      doc.autoTable({
+        ...tableOpts, startY: y,
+        head: [['Date', 'Medecin', 'Diagnostic / Motif']],
+        body: consRecentes.map(c => [
+          new Date(c.date_consultation).toLocaleDateString('fr-MU'),
+          `${c.medecin_titre || ''} ${c.medecin_nom || ''}`.trim() || '—',
+          c.diagnostic || c.motif || '—',
+        ]),
+      });
+      y = doc.lastAutoTable.finalY + 8;
+    } else {
+      emptyLine('Aucune consultation enregistree');
+    }
   }
 
-  // ── Consultations ──────────────────────────────────────────
-  section(isDeces || isDepart ? 'HISTORIQUE DES CONSULTATIONS' : 'CONSULTATIONS RECENTES');
-  const consRecentes = cons.slice(0, isDeces || isDepart ? 10 : 5);
-  if (consRecentes.length) {
-    doc.autoTable({
-      ...tableOpts, startY: y,
-      head: [['Date', 'Medecin', 'Diagnostic / Motif']],
-      body: consRecentes.map(c => [
-        new Date(c.date_consultation).toLocaleDateString('fr-MU'),
-        `${c.medecin_titre || ''} ${c.medecin_nom || ''}`.trim() || '—',
-        c.diagnostic || c.motif || '—',
-      ]),
-    });
-    y = doc.lastAutoTable.finalY + 8;
-  } else {
-    emptyLine('Aucune consultation enregistree');
-  }
+  if (withAdmin) {
+    // ── Historique vacances ──────────────────────────────────
+    section('HISTORIQUE DES VACANCES');
+    if (histSorties.length) {
+      doc.autoTable({
+        ...tableOpts, startY: y,
+        head: [['Date de sortie', 'Date de retour', 'Motif']],
+        body: histSorties.map(h => [
+          h.date_sortie ? new Date(h.date_sortie).toLocaleDateString('fr-MU') : '—',
+          h.date_retour ? new Date(h.date_retour).toLocaleDateString('fr-MU') : '—',
+          h.motif_sortie || '—',
+        ]),
+      });
+      y = doc.lastAutoTable.finalY + 8;
+    } else {
+      emptyLine('Aucune sortie vacances enregistree');
+    }
 
-  // ── Historique vacances ────────────────────────────────────
-  section('HISTORIQUE DES VACANCES');
-  if (histSorties.length) {
-    doc.autoTable({
-      ...tableOpts, startY: y,
-      head: [['Date de sortie', 'Date de retour', 'Motif']],
-      body: histSorties.map(h => [
-        h.date_sortie ? new Date(h.date_sortie).toLocaleDateString('fr-MU') : '—',
-        h.date_retour ? new Date(h.date_retour).toLocaleDateString('fr-MU') : '—',
-        h.motif_sortie || '—',
-      ]),
-    });
-    y = doc.lastAutoTable.finalY + 8;
-  } else {
-    emptyLine('Aucune sortie vacances enregistree');
-  }
-
-  // ── Historique courses ─────────────────────────────────────
-  section('HISTORIQUE DES COURSES');
-  if (histCourses.length) {
-    doc.autoTable({
-      ...tableOpts, startY: y,
-      head: [['Date', 'Depart', 'Retour', 'Articles achetes', 'Statut']],
-      columnStyles: { 3: { cellWidth: 60 } },
-      body: histCourses.map(c => [
-        c.date_sortie ? new Date(c.date_sortie).toLocaleDateString('fr-MU') : '—',
-        c.heure_depart ? c.heure_depart.slice(0,5) : '—',
-        c.heure_retour ? c.heure_retour.slice(0,5) : '—',
-        c.articles || '—',
-        c.est_rentre ? 'Rentre(e)' : (!c.est_rentre && c.heure_depart ? 'Dehors' : 'Planifie'),
-      ]),
-    });
-    y = doc.lastAutoTable.finalY + 8;
-  } else {
-    emptyLine('Aucune sortie courses enregistree');
+    // ── Historique courses ───────────────────────────────────
+    section('HISTORIQUE DES COURSES');
+    if (histCourses.length) {
+      doc.autoTable({
+        ...tableOpts, startY: y,
+        head: [['Date', 'Depart', 'Retour', 'Articles achetes', 'Statut']],
+        columnStyles: { 3: { cellWidth: 60 } },
+        body: histCourses.map(c => [
+          c.date_sortie ? new Date(c.date_sortie).toLocaleDateString('fr-MU') : '—',
+          c.heure_depart ? c.heure_depart.slice(0,5) : '—',
+          c.heure_retour ? c.heure_retour.slice(0,5) : '—',
+          c.articles || '—',
+          c.est_rentre ? 'Rentre(e)' : (!c.est_rentre && c.heure_depart ? 'Dehors' : 'Planifie'),
+        ]),
+      });
+      y = doc.lastAutoTable.finalY + 8;
+    } else {
+      emptyLine('Aucune sortie courses enregistree');
+    }
   }
 
   // ── Pied de page sur chaque page ───────────────────────────
@@ -1070,7 +1131,8 @@ function _exportPDF(r, cons, trais, contacts, histSorties = [], histCourses = []
   }
 
   // ── Téléchargement ─────────────────────────────────────────
-  const suffix = isDeces ? 'deces' : isDepart ? 'archive' : 'dossier_medical';
+  const modeSuffix = mode === 'medical' ? 'medical' : mode === 'admin' ? 'administratif' : 'complet';
+  const suffix = `${isDeces ? 'deces' : isDepart ? 'archive' : 'dossier'}_${modeSuffix}`;
   doc.save(`${slug(r.nom)}_${slug(r.prenom)}_${suffix}_St_Hughs.pdf`);
 }
 
@@ -1136,7 +1198,7 @@ export function _openDepartModal(r) {
       <div class="form-group">
         <label class="form-label">${t('depart.exitDate')}</label>
         <input class="form-control" type="datetime-local" name="date_sortie"
-          value="${new Date().toISOString().slice(0,16)}">
+          value="${nowLocalInput()}">
       </div>
       <div class="form-group" id="return-date-group" style="display:none">
         <label class="form-label">${t('depart.returnDate')}</label>

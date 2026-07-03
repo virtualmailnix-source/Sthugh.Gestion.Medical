@@ -118,6 +118,12 @@ const T = {
       profileLabelAdmission:"Entrée à St Hugh's", profileLabelLastConsult:'Dernière consultation',
       profileLabelScore:'Score priorité',
       allergiesLabel:'Allergies connues',
+      exportChoiceTitle:'Exporter le dossier',
+      exportChoiceSub:'Choisissez le contenu à exporter',
+      exportMedical:'Dossier médical', exportMedicalDesc:'Informations médicales, traitements et consultations uniquement',
+      exportAdmin:'Dossier administratif', exportAdminDesc:'Contacts famille, historique vacances et courses — sans données médicales',
+      exportFull:'Dossier complet', exportFullDesc:'Toutes les informations (médicales et administratives)',
+      backToProfile:'Retour au dossier',
     },
 
     doctors: {
@@ -263,6 +269,10 @@ const T = {
       allMarkedRead:'Toutes les alertes marquées comme lues',
       typeMed24h:'Médicament — 24h', typeMedOut:'Médicament épuisé',
       typeNotSeen:'Pas vu 30j+', typeUrgent:'Urgence', typeAnniversaire:'Anniversaire',
+      typeVisitReq:'Visite requise', typeRdvMiss:'RDV manqué', typeOther:'Autre',
+      tabAll:'Toutes', tabMeds:'Médicaments', tabVisits:'Visites',
+      tabUrgences:'Urgences', tabBday:'Anniversaires', tabOther:'Autres',
+      filterTreated:'Traitées',
       room:'Chambre',
     },
 
@@ -547,6 +557,12 @@ const T = {
       profileLabelAdmission:"Admitted to St Hugh's", profileLabelLastConsult:'Last consultation',
       profileLabelScore:'Priority score',
       allergiesLabel:'Known allergies',
+      exportChoiceTitle:'Export file',
+      exportChoiceSub:'Choose the content to export',
+      exportMedical:'Medical file', exportMedicalDesc:'Medical information, treatments and consultations only',
+      exportAdmin:'Administrative file', exportAdminDesc:'Family contacts, vacation and shopping history — no medical data',
+      exportFull:'Complete file', exportFullDesc:'All information (medical and administrative)',
+      backToProfile:'Back to file',
     },
 
     doctors: {
@@ -692,6 +708,10 @@ const T = {
       allMarkedRead:'All alerts marked as read',
       typeMed24h:'Medication — 24h', typeMedOut:'Medication out',
       typeNotSeen:'Not seen 30d+', typeUrgent:'Emergency', typeAnniversaire:'Birthday',
+      typeVisitReq:'Visit required', typeRdvMiss:'Missed appointment', typeOther:'Other',
+      tabAll:'All', tabMeds:'Medications', tabVisits:'Visits',
+      tabUrgences:'Emergencies', tabBday:'Birthdays', tabOther:'Other',
+      filterTreated:'Resolved',
       room:'Room',
     },
 

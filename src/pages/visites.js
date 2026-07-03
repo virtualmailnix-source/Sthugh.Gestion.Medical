@@ -79,7 +79,8 @@ async function _load() {
     ${rows.map(v => _visitCard(v)).join('')}
   </div>`;
 
-  wrap.addEventListener('click', e => {
+  // onclick : _load est rappelée sur le même élément, addEventListener empilerait
+  wrap.onclick = e => {
     const btn = e.target.closest('button[data-action]');
     if (!btn) return;
     const id  = btn.dataset.id;
@@ -88,7 +89,7 @@ async function _load() {
     if (btn.dataset.action === 'done')   _markStatus(id, 'terminee', true);
     if (btn.dataset.action === 'cancel') _markStatus(id, 'annulee');
     if (btn.dataset.action === 'delete') _deleteVisite(id);
-  });
+  };
 }
 
 function _visitCard(v) {

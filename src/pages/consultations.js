@@ -118,18 +118,19 @@ async function _load() {
         ${Array.from({length:pages},(_,i)=>i+1).map(i=>Math.abs(i-_page)<=2||i===1||i===pages?`<button class="page-btn ${i===_page?'active':''}" data-p="${i}">${i}</button>`:(Math.abs(i-_page)===3?`<span>…</span>`:'')).join('')}
         <button class="page-btn" ${_page===pages?'disabled':''} data-p="${_page+1}"><i class="bi bi-chevron-right"></i></button>
       </div>`;
-      pg.addEventListener('click', e=>{const b=e.target.closest('[data-p]');if(b&&!b.disabled){_page=+b.dataset.p;_load();}});
+      pg.onclick = e=>{const b=e.target.closest('[data-p]');if(b&&!b.disabled){_page=+b.dataset.p;_load();}};
     }
   }
 
-  wrap.addEventListener('click', e=>{
+  // onclick : _load est rappelée sur le même élément, addEventListener empilerait
+  wrap.onclick = e=>{
     const btn=e.target.closest('button[data-action]');
     const row=btn?.closest('tr[data-id]');
     if (!btn||!row) return;
     if (btn.dataset.action==='view')   _viewConsultation(row.dataset.id);
     if (btn.dataset.action==='edit')   openFormConsultation(row.dataset.id, null);
     if (btn.dataset.action==='delete') _del(row.dataset.id);
-  });
+  };
 }
 
 // ── Formulaire ────────────────────────────────────────────

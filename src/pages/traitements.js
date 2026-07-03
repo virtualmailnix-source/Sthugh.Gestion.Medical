@@ -117,7 +117,8 @@ async function _load(filter, search) {
     </tbody>
   </table></div>`;
 
-  wrap.addEventListener('click', e => {
+  // onclick : _load est rappelée sur le même élément, addEventListener empilerait
+  wrap.onclick = e => {
     const btn = e.target.closest('button[data-action]');
     if (!btn) return;
     const row = btn.closest('tr[data-id]');
@@ -127,7 +128,7 @@ async function _load(filter, search) {
     if (btn.dataset.action==='edit')   openFormTraitement(tid, null);
     if (btn.dataset.action==='renew')  _renewTraitement(trow);
     if (btn.dataset.action==='stop')   _stopTraitement(tid);
-  });
+  };
 }
 
 function _joursCls(j) {

@@ -103,21 +103,21 @@ async function _load() {
 
   wrap.innerHTML = html || `<div class="empty-state"><i class="bi bi-inbox"></i><p>${t('common.noResult')}</p></div>`;
 
-  wrap.addEventListener('click', async e => {
+  // onclick : _load est rappelée sur le même élément, addEventListener empilerait
+  wrap.onclick = async e => {
     const btn = e.target.closest('button[data-action]');
     if (!btn) return;
     const id   = btn.dataset.id;
     const nom  = btn.dataset.nom;
-    const type = btn.dataset.type;
 
     if (btn.dataset.action === 'restore') {
       _confirmRestore(id, nom);
     }
     if (btn.dataset.action === 'profile') {
       const { openResidentProfile } = await import('./residents.js');
-      openResidentProfile(btn.dataset.id);
+      openResidentProfile(id);
     }
-  });
+  };
 }
 
 function _section(title, bgColor, rows, type) {

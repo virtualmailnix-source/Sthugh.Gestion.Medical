@@ -154,14 +154,15 @@ async function _loadDay() {
       </div>
     </div>`).join('');
 
-  wrap.addEventListener('click', e=>{
+  // onclick : _loadDay est rappelée sur le même élément, addEventListener empilerait
+  wrap.onclick = e=>{
     const btn=e.target.closest('button[data-action]'); if(!btn) return;
     if(btn.dataset.action==='edit')    openFormRdv(btn.dataset.id);
     if(btn.dataset.action==='confirm') _confirmPresence(btn.dataset.id);
     if(btn.dataset.action==='report')  _reporterRdv(btn.dataset.id, btn.dataset.date);
     if(btn.dataset.action==='absent')  _markAbsent(btn.dataset.id);
     if(btn.dataset.action==='delete')  _del(btn.dataset.id);
-  });
+  };
 }
 
 function _statCls(s) {

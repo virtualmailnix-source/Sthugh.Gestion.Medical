@@ -144,7 +144,8 @@ async function _load() {
   // Stocker les données pour l'édition
   wrap._data = rows;
 
-  wrap.addEventListener('click', async e => {
+  // onclick : _load est rappelée sur le même élément, addEventListener empilerait
+  wrap.onclick = async e => {
     const btn = e.target.closest('button[data-action]');
     if (!btn) return;
     const { action, id, nom } = btn.dataset;
@@ -157,7 +158,7 @@ async function _load() {
     } else if (action === 'delete') {
       _confirmDelete(id, nom);
     }
-  });
+  };
 }
 
 async function _loadAutonomes() {
