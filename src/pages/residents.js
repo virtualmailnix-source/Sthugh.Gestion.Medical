@@ -82,7 +82,9 @@ async function _loadResidents() {
 
   if (_filter === 'actif')    query = query.eq('actif', true).is('statut_depart', null);
   if (_filter === 'inactif')  query = query.eq('actif', false);
-  if (_filter === 'urgents')  query = query.eq('actif', true).eq('niveau_priorite', 1);
+  // Urgents : jamais de décédés (actif=false via trigger, garde explicite en plus)
+  if (_filter === 'urgents')  query = query.eq('actif', true).eq('niveau_priorite', 1)
+                                           .or('statut_depart.is.null,statut_depart.neq.deces');
   if (_filter === 'vacances') query = query.eq('statut_depart', 'vacances');
   if (_filter === 'depart')   query = query.eq('statut_depart', 'depart');
   if (_filter === 'deces')    query = query.eq('statut_depart', 'deces');
@@ -177,30 +179,34 @@ function _tableHTML(rows) {
         <td>${formatAge(r.date_naissance)} / ${r.sexe ? r.sexe[0] : '—'}</td>
         <td style="font-size:.85rem">${r.medecin_nom ? (r.medecin_titre || 'Dr.') + ' ' + r.medecin_nom : '—'}</td>
         <td style="font-size:.83rem">
-          ${r.statut_depart === 'vacances'
+          ${r.statut_depart === 'deces'
+            ? '<span style="color:var(--text-light)">—</span>'
+            : r.statut_depart === 'vacances'
             ? `<span class="badge" style="background:var(--tint-blue-bg);color:var(--tint-blue-fg)"><i class="bi bi-luggage-fill"></i> ${t('depart.badgeVacances')}</span>`
             : r.statut_depart === 'depart'
             ? `<span class="badge" style="background:var(--tint-gray-bg);color:var(--tint-gray-fg)"><i class="bi bi-door-open-fill"></i> ${t('depart.badgeDeparture')}</span>`
-            : r.statut_depart === 'deces'
-            ? `<span class="badge" style="background:var(--tint-red-bg);color:var(--tint-red-fg)">✝ ${t('depart.badgeDeath')}</span>`
             : r.derniere_consultation
             ? `${formatDate(r.derniere_consultation)} <span style="color:${r.jours_sans_consultation > 30 ? '#dc2626' : r.jours_sans_consultation > 14 ? '#d97706' : 'var(--text-light)'};font-size:.75rem">(${r.jours_sans_consultation}${t('residents.daysAgo')})</span>`
             : `<span style="color:#dc2626;font-weight:600">${t('residents.never')}</span>`}
         </td>
         <td>
-          ${r.traitements_urgents > 0
+          ${r.statut_depart === 'deces'
+            ? '<span style="color:var(--text-light);font-size:.8rem">—</span>'
+            : r.traitements_urgents > 0
             ? `<span class="badge badge-alerte-24h"><i class="bi bi-exclamation-triangle-fill"></i> ${r.traitements_urgents}</span>`
             : r.traitements_bientot > 0
             ? `<span class="badge badge-alerte-3j">${r.traitements_bientot}</span>`
             : '<span style="color:var(--text-light);font-size:.8rem">—</span>'}
         </td>
         <td>
-          <div>
+          ${r.statut_depart === 'deces'
+            ? `<span class="badge" style="background:var(--tint-gray-bg);color:var(--tint-gray-fg);white-space:nowrap">✝ ${t('depart.badgeDeath')}${r.date_sortie ? ' ' + t('depart.badgeDeathOn') + ' ' + formatDate(r.date_sortie) : ''}</span>`
+            : `<div>
             ${_prioriteBadge(r.niveau_priorite)}
             <div class="priority-bar" style="margin-top:.3rem">
               <div class="priority-bar-fill" style="width:${Math.min(100, r.score_priorite)}%;background:${r.score_priorite >= 60 ? '#dc2626' : r.score_priorite >= 30 ? '#d97706' : '#16a34a'}"></div>
             </div>
-          </div>
+          </div>`}
         </td>
         <td><div class="table-actions">
           <button class="btn-icon" data-action="view"    title="Dossier"><i class="bi bi-folder2-open"></i></button>

@@ -10,7 +10,10 @@ export async function renderDashboard(container) {
   try {
     [statsRes, urgentsRes, rdvRes, alertesRes, medTraitRes, stockRes] = await Promise.all([
       db.rpc('fn_dashboard_stats'),
-      db.from('v_residents_priorite').select('*').gte('score_priorite', 30).limit(8),
+      // Liste priorité : résidents présents uniquement (jamais les décédés/partis)
+      db.from('v_residents_priorite').select('*').eq('actif', true)
+          .or('statut_depart.is.null,statut_depart.neq.deces')
+          .gte('score_priorite', 30).limit(8),
       db.from('v_rdv_detail').select('*')
           .gte('date_rdv', new Date().toISOString().slice(0,10)+'T00:00:00')
           .lte('date_rdv', new Date().toISOString().slice(0,10)+'T23:59:59')
