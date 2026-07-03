@@ -590,9 +590,14 @@ export async function openResidentProfile(id) {
 async function _openProfile(id) {
   const [resRes, consRes, traitRes, rdvRes, contactsRes, histSortiesRes, histCoursesRes, visitesRes] = await Promise.all([
     db.from('v_residents_priorite').select('*').eq('id', id).single(),
-    db.from('v_consultations_detail').select('*').eq('resident_id', id).order('date_consultation', { ascending: false }).limit(10),
+    // Vue unifiée : consultations saisies + RDV échus (règle métier)
+    db.from('v_consultations_unifiees').select('*').eq('resident_id', id).order('date_consultation', { ascending: false }).limit(10),
     db.from('v_traitements_actifs').select('*').eq('resident_id', id),
-    db.from('v_rdv_detail').select('*').eq('resident_id', id).order('date_rdv', { ascending: false }).limit(8),
+    // RDV futurs uniquement — les échus apparaissent côté consultations
+    db.from('v_rdv_detail').select('*').eq('resident_id', id)
+      .gte('date_rdv', new Date().toISOString())
+      .not('statut', 'in', '(annule,absent)')
+      .order('date_rdv', { ascending: true }).limit(10),
     db.from('contacts_famille').select('*').eq('resident_id', id).order('est_principal', { ascending: false }),
     db.from('historique_sorties').select('*').eq('resident_id', id).order('date_sortie', { ascending: false }),
     db.from('courses').select('*').eq('resident_id', id).order('date_sortie', { ascending: false }).order('heure_depart', { ascending: false }),
@@ -795,7 +800,9 @@ async function _openProfile(id) {
       ${cons.length ? cons.map(c => `
         <div class="consult-mini">
           <div class="consult-mini-header">
-            <span class="consult-mini-date">${formatDate(c.date_consultation, { time: true })}</span>
+            <span class="consult-mini-date">${formatDate(c.date_consultation, { time: true })}
+              ${c.source === 'rdv' ? `<span class="badge badge-planifie" style="font-size:.66rem;margin-left:.3rem">${t('consultations.fromRdv')}</span>` : ''}
+            </span>
             <span style="font-size:.8rem;color:var(--text-light)">${c.medecin_titre || ''} ${c.medecin_nom || ''}</span>
           </div>
           <div class="consult-mini-body">${c.diagnostic || c.motif || '—'}</div>
@@ -835,7 +842,7 @@ async function _openProfile(id) {
     // Nouvelle consultation : actif ou vacances seulement
     ...(isActive || isVacances ? [{ label: t('residents.newConsult'), cls: 'btn btn-primary btn-sm', action: () => { closeModal(); openFormConsultation(null, id); } }] : []),
     // PDF : toujours visible, libellé selon statut — ouvre le choix du contenu
-    { label: pdfLabel, cls: 'btn btn-secondary btn-sm', action: () => _openExportChoice(r, cons, trais, contacts, histSorties, histCourses, visites) },
+    { label: pdfLabel, cls: 'btn btn-secondary btn-sm', action: () => _openExportChoice(r, cons, trais, contacts, histSorties, histCourses, visites, rdvs) },
     // Retour au foyer (vacances)
     ...(isVacances ? [{ label: `<i class="bi bi-house-fill"></i> ${t('depart.btnRestore')}`, cls: 'btn btn-success btn-sm', action: () => { closeModal(); _openRestoreModal(r); } }] : []),
     // Gérer sortie : actif + super_admin → toutes options; actif + admin → vacances uniquement
@@ -1055,10 +1062,10 @@ function _alerteBadge(s, jours) {
 }
 
 // ── Choix du contenu à exporter ─────────────────────────────
-function _openExportChoice(r, cons, trais, contacts, histSorties, histCourses, visites = []) {
+function _openExportChoice(r, cons, trais, contacts, histSorties, histCourses, visites = [], rdvs = []) {
   // Réceptionniste : pas de choix — export administratif direct
   if (isReceptionist()) {
-    _exportPDF(r, [], [], contacts, histSorties, histCourses, 'admin', visites);
+    _exportPDF(r, [], [], contacts, histSorties, histCourses, 'admin', visites, []);
     return;
   }
   const choices = [
@@ -1092,18 +1099,18 @@ function _openExportChoice(r, cons, trais, contacts, histSorties, histCourses, v
 
   document.querySelectorAll('.export-choice').forEach(btn =>
     btn.addEventListener('click', () => {
-      _exportPDF(r, cons, trais, contacts, histSorties, histCourses, btn.dataset.mode, visites);
+      _exportPDF(r, cons, trais, contacts, histSorties, histCourses, btn.dataset.mode, visites, rdvs);
       closeModal();
       _openProfile(r.id);
     })
   );
 }
 
-function _exportPDF(r, cons, trais, contacts, histSorties = [], histCourses = [], mode = 'complet', visites = []) {
+function _exportPDF(r, cons, trais, contacts, histSorties = [], histCourses = [], mode = 'complet', visites = [], rdvs = []) {
   if (!window.jspdf) { alert('Bibliothèque PDF non chargée. Vérifiez votre connexion.'); return; }
   // Verrou au moment de la génération : la réceptionniste n'exporte JAMAIS
   // de données médicales, quel que soit le mode demandé par l'appelant.
-  if (isReceptionist()) { mode = 'admin'; cons = []; trais = []; }
+  if (isReceptionist()) { mode = 'admin'; cons = []; trais = []; rdvs = []; }
   const withMedical = mode !== 'admin';    // sections médicales
   const withAdmin   = mode !== 'medical';  // sections non médicales
   const { jsPDF } = window.jspdf;
@@ -1296,9 +1303,9 @@ function _exportPDF(r, cons, trais, contacts, histSorties = [], histCourses = []
       emptyLine(isDeces || isDepart ? 'Aucun traitement enregistre' : 'Aucun traitement actif');
     }
 
-    // ── Consultations ────────────────────────────────────────
+    // ── Consultations (saisies + RDV échus, fusion triée) ────
     section(isDeces || isDepart ? 'HISTORIQUE DES CONSULTATIONS' : 'CONSULTATIONS RECENTES');
-    const consRecentes = cons.slice(0, isDeces || isDepart ? 10 : 5);
+    const consRecentes = cons.slice(0, 10);
     if (consRecentes.length) {
       doc.autoTable({
         ...tableOpts, startY: y,
@@ -1306,12 +1313,38 @@ function _exportPDF(r, cons, trais, contacts, histSorties = [], histCourses = []
         body: consRecentes.map(c => [
           new Date(c.date_consultation).toLocaleDateString('fr-MU'),
           `${c.medecin_titre || ''} ${c.medecin_nom || ''}`.trim() || '—',
-          c.diagnostic || c.motif || '—',
+          (c.diagnostic || c.motif || '—') + (c.source === 'rdv' ? ' (RDV)' : ''),
         ]),
       });
       y = doc.lastAutoTable.finalY + 8;
     } else {
       emptyLine('Aucune consultation enregistree');
+    }
+
+    // ── Prochains rendez-vous ────────────────────────────────
+    if (!isDeces && !isDepart) {
+      section('PROCHAINS RENDEZ-VOUS');
+      const rdvFuturs = (rdvs || [])
+        .filter(rv => new Date(rv.date_rdv) >= new Date() && !['annule','absent'].includes(rv.statut))
+        .sort((a, b) => new Date(a.date_rdv) - new Date(b.date_rdv));
+      if (rdvFuturs.length) {
+        doc.autoTable({
+          ...tableOpts, startY: y,
+          head: [['Date', 'Heure', 'Medecin', 'Motif']],
+          body: rdvFuturs.map(rv => {
+            const d = new Date(rv.date_rdv);
+            return [
+              d.toLocaleDateString('fr-MU'),
+              d.toLocaleTimeString('fr-MU', { hour: '2-digit', minute: '2-digit' }),
+              `${rv.medecin_titre || ''} ${rv.medecin_nom || ''}`.trim() || '—',
+              (rv.motif || '—') + (rv.est_urgence ? ' (URGENCE)' : ''),
+            ];
+          }),
+        });
+        y = doc.lastAutoTable.finalY + 8;
+      } else {
+        emptyLine('Aucun rendez-vous planifie');
+      }
     }
   }
 

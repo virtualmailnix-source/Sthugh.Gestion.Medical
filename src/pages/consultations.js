@@ -74,7 +74,8 @@ async function _load() {
   const wrap = document.getElementById('cons-wrap');
   if (!wrap) return;
 
-  let q = db.from('v_consultations_detail').select('*',{count:'exact'})
+  // Vue unifiée : consultations saisies + RDV échus (règle métier)
+  let q = db.from('v_consultations_unifiees').select('*',{count:'exact'})
     .order('date_consultation',{ascending:false})
     .range((_page-1)*PAGE_SIZE, _page*PAGE_SIZE-1);
 
@@ -92,16 +93,19 @@ async function _load() {
     <thead><tr><th>${t('consultations.colResident')}</th><th>${t('consultations.colRoom')}</th><th>${t('consultations.colDate')}</th><th>${t('consultations.colDoctor')}</th><th>${t('consultations.colReason')}</th><th>${t('consultations.colOrdonnance')}</th><th style="text-align:right">${t('consultations.colActions')}</th></tr></thead>
     <tbody>
       ${rows.map(c=>`<tr data-id="${c.id}">
-        <td style="font-weight:600">${fullName(c.resident_nom,c.resident_prenom)}</td>
+        <td style="font-weight:600">${fullName(c.resident_nom,c.resident_prenom)}
+          ${c.source === 'rdv' ? `<span class="badge badge-planifie" style="font-size:.68rem;margin-left:.35rem" title="${t('consultations.fromRdvTitle')}">${t('consultations.fromRdv')}</span>` : ''}
+        </td>
         <td><span class="badge badge-teal">${c.numero_chambre||'—'}</span></td>
         <td style="font-size:.85rem;white-space:nowrap">${formatDate(c.date_consultation,{time:true})}</td>
         <td style="font-size:.83rem">${c.medecin_titre||''} ${c.medecin_nom||'—'}</td>
         <td style="font-size:.85rem;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.motif||c.diagnostic||'—'}</td>
         <td>${c.ordonnance_url ? `<a href="${c.ordonnance_url}" target="_blank" class="btn btn-secondary btn-sm"><i class="bi bi-file-earmark-pdf-fill"></i></a>` : '—'}</td>
         <td><div class="table-actions">
+          ${c.source === 'rdv' ? `<span style="font-size:.75rem;color:var(--text-light)" title="${t('consultations.fromRdvTitle')}"><i class="bi bi-calendar3"></i></span>` : `
           <button class="btn-icon" data-action="view"   title="${t('common.view')}"><i class="bi bi-eye-fill"></i></button>
           <button class="btn-icon" data-action="edit"   title="${t('common.modify')}"><i class="bi bi-pencil-fill"></i></button>
-          ${isSuperAdmin() ? `<button class="btn-icon" data-action="delete" title="${t('common.delete')}" style="color:#dc2626"><i class="bi bi-trash3-fill"></i></button>` : ''}
+          ${isSuperAdmin() ? `<button class="btn-icon" data-action="delete" title="${t('common.delete')}" style="color:#dc2626"><i class="bi bi-trash3-fill"></i></button>` : ''}`}
         </div></td>
       </tr>`).join('')}
     </tbody>
