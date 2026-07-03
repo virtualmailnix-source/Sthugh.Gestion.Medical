@@ -6,7 +6,9 @@ export function renderMonProfil(container) {
   const u = currentUserInfo();
   if (!u) { container.innerHTML = ''; return; }
 
-  const roleLabel = u.role === 'super_admin' ? t('ui.superAdminFull') : t('ui.adminFull');
+  const roleLabel = u.role === 'super_admin' ? t('ui.superAdminFull')
+    : u.role === 'receptionniste' ? t('ui.receptionistFull')
+    : t('ui.adminFull');
   const roleCls   = u.role === 'super_admin' ? 'role-super' : 'role-admin';
   const ini       = initials(u.nom, u.prenom);
 

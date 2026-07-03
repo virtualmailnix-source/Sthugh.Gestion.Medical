@@ -2,7 +2,7 @@ import { db }            from '../supabase.js';
 import { openModal, closeModal } from '../../script.js';
 import { toastSuccess, toastError } from '../toast.js';
 import { escapeHtml, fullName, initials, debounce } from '../utils.js';
-import { isSuperAdmin } from '../auth.js';
+import { isSuperAdmin, isMedicalStaff } from '../auth.js';
 import { t } from '../i18n.js';
 
 export async function renderMedecins(container) {
@@ -17,14 +17,14 @@ export async function renderMedecins(container) {
           <i class="bi bi-search"></i>
           <input type="text" id="med-search" placeholder="${t('doctors.searchPlaceholder')}">
         </div>
-        <button class="btn btn-primary" id="btn-add-med">
+        ${isMedicalStaff() ? `<button class="btn btn-primary" id="btn-add-med">
           <i class="bi bi-person-plus-fill"></i> ${t('doctors.addDoctor')}
-        </button>
+        </button>` : ''}
       </div>
     </div>
     <div id="med-list"></div>`;
 
-  document.getElementById('btn-add-med').addEventListener('click', () => openFormMedecin(null));
+  document.getElementById('btn-add-med')?.addEventListener('click', () => openFormMedecin(null));
   document.getElementById('med-search').addEventListener('input', debounce(e => _load(e.target.value), 300));
   _load('');
 }
@@ -74,9 +74,9 @@ async function _load(search = '') {
               <span style="font-weight:700;color:var(--teal-dark)">${d.nb_residents?.[0]?.count ?? 0}</span> ${t('doctors.residents')}
             </div>
             <div style="display:flex;gap:.5rem">
-              <button class="btn btn-secondary btn-sm" data-action="edit" data-id="${d.id}">
+              ${isMedicalStaff() ? `<button class="btn btn-secondary btn-sm" data-action="edit" data-id="${d.id}">
                 <i class="bi bi-pencil-fill"></i>
-              </button>
+              </button>` : ''}
               ${isSuperAdmin() ? `<button class="btn btn-danger btn-sm" data-action="delete" data-id="${d.id}">
                 <i class="bi bi-trash3-fill"></i>
               </button>` : ''}

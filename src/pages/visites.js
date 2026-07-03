@@ -54,18 +54,25 @@ async function _load() {
 
   const today = todayISO();
 
+  // Jointure client via v_residents_public : accessible à tous les rôles,
+  // y compris la réceptionniste (l'embed residents(...) serait vide sous RLS)
   let q = db.from('visites')
-    .select('*, residents(nom,prenom,numero_chambre,photo_url)')
+    .select('*')
     .order('heure_arrivee', { ascending: _filter !== 'history' });
 
   if (_filter === 'today')    q = q.eq('date_visite', today);
   if (_filter === 'upcoming') q = q.gt('date_visite', today).eq('est_planifiee', true).in('statut', ['planifiee']);
   if (_filter === 'history')  q = q.lt('date_visite', today).order('date_visite', { ascending: false });
 
-  const { data, error } = await q.limit(100);
+  const [{ data, error }, resPubRes] = await Promise.all([
+    q.limit(100),
+    db.from('v_residents_public').select('id, nom, prenom, numero_chambre, photo_url'),
+  ]);
   if (error) { toastError(t('visites.noVisits')); wrap.innerHTML = ''; return; }
 
-  const rows = data || [];
+  const resById = {};
+  (resPubRes.data || []).forEach(r => { resById[r.id] = r; });
+  const rows = (data || []).map(v => ({ ...v, residents: resById[v.resident_id] || null }));
 
   if (!rows.length) {
     const msg = _filter === 'today' ? t('visites.noToday')
@@ -199,7 +206,7 @@ async function _openFormVisite(id) {
   }
   const v = visite || {};
 
-  const { data: resList } = await db.from('residents')
+  const { data: resList } = await db.from('v_residents_public')
     .select('id,nom,prenom,numero_chambre')
     .eq('actif', true).is('statut_depart', null)
     .order('nom').limit(300);

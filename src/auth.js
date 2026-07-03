@@ -42,6 +42,15 @@ export function isSuperAdmin() {
   return getState().userRole === 'super_admin';
 }
 
+export function isReceptionist() {
+  return getState().userRole === 'receptionniste';
+}
+
+// Staff médical = super_admin + admin (accès au volet médical)
+export function isMedicalStaff() {
+  return ['super_admin', 'admin'].includes(getState().userRole);
+}
+
 export function currentUserInfo() {
   return getState().currentUser;
 }

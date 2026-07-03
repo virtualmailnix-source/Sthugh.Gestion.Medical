@@ -3,7 +3,7 @@ import { openModal, closeModal }    from '../../script.js';
 import { toastSuccess, toastError } from '../toast.js';
 import { formatDate, formatAge, initials, fullName, escapeHtml } from '../utils.js';
 import { t }                        from '../i18n.js';
-import { isSuperAdmin }             from '../auth.js';
+import { isSuperAdmin, isReceptionist } from '../auth.js';
 
 let _filter = 'all';
 
@@ -27,9 +27,9 @@ export async function renderDeparts(container) {
         <button class="chip" data-f="depart">
           <i class="bi bi-door-open-fill"></i> ${t('depart.filterDeparts')}
         </button>
-        <button class="chip" data-f="deces">
+        ${!isReceptionist() ? `<button class="chip" data-f="deces">
           ✝ ${t('depart.filterDeces')}
-        </button>
+        </button>` : ''}
       </div>
     </div>
 
@@ -52,16 +52,26 @@ async function _load() {
   if (!wrap) return;
   wrap.innerHTML = `<div style="padding:2rem;text-align:center;color:var(--text-light)"><i class="bi bi-hourglass-split"></i></div>`;
 
-  // Requête directe sur residents (pas la vue) pour inclure actif=false
-  let q = db.from('residents')
-    .select(`
-      id, numero_chambre, nom, prenom, date_naissance, sexe, photo_url,
-      statut_depart, date_sortie, date_retour_prevue, motif_sortie, motif_deces,
-      conditions_chroniques,
-      doctors ( id, nom, prenom, titre )
-    `)
-    .not('statut_depart', 'is', null)
-    .order('date_sortie', { ascending: false, nullsFirst: false });
+  // Staff : requête directe sur residents (inclut motif_deces + médecin).
+  // Réceptionniste : vue publique, sans les décès ni le volet médical.
+  let q;
+  if (isReceptionist()) {
+    q = db.from('v_residents_public')
+      .select('id, numero_chambre, nom, prenom, date_naissance, sexe, photo_url, statut_depart, date_sortie, date_retour_prevue, motif_sortie')
+      .not('statut_depart', 'is', null)
+      .neq('statut_depart', 'deces')
+      .order('date_sortie', { ascending: false, nullsFirst: false });
+  } else {
+    q = db.from('residents')
+      .select(`
+        id, numero_chambre, nom, prenom, date_naissance, sexe, photo_url,
+        statut_depart, date_sortie, date_retour_prevue, motif_sortie, motif_deces,
+        conditions_chroniques,
+        doctors ( id, nom, prenom, titre )
+      `)
+      .not('statut_depart', 'is', null)
+      .order('date_sortie', { ascending: false, nullsFirst: false });
+  }
 
   if (_filter !== 'all') q = q.eq('statut_depart', _filter);
 
@@ -183,6 +193,15 @@ function _confirmRestore(id, nom) {
     [
       { label: t('common.cancel'), cls: 'btn btn-secondary', action: closeModal },
       { label: t('depart.btnRestore'), cls: 'btn btn-success', action: async () => {
+        if (isReceptionist()) {
+          // RPC dédiée : la RLS bloque l'accès direct à residents pour l'accueil
+          const { data, error } = await db.rpc('fn_accueil_retour', { p_resident_id: id });
+          if (error || !data) { toastError(error?.message || t('common.error')); return; }
+          toastSuccess(t('depart.restoreOk'));
+          closeModal();
+          _load();
+          return;
+        }
         // Récupérer les données vacances avant de les effacer
         const { data: res } = await db.from('residents')
           .select('date_sortie, date_retour_prevue, motif_sortie')

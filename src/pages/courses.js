@@ -54,11 +54,10 @@ async function _load() {
   if (!wrap) return;
   wrap.innerHTML = `<div style="padding:2rem;text-align:center;color:var(--text-light)"><i class="bi bi-hourglass-split"></i></div>`;
 
+  // Jointure client via v_residents_public : accessible à tous les rôles,
+  // y compris la réceptionniste (l'embed residents(...) serait vide sous RLS)
   let q = db.from('courses')
-    .select(`
-      id, date_sortie, heure_depart, heure_retour, est_rentre, articles, notes, created_at,
-      residents ( id, nom, prenom, numero_chambre, photo_url, mobilite )
-    `)
+    .select('id, resident_id, date_sortie, heure_depart, heure_retour, est_rentre, articles, notes, created_at')
     .order('date_sortie', { ascending: false })
     .order('heure_depart', { ascending: false });
 
@@ -72,10 +71,15 @@ async function _load() {
     q = q.lt('date_sortie', today);
   }
 
-  const { data, error } = await q;
+  const [{ data, error }, resPubRes] = await Promise.all([
+    q,
+    db.from('v_residents_public').select('id, nom, prenom, numero_chambre, photo_url'),
+  ]);
   if (error) { toastError(t('common.error')); return; }
 
-  const rows = data || [];
+  const resById = {};
+  (resPubRes.data || []).forEach(r => { resById[r.id] = r; });
+  const rows = (data || []).map(c => ({ ...c, residents: resById[c.resident_id] || null }));
 
   if (!rows.length) {
     wrap.innerHTML = `<div class="empty-state"><i class="bi bi-bag-x"></i><p>${t('courses.noResult')}</p></div>`;
@@ -163,12 +167,8 @@ async function _load() {
 
 async function _loadAutonomes() {
   if (_autonomes.length) return _autonomes;
-  const { data } = await db.from('residents')
-    .select('id, nom, prenom, numero_chambre')
-    .eq('mobilite', 'Autonome')
-    .eq('actif', true)
-    .is('statut_depart', null)
-    .order('nom');
+  // RPC : accessible à tous les rôles sans exposer la colonne mobilite
+  const { data } = await db.rpc('fn_residents_autonomes');
   _autonomes = data || [];
   return _autonomes;
 }

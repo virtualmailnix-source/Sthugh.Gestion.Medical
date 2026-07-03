@@ -2,6 +2,7 @@ import { db }                       from '../supabase.js';
 import { toastSuccess, toastError } from '../toast.js';
 import { initials, fullName }       from '../utils.js';
 import { t, getLang }               from '../i18n.js';
+import { isMedicalStaff }           from '../auth.js';
 
 export async function renderAnniversaires(container) {
   container.innerHTML = `
@@ -11,9 +12,9 @@ export async function renderAnniversaires(container) {
         <span class="sub">${t('anniversaires.subtitle')}</span>
       </div>
       <div class="page-header-actions">
-        <button class="btn btn-primary" id="btn-gen-bday">
+        ${isMedicalStaff() ? `<button class="btn btn-primary" id="btn-gen-bday">
           <i class="bi bi-balloon-heart-fill"></i> ${t('anniversaires.generateAlerts')}
-        </button>
+        </button>` : ''}
       </div>
     </div>
 
@@ -49,8 +50,9 @@ async function _load() {
   if (!wrap) return;
   wrap.innerHTML = `<div style="padding:2rem;text-align:center;color:var(--text-light)"><i class="bi bi-hourglass-split"></i> ${t('common.loading')}</div>`;
 
-  const { data, error } = await db.from('residents')
-    .select('id, nom, prenom, numero_chambre, date_naissance, photo_url, medecin_id')
+  // Vue publique : accessible à tous les rôles (réceptionniste incluse)
+  const { data, error } = await db.from('v_residents_public')
+    .select('id, nom, prenom, numero_chambre, date_naissance, photo_url')
     .eq('actif', true)
     .not('date_naissance', 'is', null)
     .order('nom');

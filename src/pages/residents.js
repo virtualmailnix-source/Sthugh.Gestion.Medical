@@ -7,7 +7,7 @@ import {
 } from '../utils.js';
 import { openFormConsultation }        from './consultations.js';
 import { openFormRdv }                 from './rendez-vous.js';
-import { isSuperAdmin, currentUserInfo } from '../auth.js';
+import { isSuperAdmin, isReceptionist, currentUserInfo } from '../auth.js';
 import { t, getLang }                  from '../i18n.js';
 
 const PAGE_SIZE = 15;
@@ -38,11 +38,13 @@ export async function renderResidents(container) {
       <div class="filter-chips">
         <button class="chip active" data-filter="actif">${t('residents.filterActive')}</button>
         <button class="chip" data-filter="tous">${t('residents.filterAll')}</button>
-        <button class="chip" data-filter="urgents">${t('residents.filterUrgent')}</button>
+        ${!isReceptionist() ? `
+        <button class="chip" data-filter="urgents">${t('residents.filterUrgent')}</button>` : ''}
         <button class="chip" data-filter="vacances"><i class="bi bi-luggage-fill"></i> ${t('depart.filterVacances')}</button>
         <button class="chip" data-filter="depart"><i class="bi bi-door-open-fill"></i> ${t('depart.filterDeparts')}</button>
+        ${!isReceptionist() ? `
         <button class="chip" data-filter="deces">✝ ${t('depart.filterDeces')}</button>
-        <button class="chip" data-filter="inactif">${t('residents.filterArchived')}</button>
+        <button class="chip" data-filter="inactif">${t('residents.filterArchived')}</button>` : ''}
       </div>
     </div>
 
@@ -69,9 +71,14 @@ async function _loadResidents() {
   if (!wrap) return;
   wrap.innerHTML = `<div style="padding:1.5rem">${_sk()}</div>`;
 
-  let query = db.from('v_residents_priorite')
+  // Réceptionniste : vue publique (colonnes non médicales), jamais les décédés
+  const source = isReceptionist() ? 'v_residents_public' : 'v_residents_priorite';
+  let query = db.from(source)
     .select('*', { count: 'exact' })
     .range((_page - 1) * PAGE_SIZE, _page * PAGE_SIZE - 1);
+
+  // (or : un simple neq exclurait aussi les statut_depart NULL, donc les présents)
+  if (isReceptionist()) query = query.or('statut_depart.is.null,statut_depart.neq.deces');
 
   if (_filter === 'actif')    query = query.eq('actif', true).is('statut_depart', null);
   if (_filter === 'inactif')  query = query.eq('actif', false);
@@ -87,7 +94,7 @@ async function _loadResidents() {
   const { data, error, count } = await query;
   if (error) { toastError('Erreur chargement résidents'); return; }
 
-  wrap.innerHTML = _tableHTML(data || []);
+  wrap.innerHTML = isReceptionist() ? _tableAccueilHTML(data || []) : _tableHTML(data || []);
   _renderPagination(count || 0);
 
   // onclick (et non addEventListener) : _loadResidents est rappelée à chaque
@@ -95,6 +102,10 @@ async function _loadResidents() {
   wrap.onclick = e => {
     const btn = e.target.closest('button[data-action]');
     const row = e.target.closest('tr[data-id]');
+    if (isReceptionist()) {
+      if (row) _openProfileAccueil(row.dataset.id);
+      return;
+    }
     if (btn?.dataset.action === 'view')    { _openProfile(row.dataset.id); return; }
     if (btn?.dataset.action === 'edit')    { openFormResident(row.dataset.id); return; }
     if (btn?.dataset.action === 'consult') { openFormConsultation(null, row.dataset.id); return; }
@@ -102,6 +113,42 @@ async function _loadResidents() {
     if (btn?.dataset.action === 'delete')  { _confirmDelete(row.dataset.id, row.dataset.name); return; }
     if (row) _openProfile(row.dataset.id);
   };
+}
+
+// ── Tableau réceptionniste : identité / chambre / statut seulement ──
+function _tableAccueilHTML(rows) {
+  if (!rows.length) return `<div class="empty-state"><i class="bi bi-people"></i><p>${t('residents.noResidents')}</p></div>`;
+  return `<div class="table-wrap"><table class="table">
+    <thead><tr>
+      <th>${t('common.roomFull')}</th><th>${t('residents.colResident')}</th>
+      <th>${t('residents.colAgeSex')}</th><th>${t('residents.colStatus')}</th>
+      <th style="text-align:right">${t('common.actions')}</th>
+    </tr></thead>
+    <tbody>
+      ${rows.map(r => `<tr data-id="${r.id}" data-name="${escapeHtml(fullName(r.nom, r.prenom))}" style="cursor:pointer">
+        <td><span class="badge badge-teal">${r.numero_chambre || '—'}</span></td>
+        <td>
+          <div style="display:flex;align-items:center;gap:.6rem">
+            ${r.photo_url
+              ? `<img src="${r.photo_url}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid var(--card-border)">`
+              : `<div class="patient-avatar">${initials(r.nom, r.prenom)}</div>`}
+            <div style="font-weight:600">${fullName(r.nom, r.prenom)}</div>
+          </div>
+        </td>
+        <td>${formatAge(r.date_naissance)} / ${r.sexe ? r.sexe[0] : '—'}</td>
+        <td style="font-size:.83rem">
+          ${r.statut_depart === 'vacances'
+            ? `<span class="badge" style="background:#dbeafe;color:#1d4ed8"><i class="bi bi-luggage-fill"></i> ${t('depart.badgeVacances')}</span>`
+            : r.statut_depart === 'depart'
+            ? `<span class="badge" style="background:#f3f4f6;color:#374151"><i class="bi bi-door-open-fill"></i> ${t('depart.badgeDeparture')}</span>`
+            : `<span class="badge badge-actif">${t('residents.statusPresent')}</span>`}
+        </td>
+        <td><div class="table-actions">
+          <button class="btn-icon" data-action="view" title="Dossier"><i class="bi bi-folder2-open"></i></button>
+        </div></td>
+      </tr>`).join('')}
+    </tbody>
+  </table></div>`;
 }
 
 function _tableHTML(rows) {
@@ -517,7 +564,9 @@ async function _submitResident(id) {
 }
 
 // ── Profil résident ─────────────────────────────────────────
-export async function openResidentProfile(id) { return _openProfile(id); }
+export async function openResidentProfile(id) {
+  return isReceptionist() ? _openProfileAccueil(id) : _openProfile(id);
+}
 
 async function _openProfile(id) {
   const [resRes, consRes, traitRes, rdvRes, contactsRes, histSortiesRes, histCoursesRes] = await Promise.all([
@@ -790,6 +839,174 @@ async function _openProfile(id) {
     closeModal();
     openFormResident(id);
   });
+}
+
+// ── Profil réceptionniste : identité, contacts, visites — rien de médical ──
+async function _openProfileAccueil(id) {
+  const [resRes, contactsRes, histSortiesRes, histCoursesRes, visitesRes] = await Promise.all([
+    db.from('v_residents_public').select('*').eq('id', id).single(),
+    db.from('contacts_famille').select('*').eq('resident_id', id).order('est_principal', { ascending: false }),
+    db.from('historique_sorties').select('*').eq('resident_id', id).order('date_sortie', { ascending: false }),
+    db.from('courses').select('*').eq('resident_id', id).order('date_sortie', { ascending: false }),
+    db.from('visites').select('*').eq('resident_id', id).order('date_visite', { ascending: false }).limit(10),
+  ]);
+
+  const r           = resRes.data;
+  const contacts    = contactsRes.data || [];
+  const histSorties = histSortiesRes.data || [];
+  const histCourses = histCoursesRes.data || [];
+  const visites     = visitesRes.data || [];
+  if (!r) return;
+
+  const isVacances = r.statut_depart === 'vacances';
+  const isActive   = !r.statut_depart;
+
+  const contactsHTML = contacts.length
+    ? contacts.map(c => `
+        <div style="display:flex;align-items:flex-start;gap:.75rem;padding:.65rem 0;border-bottom:1px solid var(--card-border)">
+          <i class="bi bi-person-circle" style="color:var(--teal-light);font-size:1.2rem;margin-top:.1rem"></i>
+          <div style="flex:1">
+            <div style="font-weight:600">${escapeHtml(c.nom)}
+              ${c.est_principal ? `<span class="badge badge-teal" style="font-size:.68rem;margin-left:.4rem">${t('residents.primaryBadge')}</span>` : ''}
+              ${c.relation ? `<span style="color:var(--text-light);font-weight:400"> — ${escapeHtml(c.relation)}</span>` : ''}
+            </div>
+            ${c.telephone ? `<div style="font-size:.83rem;color:var(--text-light);margin-top:.15rem"><i class="bi bi-telephone"></i> ${escapeHtml(c.telephone)}</div>` : ''}
+          </div>
+        </div>`).join('')
+    : `<div class="empty-state" style="padding:1.5rem"><i class="bi bi-telephone-x"></i><p>${t('residents.noContacts')}</p></div>`;
+
+  const body = `
+    <div class="resident-profile-head">
+      ${r.photo_url
+        ? `<img src="${r.photo_url}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid rgba(255,255,255,.3)">`
+        : `<div class="resident-avatar-lg">${initials(r.nom, r.prenom)}</div>`}
+      <div>
+        <div style="font-family:Georgia,serif;font-size:1.25rem;font-weight:700">${fullName(r.nom, r.prenom)}</div>
+        <div style="font-size:.85rem;opacity:.8;margin-top:.2rem">
+          Ch. ${r.numero_chambre || '—'} &bull; ${formatAge(r.date_naissance)} &bull; ${r.sexe || '—'}
+        </div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="infos">${t('residents.tabInfo')}</button>
+      <button class="tab-btn" data-tab="contacts">${t('residents.tabContacts')} (${contacts.length})</button>
+      <button class="tab-btn" data-tab="visites">${t('visites.title')} (${visites.length})</button>
+    </div>
+
+    <div class="tab-pane active" data-pane="infos">
+      <table style="width:100%;font-size:.9rem">
+        ${_row(t('residents.profileLabelAdmission'), formatDate(r.date_entree))}
+        ${r.statut_depart === 'vacances' && r.date_sortie ? _row(t('depart.badgeVacances'), formatDate(r.date_sortie) + (r.date_retour_prevue ? ' → ' + formatDate(r.date_retour_prevue) : '')) : ''}
+        ${r.statut_depart === 'depart' && r.date_sortie ? _row(t('depart.departedOn'), formatDate(r.date_sortie)) : ''}
+      </table>
+      ${histSorties.length ? `
+        <div style="margin-top:1.25rem">
+          <div style="font-weight:600;font-size:.85rem;color:var(--teal-dark);margin-bottom:.5rem">
+            <i class="bi bi-luggage-fill"></i> ${t('historiqueSorties.sectionTitle')} (${histSorties.length})
+          </div>
+          <div class="table-wrap"><table class="table" style="font-size:.82rem">
+            <thead><tr><th>${t('historiqueSorties.colDateSortie')}</th><th>${t('historiqueSorties.colDateRetour')}</th><th>${t('historiqueSorties.colMotif')}</th></tr></thead>
+            <tbody>${histSorties.map(h => `<tr>
+              <td>${h.date_sortie ? formatDate(h.date_sortie, { time: true }) : '—'}</td>
+              <td>${h.date_retour ? formatDate(h.date_retour, { time: true }) : '—'}</td>
+              <td style="color:var(--text-light)">${escapeHtml(h.motif_sortie || '—')}</td>
+            </tr>`).join('')}</tbody>
+          </table></div>
+        </div>` : ''}
+      ${histCourses.length ? `
+        <div style="margin-top:1.25rem">
+          <div style="font-weight:600;font-size:.85rem;color:var(--teal-dark);margin-bottom:.5rem">
+            <i class="bi bi-bag-fill"></i> ${t('historiqueCourses.sectionTitle')} (${histCourses.length})
+          </div>
+          <div class="table-wrap"><table class="table" style="font-size:.82rem">
+            <thead><tr><th>${t('historiqueCourses.colDate')}</th><th>${t('historiqueCourses.colDepart')}</th><th>${t('historiqueCourses.colRetour')}</th><th>${t('historiqueCourses.colStatut')}</th></tr></thead>
+            <tbody>${histCourses.map(c => `<tr>
+              <td>${formatDate(c.date_sortie)}</td>
+              <td>${c.heure_depart ? c.heure_depart.slice(0,5) : '—'}</td>
+              <td>${c.heure_retour ? c.heure_retour.slice(0,5) : '—'}</td>
+              <td><span class="badge ${c.est_rentre ? 'badge-actif' : (c.heure_depart ? 'badge-attente' : 'badge-teal')}">
+                ${c.est_rentre ? t('courses.statusRentre') : (c.heure_depart ? t('courses.statusDehors') : t('courses.statusPlanned'))}
+              </span></td>
+            </tr>`).join('')}</tbody>
+          </table></div>
+        </div>` : ''}
+    </div>
+
+    <div class="tab-pane" data-pane="contacts">${contactsHTML}</div>
+
+    <div class="tab-pane" data-pane="visites">
+      ${visites.length ? visites.map(v => `
+        <div class="consult-mini">
+          <div class="consult-mini-header">
+            <span class="consult-mini-date">${formatDate(v.date_visite)}</span>
+            <span class="badge ${v.statut === 'terminee' ? 'badge-actif' : v.statut === 'annulee' ? 'badge-annule' : 'badge-planifie'}">${t('visites.status' + v.statut.charAt(0).toUpperCase() + v.statut.slice(1).replace('_c','C')) || v.statut}</span>
+          </div>
+          <div class="consult-mini-body">${escapeHtml(fullName(v.visiteur_nom, v.visiteur_prenom))}${v.relation ? ' — ' + escapeHtml(v.relation) : ''} (${v.nb_personnes || 1} pers.)</div>
+        </div>`).join('')
+        : `<div class="empty-state"><i class="bi bi-person-x"></i><p>${t('visites.noVisits')}</p></div>`}
+    </div>`;
+
+  openModal(`<i class="bi bi-folder2-open"></i> ${t('residents.profileTitle')}`, body, [
+    { label: `<i class="bi bi-file-earmark-pdf-fill"></i> ${t('common.export')}`, cls: 'btn btn-secondary btn-sm',
+      action: () => _exportPDF(r, [], [], contacts, histSorties, histCourses, 'admin') },
+    ...(isActive ? [{ label: `<i class="bi bi-luggage-fill"></i> ${t('depart.typeVacances')}`, cls: 'btn btn-secondary btn-sm',
+      action: () => { closeModal(); _openVacancesAccueil(r); } }] : []),
+    ...(isVacances ? [{ label: `<i class="bi bi-house-fill"></i> ${t('depart.btnRestore')}`, cls: 'btn btn-success btn-sm',
+      action: async () => {
+        const { data, error } = await db.rpc('fn_accueil_retour', { p_resident_id: r.id });
+        if (error || !data) { toastError(error?.message || t('depart.restoreErr')); return; }
+        toastSuccess(t('depart.restoreOk'));
+        closeModal();
+        _loadResidents();
+      } }] : []),
+    { label: t('common.close'), cls: 'btn btn-secondary btn-sm', action: closeModal }
+  ], 'modal-xl');
+
+  document.querySelectorAll('.tab-btn[data-tab]').forEach(btn =>
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn,.tab-pane').forEach(el => el.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelector(`[data-pane="${btn.dataset.tab}"]`)?.classList.add('active');
+    })
+  );
+}
+
+// Sortie vacances côté accueil — passe par la RPC (RLS bloque l'UPDATE direct)
+function _openVacancesAccueil(r) {
+  const body = `<form id="form-vac">
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">${t('depart.exitDate')}</label>
+        <input class="form-control" type="datetime-local" name="date_sortie" value="${nowLocalInput()}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">${t('depart.returnDate')}</label>
+        <input class="form-control" type="date" name="date_retour_prevue">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">${t('depart.exitReason')}</label>
+      <textarea class="form-control" name="motif_sortie" rows="2"></textarea>
+    </div>
+  </form>`;
+
+  openModal(`<i class="bi bi-luggage-fill"></i> ${t('depart.typeVacances')} — ${fullName(r.nom, r.prenom)}`, body, [
+    { label: t('common.cancel'), cls: 'btn btn-secondary', action: closeModal },
+    { label: t('common.save'), cls: 'btn btn-primary', action: async () => {
+      const fd = new FormData(document.getElementById('form-vac'));
+      const { data, error } = await db.rpc('fn_accueil_sortie_vacances', {
+        p_resident_id: r.id,
+        p_date_sortie: fd.get('date_sortie') ? new Date(fd.get('date_sortie')).toISOString() : new Date().toISOString(),
+        p_date_retour_prevue: fd.get('date_retour_prevue') || null,
+        p_motif: fd.get('motif_sortie') || null,
+      });
+      if (error || !data) { toastError(error?.message || t('depart.saveErr')); return; }
+      toastSuccess(t('depart.confirmed'));
+      closeModal();
+      _loadResidents();
+    }}
+  ], 'modal-lg');
 }
 
 function _row(label, val) {

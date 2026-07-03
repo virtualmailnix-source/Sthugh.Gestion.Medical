@@ -1,6 +1,6 @@
-import { initRouter }                     from './src/router.js';
+import { initRouter, RECEPTION_PAGES }   from './src/router.js';
 import { db }                            from './src/supabase.js';
-import { initAuth, login, logout }       from './src/auth.js';
+import { initAuth, login, isMedicalStaff } from './src/auth.js';
 import { getLang, setLang, applyLang, t } from './src/i18n.js';
 
 // ── PWA Service Worker ─────────────────────────────────────
@@ -71,7 +71,9 @@ function _showWelcome(user) {
   document.getElementById('welcome-greeting').textContent = greeting + ',';
   document.getElementById('welcome-name').textContent = user.prenom + ' ' + user.nom;
   document.getElementById('welcome-role').textContent =
-    user.role === 'super_admin' ? t('ui.superAdminFull') : t('ui.adminFull');
+    user.role === 'super_admin' ? t('ui.superAdminFull')
+    : user.role === 'receptionniste' ? t('ui.receptionistFull')
+    : t('ui.adminFull');
 
   screen.classList.remove('hidden');
 
@@ -119,8 +121,16 @@ function _startApp(user) {
 
   const roleEl = document.getElementById('topbar-user-role');
   if (roleEl) {
-    roleEl.textContent = user.role === 'super_admin' ? 'Super Admin' : 'Admin';
+    roleEl.textContent = user.role === 'super_admin' ? 'Super Admin'
+      : user.role === 'receptionniste' ? 'Réception' : 'Admin';
     roleEl.className   = 'topbar-role-badge ' + (user.role === 'super_admin' ? 'role-super' : 'role-admin');
+  }
+
+  // Réceptionniste : ne laisser dans la sidebar que les pages autorisées
+  if (user.role === 'receptionniste') {
+    document.querySelectorAll('.nav-link').forEach(a => {
+      if (!RECEPTION_PAGES.includes(a.dataset.page)) a.style.display = 'none';
+    });
   }
 
   // Date
@@ -213,22 +223,24 @@ function _startApp(user) {
 
 async function _loadBadges() {
   try {
-    const { count } = await db.from('alertes').select('id', { count: 'exact' })
-      .eq('lue', false).eq('traitee', false);
-    const ba = document.getElementById('badge-alertes');
-    if (ba) {
-      ba.textContent = count || 0;
-      ba.style.display = (count || 0) > 0 ? 'flex' : 'none';
-    }
+    if (isMedicalStaff()) {
+      const { count } = await db.from('alertes').select('id', { count: 'exact' })
+        .eq('lue', false).eq('traitee', false);
+      const ba = document.getElementById('badge-alertes');
+      if (ba) {
+        ba.textContent = count || 0;
+        ba.style.display = (count || 0) > 0 ? 'flex' : 'none';
+      }
 
-    const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-    const { count: tc } = await db.from('traitements').select('id', { count: 'exact' })
-      .eq('actif', true).eq('traitement_chronique', false)
-      .not('date_fin', 'is', null).lte('date_fin', tomorrow);
-    const bt = document.getElementById('badge-traitements');
-    if (bt) {
-      bt.textContent = '!';
-      bt.style.display = (tc || 0) > 0 ? 'flex' : 'none';
+      const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      const { count: tc } = await db.from('traitements').select('id', { count: 'exact' })
+        .eq('actif', true).eq('traitement_chronique', false)
+        .not('date_fin', 'is', null).lte('date_fin', tomorrow);
+      const bt = document.getElementById('badge-traitements');
+      if (bt) {
+        bt.textContent = '!';
+        bt.style.display = (tc || 0) > 0 ? 'flex' : 'none';
+      }
     }
 
     // Badge visites planifiées aujourd'hui
@@ -238,8 +250,8 @@ async function _loadBadges() {
     const bv = document.getElementById('badge-visites');
     if (bv) { bv.textContent = vc || 0; bv.style.display = (vc || 0) > 0 ? 'flex' : 'none'; }
 
-    // Badge anniversaires (aujourd'hui + demain)
-    const { data: residents } = await db.from('residents')
+    // Badge anniversaires (aujourd'hui + demain) — vue accessible à tous les rôles
+    const { data: residents } = await db.from('v_residents_public')
       .select('date_naissance').eq('actif', true).not('date_naissance', 'is', null);
     const now = new Date();
     const bdayCount = (residents || []).filter(r => {
