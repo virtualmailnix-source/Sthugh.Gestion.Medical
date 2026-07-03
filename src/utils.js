@@ -121,6 +121,11 @@ export function escapeHtml(str) {
     .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+// Lien téléphone cliquable : ne garde que chiffres et + ("+230 5XX…" → tel:+2305XX…)
+export function telHref(tel) {
+  return 'tel:' + String(tel || '').replace(/[^+\d]/g, '');
+}
+
 export function imcLabel(imc) {
   if (!imc) return { label: '—', cls: '' };
   if (imc < 18.5) return { label: 'Insuffisance pondérale', cls: 'badge-warning' };

@@ -3,7 +3,7 @@ import { openModal, closeModal }       from '../../script.js';
 import { toastSuccess, toastError }    from '../toast.js';
 import {
   formatDate, formatAge, initials, fullName,
-  escapeHtml, debounce, nowLocalInput
+  escapeHtml, debounce, nowLocalInput, telHref
 } from '../utils.js';
 import { openFormConsultation }        from './consultations.js';
 import { openFormRdv }                 from './rendez-vous.js';
@@ -424,6 +424,10 @@ function _contactRowHTML(c) {
         <label class="form-label">${t('residents.contactRelation')}</label>
         <input class="form-control contact-relation" placeholder="${getLang()==='en'?'Son, Daughter…':'Fils, Fille, Neveu…'}" value="${escapeHtml(c.relation || '')}">
       </div>
+      <div class="form-group">
+        <label class="form-label">${t('residents.contactEmail')}</label>
+        <input class="form-control contact-email" type="email" placeholder="exemple@email.mu" value="${escapeHtml(c.email || '')}">
+      </div>
     </div>
     <div style="display:flex;align-items:center;gap:.75rem;margin-top:.5rem">
       <label style="display:flex;align-items:center;gap:.5rem;font-size:.83rem;cursor:pointer">
@@ -534,6 +538,7 @@ async function _submitResident(id) {
       nom,
       telephone:     row.querySelector('.contact-tel')?.value?.trim() || null,
       relation:      row.querySelector('.contact-relation')?.value?.trim() || null,
+      email:         row.querySelector('.contact-email')?.value?.trim() || null,
       est_principal: row.querySelector('.contact-principal')?.checked || false,
     });
   });
@@ -602,7 +607,8 @@ async function _openProfile(id) {
               ${c.est_principal ? `<span class="badge badge-teal" style="font-size:.68rem;margin-left:.4rem">${t('residents.primaryBadge')}</span>` : ''}
               ${c.relation ? `<span style="color:var(--text-light);font-weight:400"> — ${escapeHtml(c.relation)}</span>` : ''}
             </div>
-            ${c.telephone ? `<div style="font-size:.83rem;color:var(--text-light);margin-top:.15rem"><i class="bi bi-telephone"></i> ${escapeHtml(c.telephone)}</div>` : ''}
+            ${c.telephone ? `<div style="font-size:.83rem;color:var(--text-light);margin-top:.15rem"><i class="bi bi-telephone"></i> <a href="${telHref(c.telephone)}" style="color:inherit">${escapeHtml(c.telephone)}</a></div>` : ''}
+            ${c.email ? `<div style="font-size:.83rem;color:var(--text-light);margin-top:.15rem"><i class="bi bi-envelope"></i> <a href="mailto:${escapeHtml(c.email)}" style="color:inherit">${escapeHtml(c.email)}</a></div>` : ''}
           </div>
         </div>`).join('')
     : `<div class="empty-state" style="padding:1.5rem"><i class="bi bi-telephone-x"></i><p>${t('residents.noContacts')}</p></div>`;
@@ -870,7 +876,8 @@ async function _openProfileAccueil(id) {
               ${c.est_principal ? `<span class="badge badge-teal" style="font-size:.68rem;margin-left:.4rem">${t('residents.primaryBadge')}</span>` : ''}
               ${c.relation ? `<span style="color:var(--text-light);font-weight:400"> — ${escapeHtml(c.relation)}</span>` : ''}
             </div>
-            ${c.telephone ? `<div style="font-size:.83rem;color:var(--text-light);margin-top:.15rem"><i class="bi bi-telephone"></i> ${escapeHtml(c.telephone)}</div>` : ''}
+            ${c.telephone ? `<div style="font-size:.83rem;color:var(--text-light);margin-top:.15rem"><i class="bi bi-telephone"></i> <a href="${telHref(c.telephone)}" style="color:inherit">${escapeHtml(c.telephone)}</a></div>` : ''}
+            ${c.email ? `<div style="font-size:.83rem;color:var(--text-light);margin-top:.15rem"><i class="bi bi-envelope"></i> <a href="mailto:${escapeHtml(c.email)}" style="color:inherit">${escapeHtml(c.email)}</a></div>` : ''}
           </div>
         </div>`).join('')
     : `<div class="empty-state" style="padding:1.5rem"><i class="bi bi-telephone-x"></i><p>${t('residents.noContacts')}</p></div>`;
@@ -1232,8 +1239,8 @@ function _exportPDF(r, cons, trais, contacts, histSorties = [], histCourses = []
     if (contacts.length) {
       doc.autoTable({
         ...tableOpts, startY: y,
-        head: [['Nom', 'Relation', 'Telephone', 'Principal']],
-        body: contacts.map(c => [c.nom || '—', c.relation || '—', c.telephone || '—', c.est_principal ? 'Oui' : '']),
+        head: [['Nom', 'Relation', 'Telephone', 'Email', 'Principal']],
+        body: contacts.map(c => [c.nom || '—', c.relation || '—', c.telephone || '—', c.email || '—', c.est_principal ? 'Oui' : '']),
       });
       y = doc.lastAutoTable.finalY + 8;
     } else {

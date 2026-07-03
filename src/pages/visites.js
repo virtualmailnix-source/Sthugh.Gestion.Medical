@@ -1,7 +1,7 @@
 import { db }                       from '../supabase.js';
 import { openModal, closeModal }    from '../../script.js';
 import { toastSuccess, toastError } from '../toast.js';
-import { formatDate, formatTime, fullName, escapeHtml, debounce, nowLocalInput, todayISO } from '../utils.js';
+import { formatDate, formatTime, fullName, escapeHtml, debounce, nowLocalInput, todayISO, telHref } from '../utils.js';
 import { t, getLang }               from '../i18n.js';
 
 let _filter = 'today';
@@ -147,7 +147,7 @@ function _visitCard(v) {
         <div style="font-size:.88rem;font-weight:600;color:var(--teal-dark)">
           <i class="bi bi-person-fill" style="margin-right:.3rem"></i>${v.visiteur_prenom} ${v.visiteur_nom}
           ${v.visiteur_relation ? `<span style="font-weight:400;color:var(--text-light)"> — ${escapeHtml(v.visiteur_relation)}</span>` : ''}
-          ${v.visiteur_telephone ? `<span style="font-size:.78rem;color:var(--text-light);margin-left:.5rem"><i class="bi bi-telephone"></i> ${v.visiteur_telephone}</span>` : ''}
+          ${v.visiteur_telephone ? `<span style="font-size:.78rem;color:var(--text-light);margin-left:.5rem"><i class="bi bi-telephone"></i> <a href="${telHref(v.visiteur_telephone)}" style="color:inherit">${v.visiteur_telephone}</a></span>` : ''}
         </div>
         ${othersTxt}
       </div>

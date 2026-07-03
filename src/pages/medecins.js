@@ -1,7 +1,7 @@
 import { db }            from '../supabase.js';
 import { openModal, closeModal } from '../../script.js';
 import { toastSuccess, toastError } from '../toast.js';
-import { escapeHtml, fullName, initials, debounce } from '../utils.js';
+import { escapeHtml, fullName, initials, debounce, telHref } from '../utils.js';
 import { isSuperAdmin, isMedicalStaff } from '../auth.js';
 import { t } from '../i18n.js';
 
@@ -63,8 +63,9 @@ async function _load(search = '') {
             </div>
           </div>
           <div style="margin-top:1rem;display:grid;gap:.4rem;font-size:.85rem">
-            ${d.telephone ? `<div><i class="bi bi-telephone-fill" style="color:var(--teal-light);margin-right:.5rem"></i>${d.telephone}</div>` : ''}
-            ${d.email ? `<div><i class="bi bi-envelope-fill" style="color:var(--teal-light);margin-right:.5rem"></i>${d.email}</div>` : ''}
+            ${d.telephone ? `<div><i class="bi bi-telephone-fill" style="color:var(--teal-light);margin-right:.5rem"></i><a href="${telHref(d.telephone)}" style="color:inherit">${d.telephone}</a></div>` : ''}
+            ${d.telephone2 ? `<div><i class="bi bi-telephone-fill" style="color:var(--teal-light);margin-right:.5rem"></i><a href="${telHref(d.telephone2)}" style="color:inherit">${d.telephone2}</a></div>` : ''}
+            ${d.email ? `<div><i class="bi bi-envelope-fill" style="color:var(--teal-light);margin-right:.5rem"></i><a href="mailto:${escapeHtml(d.email)}" style="color:inherit">${escapeHtml(d.email)}</a></div>` : ''}
             ${d.clinique ? `<div><i class="bi bi-building-fill" style="color:var(--teal-light);margin-right:.5rem"></i>${d.clinique}</div>` : ''}
             ${d.jours_consultation ? `<div><i class="bi bi-calendar3" style="color:var(--teal-light);margin-right:.5rem"></i>${d.jours_consultation}</div>` : ''}
           </div>
