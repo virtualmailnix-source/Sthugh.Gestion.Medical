@@ -302,6 +302,13 @@ export async function openFormResident(id) {
           <label class="form-label">${t('residents.roomNumber')}</label>
           <input class="form-control" name="numero_chambre" value="${escapeHtml(r.numero_chambre || '')}">
         </div>
+        <div class="form-group">
+          <label class="form-label">${t('residents.cin')} <span class="required">*</span></label>
+          <input class="form-control" name="cin" value="${escapeHtml(r.cin || '')}" required
+            maxlength="14" pattern="[A-Za-z][A-Za-z0-9]{13}" title="${t('residents.cinFormat')}"
+            placeholder="A1234567890123" style="text-transform:uppercase">
+          <div class="form-hint">${t('residents.cinFormat')}</div>
+        </div>
       </div>
       <div class="form-row">
         <div class="form-group">
@@ -507,6 +514,7 @@ async function _submitResident(id) {
 
   const fd   = new FormData(form);
   const data = Object.fromEntries([...fd.entries()].filter(([, v]) => v !== ''));
+  if (data.cin) data.cin = data.cin.toUpperCase();
 
   // Photo
   const photoFile    = document.getElementById('photo-input')?.files[0];
@@ -671,6 +679,7 @@ async function _openProfile(id) {
 
     <div class="tab-pane active" data-pane="infos">
       <table style="width:100%;font-size:.9rem">
+        ${_row(t('residents.cin'), r.cin ? escapeHtml(r.cin) : '—')}
         ${_row(t('residents.treatingDoctor'), r.medecin_nom ? (r.medecin_titre || 'Dr.') + ' ' + r.medecin_prenom + ' ' + r.medecin_nom : '—')}
         ${_row(t('residents.profileLabelAdmission'), formatDate(r.date_entree))}
         ${r.statut_depart === 'deces' && r.date_sortie ? _row(t('depart.deceasedOn'), `<strong style="color:var(--tint-red-fg)">${formatDate(r.date_sortie)}</strong>`) : ''}
@@ -903,6 +912,7 @@ async function _openProfileAccueil(id) {
 
     <div class="tab-pane active" data-pane="infos">
       <table style="width:100%;font-size:.9rem">
+        ${_row(t('residents.cin'), r.cin ? escapeHtml(r.cin) : '—')}
         ${_row(t('residents.profileLabelAdmission'), formatDate(r.date_entree))}
         ${r.statut_depart === 'vacances' && r.date_sortie ? _row(t('depart.badgeVacances'), formatDate(r.date_sortie) + (r.date_retour_prevue ? ' → ' + formatDate(r.date_retour_prevue) : '')) : ''}
         ${r.statut_depart === 'depart' && r.date_sortie ? _row(t('depart.departedOn'), formatDate(r.date_sortie)) : ''}
@@ -1177,7 +1187,8 @@ function _exportPDF(r, cons, trais, contacts, histSorties = [], histCourses = []
   }
   if (r.numero_chambre) parts.push(`Chambre ${r.numero_chambre}`);
   if (r.sexe)           parts.push(r.sexe);
-  if (r.taille)         parts.push(`${r.taille} cm`);
+  if (r.cin)            parts.push(`CIN: ${r.cin}`);
+  if (r.taille && withMedical) parts.push(`${r.taille} cm`);
   doc.text(parts.join('  |  '), M, y);
 
   y += 5;
