@@ -31,13 +31,26 @@ const MGR_T = {
     activate: 'Activer', deactivate: 'Désactiver',
     /* audit actions */
     actionCreate: 'Création', actionUpdate: 'Modification', actionDelete: 'Suppression',
+    actionLogin: 'Connexion', actionLoginFailed: 'Échec connexion',
+    actionLogout: 'Déconnexion', actionExport: 'Export PDF',
     /* audit tables */
     allUsers: 'Tous les utilisateurs',
     tableResidents: 'Résidents', tableDoctors: 'Médecins', tableTreatments: 'Traitements',
     tableConsultations: 'Consultations', tableRdv: 'Rendez-vous',
     tablePlanning: 'Planification', tableUsers: 'Utilisateurs',
+    tableEvents: 'Événements',
     noAudit: 'Aucune entrée dans le journal.',
     unknown: 'Inconnu',
+    /* journal : détail + période */
+    filterFrom: 'Du', filterTo: 'Au',
+    roleReception: 'Réceptionniste',
+    clickDetail: 'Cliquer pour le détail',
+    detailTitle: "Détail de l'entrée",
+    changedFields: 'Champs modifiés',
+    fieldCol: 'Champ', beforeCol: 'Avant', afterCol: 'Après', valueCol: 'Valeur',
+    noChanges: 'Aucun détail enregistré.',
+    deletedData: 'Données supprimées', recordedData: 'Données enregistrées',
+    close: 'Fermer',
     /* user form */
     newUserTitle: 'Nouvel utilisateur', editUserTitle: 'Modifier',
     formFirstname: 'Prénom', formLastname: 'Nom',
@@ -87,13 +100,26 @@ const MGR_T = {
     activate: 'Activate', deactivate: 'Deactivate',
     /* audit actions */
     actionCreate: 'Created', actionUpdate: 'Modified', actionDelete: 'Deleted',
+    actionLogin: 'Login', actionLoginFailed: 'Failed login',
+    actionLogout: 'Logout', actionExport: 'PDF export',
     /* audit tables */
     allUsers: 'All users',
     tableResidents: 'Residents', tableDoctors: 'Doctors', tableTreatments: 'Treatments',
     tableConsultations: 'Consultations', tableRdv: 'Appointments',
     tablePlanning: 'Planning', tableUsers: 'Users',
+    tableEvents: 'Events',
     noAudit: 'No entries in the log.',
     unknown: 'Unknown',
+    /* journal: detail + period */
+    filterFrom: 'From', filterTo: 'To',
+    roleReception: 'Receptionist',
+    clickDetail: 'Click for details',
+    detailTitle: 'Entry details',
+    changedFields: 'Changed fields',
+    fieldCol: 'Field', beforeCol: 'Before', afterCol: 'After', valueCol: 'Value',
+    noChanges: 'No detail recorded.',
+    deletedData: 'Deleted data', recordedData: 'Recorded data',
+    close: 'Close',
     /* user form */
     newUserTitle: 'New user', editUserTitle: 'Edit',
     formFirstname: 'First name', formLastname: 'Last name',
@@ -194,6 +220,15 @@ const sbCreate = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
 
 /* ── Init ────────────────────────────────────────────────── */
 
+/* Thème : suit la préférence de l'application principale (même localStorage),
+   y compris quand elle change dans un autre onglet. */
+(function () {
+  const apply = () =>
+    document.documentElement.setAttribute('data-theme', localStorage.getItem('theme') || 'light');
+  apply();
+  window.addEventListener('storage', e => { if (e.key === 'theme') apply(); });
+})();
+
 document.addEventListener('DOMContentLoaded', async () => {
   _applyMgrLang();
 
@@ -225,6 +260,7 @@ async function _handleLogin() {
   const { data, error } = await sb.auth.signInWithPassword({ email, password: pw });
 
   if (error) {
+    sb.rpc('fn_log_evenement', { p_action: 'LOGIN_FAILED', p_details: { email, source: 'manager' } }).then(() => {}, () => {});
     errEl.textContent = _mgrT('invalidCreds');
     errEl.classList.remove('hidden');
     btn.disabled = false;
@@ -232,6 +268,7 @@ async function _handleLogin() {
     return;
   }
 
+  sb.rpc('fn_log_evenement', { p_action: 'LOGIN', p_details: { email, source: 'manager' } }).then(() => {}, () => {});
   await _onLoggedIn(data.user);
 }
 
@@ -273,6 +310,7 @@ function _setupNav() {
   );
 
   document.getElementById('btn-logout').addEventListener('click', async () => {
+    try { await sb.rpc('fn_log_evenement', { p_action: 'LOGOUT', p_details: { source: 'manager' } }); } catch (_) {}
     await sb.auth.signOut();
     location.reload();
   });
@@ -304,7 +342,7 @@ function _navigate(page) {
   );
 
   if (page === 'users')   _loadUsers();
-  if (page === 'journal') { _loadUserFilter(); _loadAuditLog(true); }
+  if (page === 'journal') { _loadUserFilter(); _loadTableFilter(); _loadAuditLog(true); }
   if (page === 'aide')    _renderAide();
 }
 
@@ -533,12 +571,15 @@ function _closeModal() {
   document.getElementById('modal-overlay').classList.add('hidden');
   const saveBtn = document.getElementById('modal-save');
   saveBtn.disabled = false;
+  saveBtn.style.display = '';
   saveBtn.textContent = _mgrT('save');
+  document.getElementById('modal-cancel').textContent = _mgrT('cancel');
 }
 
 /* ── Journal d'audit ─────────────────────────────────────── */
 
 let _auditOffset = 0;
+let _auditRows = [];
 const AUDIT_LIMIT = 50;
 
 async function _loadUserFilter() {
@@ -550,15 +591,31 @@ async function _loadUserFilter() {
     ).join('');
 }
 
+/* Filtre « Table » : valeurs réellement présentes dans le journal,
+   pour ne jamais oublier une table existante ou future. */
+async function _loadTableFilter() {
+  const sel = document.getElementById('filter-table');
+  const current = sel.value;
+  const { data } = await sb.rpc('fn_audit_tables');
+  sel.innerHTML = `<option value="">${_mgrT('allTables')}</option>` +
+    (data || []).map(r =>
+      `<option value="${_esc(r.table_name)}">${_esc(_tableLabel(r.table_name))}</option>`
+    ).join('');
+  sel.value = current;
+}
+
 async function _loadAuditLog(reset = true) {
   if (reset) {
     _auditOffset = 0;
+    _auditRows = [];
     document.getElementById('audit-body').innerHTML = '';
   }
 
   const userFilter   = document.getElementById('filter-user').value;
   const tableFilter  = document.getElementById('filter-table').value;
   const actionFilter = document.getElementById('filter-action').value;
+  const fromFilter   = document.getElementById('filter-from').value;
+  const toFilter     = document.getElementById('filter-to').value;
 
   let query = sb.from('v_audit_log')
     .select('*')
@@ -568,6 +625,8 @@ async function _loadAuditLog(reset = true) {
   if (userFilter)   query = query.eq('auth_user_id', userFilter);
   if (tableFilter)  query = query.eq('table_name', tableFilter);
   if (actionFilter) query = query.eq('action', actionFilter);
+  if (fromFilter)   query = query.gte('created_at', fromFilter + 'T00:00:00');
+  if (toFilter)     query = query.lte('created_at', toFilter + 'T23:59:59');
 
   const { data, error } = await query;
   const tbody = document.getElementById('audit-body');
@@ -584,7 +643,8 @@ async function _loadAuditLog(reset = true) {
   }
 
   const locale = _getLang() === 'en' ? 'en-MU' : 'fr-MU';
-  const rows = data.map(a => {
+  const baseIdx = _auditRows.length;
+  const rows = data.map((a, i) => {
     const date = new Date(a.created_at).toLocaleString(locale, {
       day: '2-digit', month: '2-digit', year: 'numeric',
       hour: '2-digit', minute: '2-digit'
@@ -592,9 +652,10 @@ async function _loadAuditLog(reset = true) {
     const userName = a.user_prenom || a.user_nom
       ? `${_esc(a.user_prenom || '')} ${_esc(a.user_nom || '')}`.trim()
       : `<span style="color:var(--text-light)">${_mgrT('unknown')}</span>`;
-    const userRole = a.user_role === 'super_admin' ? _mgrT('roleSuper') : _mgrT('roleAdmin');
+    const userRole = a.user_role === 'super_admin' ? _mgrT('roleSuper')
+      : a.user_role === 'receptionniste' ? _mgrT('roleReception') : _mgrT('roleAdmin');
     return `
-      <tr>
+      <tr data-audit-idx="${baseIdx + i}" style="cursor:pointer" title="${_mgrT('clickDetail')}">
         <td style="font-size:.8rem;white-space:nowrap;color:var(--text-light)">${date}</td>
         <td>
           <div style="font-weight:600">${userName}</div>
@@ -609,7 +670,13 @@ async function _loadAuditLog(reset = true) {
   }).join('');
 
   tbody.innerHTML += rows;
+  _auditRows = _auditRows.concat(data);
   _auditOffset += data.length;
+
+  tbody.onclick = e => {
+    const tr = e.target.closest('tr[data-audit-idx]');
+    if (tr) _openAuditDetail(_auditRows[+tr.dataset.auditIdx]);
+  };
 
   const loadMore = document.getElementById('btn-load-more');
   if (data.length < AUDIT_LIMIT) {
@@ -618,6 +685,72 @@ async function _loadAuditLog(reset = true) {
     loadMore.classList.remove('hidden');
     loadMore.innerHTML = `<i class="bi bi-chevron-down"></i> ${_mgrT('loadMore')}`;
   }
+}
+
+/* ── Détail d'une entrée du journal (diff champ par champ) ── */
+
+function _openAuditDetail(a) {
+  if (!a) return;
+  const locale = _getLang() === 'en' ? 'en-MU' : 'fr-MU';
+  const date = new Date(a.created_at).toLocaleString(locale, {
+    day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit'
+  });
+  const userName = `${a.user_prenom || ''} ${a.user_nom || ''}`.trim() || _mgrT('unknown');
+
+  const fmtVal = v => {
+    if (v === null || v === undefined) return `<span style="color:var(--text-light)">∅</span>`;
+    if (typeof v === 'object') return `<code style="font-size:.75rem">${_esc(JSON.stringify(v))}</code>`;
+    return _esc(String(v));
+  };
+
+  const oldData = a.details?.old || null;
+  const newData = a.details?.new || null;
+  let body = `
+    <table style="width:100%;font-size:.85rem;margin-bottom:1rem">
+      <tr><td style="font-weight:600;padding:.25rem 0;width:130px">${_mgrT('colDate')}</td><td>${date}</td></tr>
+      <tr><td style="font-weight:600;padding:.25rem 0">${_mgrT('colUser')}</td><td>${_esc(userName)}${a.user_email ? ` (${_esc(a.user_email)})` : ''}</td></tr>
+      <tr><td style="font-weight:600;padding:.25rem 0">${_mgrT('colAction')}</td><td><span class="action-badge action-${a.action.toLowerCase()}">${_actionLabel(a.action)}</span></td></tr>
+      <tr><td style="font-weight:600;padding:.25rem 0">${_mgrT('colTable')}</td><td>${_esc(_tableLabel(a.table_name))}</td></tr>
+      ${a.record_id ? `<tr><td style="font-weight:600;padding:.25rem 0">ID</td><td><code style="font-size:.75rem">${_esc(a.record_id)}</code></td></tr>` : ''}
+    </table>`;
+
+  if (a.action === 'UPDATE' && oldData && newData) {
+    const keys = Object.keys(newData);
+    body += keys.length ? `
+      <div style="font-weight:700;margin-bottom:.5rem">${_mgrT('changedFields')} (${keys.length})</div>
+      <table class="data-table" style="font-size:.82rem">
+        <thead><tr>
+          <th>${_mgrT('fieldCol')}</th><th>${_mgrT('beforeCol')}</th><th>${_mgrT('afterCol')}</th>
+        </tr></thead>
+        <tbody>
+          ${keys.map(k => `<tr>
+            <td style="font-weight:600">${_esc(k)}</td>
+            <td style="color:#b91c1c">${fmtVal(oldData[k])}</td>
+            <td style="color:#15803d">${fmtVal(newData[k])}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>` : `<div style="color:var(--text-light)">${_mgrT('noChanges')}</div>`;
+  } else {
+    const snap = newData || oldData || a.details || {};
+    const keys = Object.keys(snap);
+    body += keys.length ? `
+      <div style="font-weight:700;margin-bottom:.5rem">${a.action === 'DELETE' ? _mgrT('deletedData') : _mgrT('recordedData')}</div>
+      <table class="data-table" style="font-size:.82rem">
+        <thead><tr><th>${_mgrT('fieldCol')}</th><th>${_mgrT('valueCol')}</th></tr></thead>
+        <tbody>
+          ${keys.map(k => `<tr>
+            <td style="font-weight:600">${_esc(k)}</td>
+            <td>${fmtVal(snap[k])}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>` : `<div style="color:var(--text-light)">${_mgrT('noChanges')}</div>`;
+  }
+
+  document.getElementById('modal-title').textContent = _mgrT('detailTitle');
+  document.getElementById('modal-body').innerHTML = body;
+  document.getElementById('modal-save').style.display = 'none';
+  document.getElementById('modal-cancel').textContent = _mgrT('close');
+  document.getElementById('modal-overlay').classList.remove('hidden');
 }
 
 /* ── Page Aide ───────────────────────────────────────────── */
@@ -926,7 +1059,11 @@ function _esc(s) {
 }
 
 function _actionLabel(action) {
-  const map = { INSERT: 'actionCreate', UPDATE: 'actionUpdate', DELETE: 'actionDelete' };
+  const map = {
+    INSERT: 'actionCreate', UPDATE: 'actionUpdate', DELETE: 'actionDelete',
+    LOGIN: 'actionLogin', LOGIN_FAILED: 'actionLoginFailed',
+    LOGOUT: 'actionLogout', EXPORT_PDF: 'actionExport',
+  };
   return _mgrT(map[action] || action);
 }
 
@@ -934,13 +1071,24 @@ function _tableLabel(tbl) {
   const map = {
     residents: 'tableResidents', doctors: 'tableDoctors',
     traitements: 'tableTreatments', consultations: 'tableConsultations',
-    rendez_vous: 'tableRdv', planning_visites: 'tablePlanning', app_users: 'tableUsers'
+    rendez_vous: 'tableRdv', planning_visites: 'tablePlanning', app_users: 'tableUsers',
+    _evenements: 'tableEvents',
   };
   return _mgrT(map[tbl] || tbl);
 }
 
 function _auditSummary(a, locale) {
   try {
+    // Événements hors tables : connexions, exports…
+    if (a.table_name === '_evenements') {
+      const d = a.details || {};
+      const parts = [];
+      if (d.email)    parts.push(d.email);
+      if (d.resident) parts.push(d.resident);
+      if (d.type)     parts.push(d.type);
+      if (d.source)   parts.push(d.source);
+      return _esc(parts.join(' — ')) || '—';
+    }
     const row   = a.details?.new || a.details?.old || {};
     const parts = [];
     if (row.nom && row.prenom)   parts.push(`${row.prenom} ${row.nom}`);

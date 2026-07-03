@@ -99,10 +99,12 @@ async function _handleLogin() {
 
   try {
     const user = await login(email, pass);
+    db.rpc('fn_log_evenement', { p_action: 'LOGIN', p_details: { email } }).then(() => {}, () => {});
     document.getElementById('login-page')?.classList.add('hidden');
     _showWelcome(user);
     setTimeout(() => _startApp(user), 3800);
   } catch (e) {
+    db.rpc('fn_log_evenement', { p_action: 'LOGIN_FAILED', p_details: { email } }).then(() => {}, () => {});
     _loginErr(e.message);
     btn.disabled = false;
     btn.innerHTML = t('ui.loginBtn');

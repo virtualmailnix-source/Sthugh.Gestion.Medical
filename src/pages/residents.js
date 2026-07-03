@@ -1440,7 +1440,14 @@ function _exportPDF(r, cons, trais, contacts, histSorties = [], histCourses = []
   // ── Téléchargement ─────────────────────────────────────────
   const modeSuffix = mode === 'medical' ? 'medical' : mode === 'admin' ? 'administratif' : 'complet';
   const suffix = `${isDeces ? 'deces' : isDepart ? 'archive' : 'dossier'}_${modeSuffix}`;
-  doc.save(`${slug(r.nom)}_${slug(r.prenom)}_${suffix}_St_Hughs.pdf`);
+  const fichier = `${slug(r.nom)}_${slug(r.prenom)}_${suffix}_St_Hughs.pdf`;
+  doc.save(fichier);
+
+  // Traçabilité : qui a exporté quel dossier, de quel type
+  db.rpc('fn_log_evenement', {
+    p_action: 'EXPORT_PDF',
+    p_details: { resident_id: r.id, resident: fullName(r.nom, r.prenom), type: modeSuffix, fichier },
+  }).then(() => {}, () => {});
 }
 
 async function _confirmDelete(id, name) {

@@ -1,4 +1,5 @@
 import { currentUserInfo, logout } from '../auth.js';
+import { db }                     from '../supabase.js';
 import { t, getLang }             from '../i18n.js';
 import { initials }               from '../utils.js';
 
@@ -69,6 +70,8 @@ export function renderMonProfil(container) {
     </div>`;
 
   document.getElementById('btn-profile-logout').addEventListener('click', async () => {
+    // Journaliser avant signOut : la session est encore valide
+    try { await db.rpc('fn_log_evenement', { p_action: 'LOGOUT', p_details: {} }); } catch (_) {}
     await logout();
     location.reload();
   });

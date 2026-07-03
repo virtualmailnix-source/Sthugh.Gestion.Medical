@@ -3,17 +3,43 @@
   --teal-dark:  #124848;
   --teal-mid:   #1b6b6b;
   --teal-light: #2a9090;
+  --mission:    #124848;   /* fond sombre stable dans les 2 thèmes */
   --gold:       #b8963e;
   --gold-light: #d4af6a;
   --cream:      #faf8f4;
   --bg:         #f4f6f8;
   --card-bg:    #ffffff;
+  --surface:    #f8fafc;
   --border:     #e2e8f0;
   --text:       #1a1a1a;
   --text-light: #64748b;
   --danger:     #dc2626;
   --warning:    #d97706;
   --success:    #16a34a;
+  --ok-bg:      #f0fdf4;  --ok-fg:   #15803d;  --ok-border:   #86efac;
+  --warn-bg:    #fffbeb;  --warn-fg: #b45309;  --warn-border: #fcd34d;
+  --err-bg:     #fef2f2;  --err-border: #fecaca;
+}
+
+/* Mode sombre : aligné sur les variables de l'application principale */
+[data-theme="dark"] {
+  --teal-dark:  #6ecece;
+  --teal-mid:   #2a9090;
+  --teal-light: #3aadad;
+  --mission:    #032727;
+  --gold:       #c8a44e;
+  --gold-light: #e0c070;
+  --cream:      #1a2f2f;
+  --bg:         #0d1f1f;
+  --card-bg:    #182f2f;
+  --surface:    #122a2a;
+  --border:     #264040;
+  --text:       #e8f4f4;
+  --text-light: #78a0a0;
+  --ok-bg:      #1d3d2a;  --ok-fg:   #9fdfb8;  --ok-border:   #2e5c40;
+  --warn-bg:    #433317;  --warn-fg: #eecf87;  --warn-border: #7a5f24;
+  --err-bg:     #4a1d1d;  --err-border: #7a3535;
+  --danger:     #f3a8a8;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -32,11 +58,12 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--teal-dark) 0%, var(--teal-mid) 100%);
+  /* --mission : en dark, --teal-dark devient clair (réservé aux textes) */
+  background: linear-gradient(135deg, var(--mission) 0%, var(--teal-mid) 100%);
 }
 
 .login-box {
-  background: #fff;
+  background: var(--card-bg);
   border-radius: 16px;
   padding: 2.5rem;
   width: 100%;
@@ -69,9 +96,9 @@ body {
 }
 
 .login-err {
-  background: #fef2f2;
+  background: var(--err-bg);
   color: var(--danger);
-  border: 1px solid #fecaca;
+  border: 1px solid var(--err-border);
   border-radius: 8px;
   padding: .6rem 1rem;
   font-size: .875rem;
@@ -81,7 +108,7 @@ body {
 
 /* ── Topbar ─────────────────────────────────────────────────── */
 .topbar {
-  background: var(--teal-dark);
+  background: var(--mission);
   color: #fff;
   display: flex;
   align-items: center;
@@ -119,7 +146,7 @@ body {
 
 /* ── Nav tabs ───────────────────────────────────────────────── */
 .main-nav {
-  background: #fff;
+  background: var(--card-bg);
   border-bottom: 1px solid var(--border);
   display: flex;
   gap: .25rem;
@@ -178,7 +205,7 @@ body {
 }
 
 .data-table th {
-  background: #f8fafc;
+  background: var(--surface);
   color: var(--text-light);
   font-size: .75rem;
   font-weight: 600;
@@ -196,7 +223,7 @@ body {
 }
 
 .data-table tbody tr:last-child td { border-bottom: none; }
-.data-table tbody tr:hover { background: #f8fafc; }
+.data-table tbody tr:hover { background: var(--surface); }
 
 .table-loading {
   text-align: center;
@@ -240,15 +267,15 @@ body {
 }
 
 .role-badge.role-super_admin {
-  background: #f0fdf4;
-  color: #15803d;
-  border: 1px solid #86efac;
+  background: var(--ok-bg);
+  color: var(--ok-fg);
+  border: 1px solid var(--ok-border);
 }
 
 .role-badge.role-admin {
-  background: #fffbeb;
-  color: #b45309;
-  border: 1px solid #fcd34d;
+  background: var(--warn-bg);
+  color: var(--warn-fg);
+  border: 1px solid var(--warn-border);
 }
 
 .status-badge {
@@ -259,8 +286,8 @@ body {
   font-weight: 600;
 }
 
-.status-badge.status-actif   { background: #f0fdf4; color: #15803d; border: 1px solid #86efac; }
-.status-badge.status-inactif { background: #fef2f2; color: var(--danger); border: 1px solid #fecaca; }
+.status-badge.status-actif   { background: var(--ok-bg); color: var(--ok-fg); border: 1px solid var(--ok-border); }
+.status-badge.status-inactif { background: var(--err-bg); color: var(--danger); border: 1px solid var(--err-border); }
 
 .action-badge {
   display: inline-block;
@@ -272,9 +299,9 @@ body {
   letter-spacing: .04em;
 }
 
-.action-badge.action-insert { background: #f0fdf4; color: #15803d; }
-.action-badge.action-update { background: #fffbeb; color: #b45309; }
-.action-badge.action-delete { background: #fef2f2; color: var(--danger); }
+.action-badge.action-insert { background: var(--ok-bg); color: var(--ok-fg); }
+.action-badge.action-update { background: var(--warn-bg); color: var(--warn-fg); }
+.action-badge.action-delete { background: var(--err-bg); color: var(--danger); }
 
 /* ── Forms ──────────────────────────────────────────────────── */
 .form-group { margin-bottom: 1rem; }
@@ -295,7 +322,7 @@ body {
   border: 1.5px solid var(--border);
   border-radius: 8px;
   font-size: .875rem;
-  background: #fff;
+  background: var(--card-bg);
   color: var(--text);
   transition: border-color .15s;
 }
@@ -306,7 +333,7 @@ body {
   box-shadow: 0 0 0 3px rgba(42,144,144,.12);
 }
 
-.form-control[readonly] { background: #f8fafc; color: var(--text-light); }
+.form-control[readonly] { background: var(--surface); color: var(--text-light); }
 
 .form-grid {
   display: grid;
@@ -344,11 +371,11 @@ body {
   border: 1px solid var(--border);
 }
 
-.btn-ghost:hover { background: #f8fafc; color: var(--text); }
+.btn-ghost:hover { background: var(--surface); color: var(--text); }
 
-.btn-warning { background: #fef3c7; color: var(--warning); border: 1px solid #fcd34d; }
-.btn-success { background: #f0fdf4; color: var(--success); border: 1px solid #86efac; }
-.btn-danger  { background: #fef2f2; color: var(--danger);  border: 1px solid #fecaca; }
+.btn-warning { background: #fef3c7; color: var(--warning); border: 1px solid var(--warn-border); }
+.btn-success { background: var(--ok-bg); color: var(--success); border: 1px solid var(--ok-border); }
+.btn-danger  { background: var(--err-bg); color: var(--danger);  border: 1px solid var(--err-border); }
 
 .btn-sm { padding: .3rem .7rem; font-size: .8rem; }
 .btn-full { width: 100%; justify-content: center; margin-top: .75rem; }
@@ -371,7 +398,7 @@ body {
 }
 
 .modal-box {
-  background: #fff;
+  background: var(--card-bg);
   border-radius: 14px;
   width: 100%;
   max-width: 560px;
@@ -437,3 +464,9 @@ body {
   border-color: var(--gold);
   background: rgba(184,150,62,.2);
 }
+
+/* ── Badges des événements du journal ───────────────────────── */
+.action-badge.action-login        { background: var(--ok-bg);   color: var(--ok-fg); }
+.action-badge.action-login_failed { background: var(--err-bg);  color: var(--danger); }
+.action-badge.action-logout       { background: var(--surface); color: var(--text-light); }
+.action-badge.action-export_pdf   { background: var(--warn-bg); color: var(--warn-fg); }

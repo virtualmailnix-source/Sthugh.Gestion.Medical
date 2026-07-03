@@ -113,24 +113,29 @@
           <div class="form-group">
             <label class="form-label" data-mgr-i18n="filterTable">Table</label>
             <select id="filter-table" class="form-control">
-              <option value="">Toutes</option>
-              <option value="residents">Résidents</option>
-              <option value="doctors">Médecins</option>
-              <option value="traitements">Traitements</option>
-              <option value="consultations">Consultations</option>
-              <option value="rendez_vous">Rendez-vous</option>
-              <option value="planning_visites">Planification</option>
-              <option value="app_users">Utilisateurs</option>
+              <option value="" data-mgr-i18n="allTables">Toutes</option>
             </select>
           </div>
           <div class="form-group">
             <label class="form-label" data-mgr-i18n="filterAction">Action</label>
             <select id="filter-action" class="form-control">
-              <option value="">Toutes</option>
+              <option value="" data-mgr-i18n="allActions">Toutes</option>
               <option value="INSERT">Création</option>
               <option value="UPDATE">Modification</option>
               <option value="DELETE">Suppression</option>
+              <option value="LOGIN">Connexion</option>
+              <option value="LOGIN_FAILED">Connexion échouée</option>
+              <option value="LOGOUT">Déconnexion</option>
+              <option value="EXPORT_PDF">Export PDF</option>
             </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" data-mgr-i18n="filterFrom">Du</label>
+            <input type="date" id="filter-from" class="form-control">
+          </div>
+          <div class="form-group">
+            <label class="form-label" data-mgr-i18n="filterTo">Au</label>
+            <input type="date" id="filter-to" class="form-control">
           </div>
           <button class="btn btn-primary" id="btn-apply-filters" style="align-self:flex-end">
             <i class="bi bi-funnel-fill"></i> <span data-mgr-i18n="filter">Filtrer</span>
