@@ -1,0 +1,9 @@
+# Configuration des Edge Functions (projet médical wfngkkrnzoponrajgdqk)
+
+[functions.visit-request]
+# Appel server-to-server depuis le site public : pas de JWT utilisateur,
+# l'authentification se fait par le header x-webhook-secret.
+verify_jwt = false
+
+[functions.notify-demande]
+verify_jwt = true

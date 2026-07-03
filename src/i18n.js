@@ -309,6 +309,26 @@ const T = {
       notSeen30:'Pas vus 30j+', urgMeds:'Médicaments urgents',
     },
 
+    demandes: {
+      tab:'Demandes en ligne', none:'Aucune demande de visite',
+      colRequester:'Demandeur', colResident:'Résident demandé', colDate:'Date / Créneau',
+      colPersons:'Pers.', colStatus:'Statut',
+      statusPending:'En attente', statusApproved:'Validée', statusRefused:'Refusée',
+      process:'Traiter', modalTitle:'Demande de visite',
+      residentAsTyped:'Résident tel que saisi par le visiteur',
+      matchResident:'Correspondance avec un résident',
+      searchResident:'Rechercher par nom ou chambre…',
+      matchHint:'Le rapprochement est fait par le personnel. Les résidents décédés ou partis sont exclus.',
+      slot:'Créneau', slotMorning:'Matin (10h à 13h)', slotAfternoon:'Après-midi (16h à 19h)',
+      refusalReason:'Motif du refus (obligatoire pour refuser)',
+      refusalPlaceholder:'Ex : date indisponible, résident hospitalisé…',
+      approve:'Approuver', refuse:'Refuser',
+      approved:'Demande validée, visite créée', refused:'Demande refusée',
+      residentRequired:'Sélectionnez le résident concerné',
+      reasonRequired:'Le motif du refus est obligatoire',
+      noteOrigin:'Demande en ligne validée',
+    },
+
     depart: {
       btnExit:'Gérer sortie', title:'Sortie / Départ',
       typeLabel:'Type de sortie',
@@ -769,6 +789,26 @@ const T = {
       byAge:'Age groups', ageUnder50:'Under 50',
       activeResidents:'Active residents', consultMonth:'Consultations this month',
       notSeen30:'Not seen 30d+', urgMeds:'Urgent medications',
+    },
+
+    demandes: {
+      tab:'Online requests', none:'No visit requests',
+      colRequester:'Requester', colResident:'Requested resident', colDate:'Date / Slot',
+      colPersons:'Pers.', colStatus:'Status',
+      statusPending:'Pending', statusApproved:'Approved', statusRefused:'Refused',
+      process:'Process', modalTitle:'Visit request',
+      residentAsTyped:'Resident as typed by the visitor',
+      matchResident:'Match with a resident',
+      searchResident:'Search by name or room…',
+      matchHint:'Matching is done by staff. Deceased or departed residents are excluded.',
+      slot:'Slot', slotMorning:'Morning (10am to 1pm)', slotAfternoon:'Afternoon (4pm to 7pm)',
+      refusalReason:'Refusal reason (required to refuse)',
+      refusalPlaceholder:'E.g.: date unavailable, resident hospitalised…',
+      approve:'Approve', refuse:'Refuse',
+      approved:'Request approved, visit created', refused:'Request refused',
+      residentRequired:'Select the resident concerned',
+      reasonRequired:'The refusal reason is required',
+      noteOrigin:'Approved online request',
     },
 
     depart: {

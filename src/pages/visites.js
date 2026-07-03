@@ -3,6 +3,7 @@ import { openModal, closeModal }    from '../../script.js';
 import { toastSuccess, toastError } from '../toast.js';
 import { formatDate, formatTime, fullName, escapeHtml, debounce, nowLocalInput, todayISO, telHref } from '../utils.js';
 import { t, getLang }               from '../i18n.js';
+import { currentUserInfo }          from '../auth.js';
 
 let _filter = 'today';
 
@@ -28,10 +29,15 @@ export async function renderVisites(container) {
         <button class="chip" data-f="upcoming">${t('visites.filterUpcoming')}</button>
         <button class="chip" data-f="all">${t('visites.filterAll')}</button>
         <button class="chip" data-f="history">${t('visites.filterHistory')}</button>
+        <button class="chip" data-f="demandes">
+          <i class="bi bi-envelope-paper"></i> ${t('demandes.tab')}
+          <span id="chip-demandes-count" style="display:none;margin-left:.3rem;font-size:.72rem;font-weight:700;background:#d97706;color:#fff;border-radius:8px;padding:0 .38rem"></span>
+        </button>
       </div>
     </div>
 
     <div id="visits-list"></div>`;
+  _updateDemandesChip();
 
   document.getElementById('btn-add-visit').addEventListener('click', () => _openFormVisite(null));
 
@@ -51,6 +57,8 @@ async function _load() {
   const wrap = document.getElementById('visits-list');
   if (!wrap) return;
   wrap.innerHTML = `<div style="padding:2rem;text-align:center;color:var(--text-light)"><i class="bi bi-hourglass-split"></i></div>`;
+
+  if (_filter === 'demandes') return _loadDemandes(wrap);
 
   const today = todayISO();
 
@@ -378,6 +386,235 @@ async function _submitVisite(id) {
 
   if (error) { toastError(error.message); return; }
   toastSuccess(t('visites.saved'));
+  closeModal();
+  _load();
+}
+
+/* ── Demandes de visite en ligne (site public) ────────────── */
+
+async function _updateDemandesChip() {
+  const { count } = await db.from('demandes_visite')
+    .select('id', { count: 'exact' }).eq('statut', 'en_attente');
+  const el = document.getElementById('chip-demandes-count');
+  if (!el) return;
+  el.textContent = count || 0;
+  el.style.display = (count || 0) > 0 ? 'inline-block' : 'none';
+}
+
+async function _loadDemandes(wrap) {
+  const { data, error } = await db.from('demandes_visite')
+    .select('*')
+    .order('statut', { ascending: true })
+    .order('date_visite', { ascending: true })
+    .limit(200);
+
+  if (error) { toastError(t('common.error')); wrap.innerHTML = ''; return; }
+  const rows = data || [];
+  _updateDemandesChip();
+
+  if (!rows.length) {
+    wrap.innerHTML = `<div class="empty-state"><i class="bi bi-envelope-open"></i><p>${t('demandes.none')}</p></div>`;
+    return;
+  }
+
+  const badge = s => s === 'en_attente'
+    ? `<span class="badge badge-attente">${t('demandes.statusPending')}</span>`
+    : s === 'validee'
+    ? `<span class="badge badge-actif">${t('demandes.statusApproved')}</span>`
+    : `<span class="badge badge-annule">${t('demandes.statusRefused')}</span>`;
+
+  wrap.innerHTML = `<div class="card"><div class="table-wrap"><table class="table">
+    <thead><tr>
+      <th>${t('demandes.colRequester')}</th>
+      <th>${t('demandes.colResident')}</th>
+      <th>${t('demandes.colDate')}</th>
+      <th>${t('demandes.colPersons')}</th>
+      <th>${t('demandes.colStatus')}</th>
+      <th style="text-align:right"></th>
+    </tr></thead>
+    <tbody>
+      ${rows.map(d => `<tr data-id="${d.id}" style="cursor:pointer">
+        <td>
+          <div style="font-weight:600">${escapeHtml(fullName(d.demandeur_nom, d.demandeur_prenom))}</div>
+          <div style="font-size:.77rem;color:var(--text-light)">${escapeHtml(d.demandeur_email)}</div>
+        </td>
+        <td>${escapeHtml(d.resident_saisi)}${d.lien_parente ? `<div style="font-size:.77rem;color:var(--text-light)">${escapeHtml(d.lien_parente)}</div>` : ''}</td>
+        <td style="font-size:.85rem">${formatDate(d.date_visite)}<div style="font-size:.77rem;color:var(--text-light)">${d.creneau === 'matin' ? t('demandes.slotMorning') : t('demandes.slotAfternoon')}</div></td>
+        <td>${d.nb_visiteurs || 1}</td>
+        <td>${badge(d.statut)}</td>
+        <td style="text-align:right">
+          ${d.statut === 'en_attente'
+            ? `<button class="btn btn-primary btn-sm" data-action="process" data-id="${d.id}"><i class="bi bi-check2-square"></i> ${t('demandes.process')}</button>`
+            : `<i class="bi bi-eye" style="color:var(--text-light)"></i>`}
+        </td>
+      </tr>`).join('')}
+    </tbody>
+  </table></div></div>`;
+
+  wrap.onclick = e => {
+    const tr = e.target.closest('tr[data-id]');
+    if (!tr) return;
+    const d = rows.find(x => x.id === tr.dataset.id);
+    if (d) _openDemandeModal(d);
+  };
+}
+
+async function _openDemandeModal(d) {
+  const { data: residents } = await db.from('v_residents_public')
+    .select('id, nom, prenom, numero_chambre, statut_depart')
+    .eq('actif', true)
+    .order('nom').limit(400);
+
+  const actifs = (residents || []).filter(r => !r.statut_depart || r.statut_depart === 'vacances');
+  const readOnly = d.statut !== 'en_attente';
+
+  const resOpts = actifs.map(r =>
+    `<option value="${r.id}" ${d.resident_id === r.id ? 'selected' : ''}>
+      ${escapeHtml(fullName(r.nom, r.prenom))} — Ch.${r.numero_chambre || '?'}${r.statut_depart === 'vacances' ? ' (' + t('depart.badgeVacances') + ')' : ''}
+    </option>`).join('');
+
+  const body = `
+    <div style="background:var(--bg-alt);border-radius:var(--radius-sm);padding:.85rem 1rem;margin-bottom:1rem">
+      <div style="font-weight:700;margin-bottom:.35rem">${escapeHtml(fullName(d.demandeur_nom, d.demandeur_prenom))}
+        ${d.lien_parente ? `<span style="font-weight:400;color:var(--text-light)"> — ${escapeHtml(d.lien_parente)}</span>` : ''}
+      </div>
+      <div style="font-size:.85rem;color:var(--text-light)">
+        <i class="bi bi-envelope"></i> <a href="mailto:${escapeHtml(d.demandeur_email)}" style="color:inherit">${escapeHtml(d.demandeur_email)}</a>
+        &nbsp; <i class="bi bi-telephone"></i> <a href="${telHref(d.demandeur_telephone)}" style="color:inherit">${escapeHtml(d.demandeur_telephone)}</a>
+        &nbsp; <i class="bi bi-people"></i> ${d.nb_visiteurs || 1} ${t('visites.persons')}
+      </div>
+      ${d.message ? `<div style="font-size:.85rem;margin-top:.5rem;white-space:pre-wrap">${escapeHtml(d.message)}</div>` : ''}
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">${t('demandes.residentAsTyped')}</label>
+      <div style="font-weight:700;font-size:1rem">${escapeHtml(d.resident_saisi)}</div>
+    </div>
+
+    ${readOnly ? `
+      <div class="form-group">
+        <label class="form-label">${t('demandes.colStatus')}</label>
+        <div>${d.statut === 'validee' ? t('demandes.statusApproved') : t('demandes.statusRefused')}
+          ${d.motif_refus ? ` — ${escapeHtml(d.motif_refus)}` : ''}</div>
+      </div>
+    ` : `
+      <form id="form-demande">
+        <div class="form-group">
+          <label class="form-label">${t('demandes.matchResident')} <span class="required">*</span></label>
+          <input class="form-control" id="demande-res-search" placeholder="${t('demandes.searchResident')}" style="margin-bottom:.4rem">
+          <select class="form-control" name="resident_id" id="demande-res-select" size="5" required>${resOpts}</select>
+          <div class="form-hint">${t('demandes.matchHint')}</div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">${t('demandes.colDate')}</label>
+            <input class="form-control" type="date" name="date_visite" value="${d.date_visite}">
+          </div>
+          <div class="form-group">
+            <label class="form-label">${t('demandes.slot')}</label>
+            <select class="form-control" name="creneau">
+              <option value="matin" ${d.creneau === 'matin' ? 'selected' : ''}>${t('demandes.slotMorning')}</option>
+              <option value="apres_midi" ${d.creneau === 'apres_midi' ? 'selected' : ''}>${t('demandes.slotAfternoon')}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">${t('demandes.refusalReason')}</label>
+          <textarea class="form-control" name="motif_refus" rows="2" placeholder="${t('demandes.refusalPlaceholder')}"></textarea>
+        </div>
+      </form>
+    `}`;
+
+  const actions = readOnly
+    ? [{ label: t('common.close'), cls: 'btn btn-secondary', action: closeModal }]
+    : [
+        { label: t('common.cancel'), cls: 'btn btn-secondary', action: closeModal },
+        { label: `<i class="bi bi-x-lg"></i> ${t('demandes.refuse')}`, cls: 'btn btn-danger', action: () => _refuseDemande(d) },
+        { label: `<i class="bi bi-check2"></i> ${t('demandes.approve')}`, cls: 'btn btn-primary', action: () => _approveDemande(d) },
+      ];
+
+  openModal(`<i class="bi bi-envelope-paper"></i> ${t('demandes.modalTitle')}`, body, actions, 'modal-lg');
+
+  document.getElementById('demande-res-search')?.addEventListener('input', e => {
+    const q = e.target.value.toLowerCase();
+    const sel = document.getElementById('demande-res-select');
+    const filtered = actifs.filter(r =>
+      fullName(r.nom, r.prenom).toLowerCase().includes(q) ||
+      String(r.numero_chambre || '').toLowerCase().includes(q));
+    sel.innerHTML = filtered.map(r =>
+      `<option value="${r.id}">${escapeHtml(fullName(r.nom, r.prenom))} — Ch.${r.numero_chambre || '?'}${r.statut_depart === 'vacances' ? ' (' + t('depart.badgeVacances') + ')' : ''}</option>`
+    ).join('');
+  });
+}
+
+function _notifyDemandeur(d, statut, motif) {
+  // Accroche email (Resend) : sans RESEND_API_KEY côté serveur,
+  // la fonction répond 200 sans envoyer et le flux continue.
+  db.functions.invoke('notify-demande', {
+    body: {
+      email: d.demandeur_email,
+      prenom: d.demandeur_prenom,
+      statut,
+      date: d.date_visite,
+      creneau: d.creneau,
+      motif: motif || null,
+    },
+  }).then(() => {}, () => {});
+}
+
+async function _approveDemande(d) {
+  const form = document.getElementById('form-demande');
+  const fd = new FormData(form);
+  const residentId = fd.get('resident_id');
+  const dateVisite = fd.get('date_visite') || d.date_visite;
+  const creneau = fd.get('creneau') || d.creneau;
+  if (!residentId) { toastError(t('demandes.residentRequired')); return; }
+
+  const { error: vErr } = await db.from('visites').insert({
+    resident_id: residentId,
+    visiteur_nom: d.demandeur_nom,
+    visiteur_prenom: d.demandeur_prenom,
+    visiteur_telephone: d.demandeur_telephone,
+    visiteur_relation: d.lien_parente,
+    nb_personnes: d.nb_visiteurs || 1,
+    date_visite: dateVisite,
+    est_planifiee: true,
+    statut: 'planifiee',
+    notes: `${t('demandes.noteOrigin')} — ${creneau === 'matin' ? t('demandes.slotMorning') : t('demandes.slotAfternoon')}${d.message ? '\n' + d.message : ''}`,
+  });
+  if (vErr) { toastError(vErr.message); return; }
+
+  const { error } = await db.from('demandes_visite').update({
+    statut: 'validee',
+    resident_id: residentId,
+    date_visite: dateVisite,
+    creneau,
+    traite_par: currentUserInfo()?.id || null,
+    traite_le: new Date().toISOString(),
+  }).eq('id', d.id);
+  if (error) { toastError(error.message); return; }
+
+  _notifyDemandeur(d, 'validee', null);
+  toastSuccess(t('demandes.approved'));
+  closeModal();
+  _load();
+}
+
+async function _refuseDemande(d) {
+  const form = document.getElementById('form-demande');
+  const motif = new FormData(form).get('motif_refus')?.trim();
+  if (!motif) { toastError(t('demandes.reasonRequired')); return; }
+
+  const { error } = await db.from('demandes_visite').update({
+    statut: 'refusee',
+    motif_refus: motif,
+    traite_par: currentUserInfo()?.id || null,
+    traite_le: new Date().toISOString(),
+  }).eq('id', d.id);
+  if (error) { toastError(error.message); return; }
+
+  _notifyDemandeur(d, 'refusee', motif);
+  toastSuccess(t('demandes.refused'));
   closeModal();
   _load();
 }

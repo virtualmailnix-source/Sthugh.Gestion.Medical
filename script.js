@@ -252,10 +252,9 @@ async function _loadBadges() {
       }
     }
 
-    // Badge visites planifiées aujourd'hui
-    const { count: vc } = await db.from('visites').select('id', { count: 'exact' })
-      .eq('date_visite', new Date().toISOString().slice(0, 10))
-      .in('statut', ['planifiee', 'en_cours']);
+    // Badge visites : demandes en ligne en attente de traitement
+    const { count: vc } = await db.from('demandes_visite').select('id', { count: 'exact' })
+      .eq('statut', 'en_attente');
     const bv = document.getElementById('badge-visites');
     if (bv) { bv.textContent = vc || 0; bv.style.display = (vc || 0) > 0 ? 'flex' : 'none'; }
 
