@@ -582,7 +582,7 @@ export async function openResidentProfile(id) {
 }
 
 async function _openProfile(id) {
-  const [resRes, consRes, traitRes, rdvRes, contactsRes, histSortiesRes, histCoursesRes] = await Promise.all([
+  const [resRes, consRes, traitRes, rdvRes, contactsRes, histSortiesRes, histCoursesRes, visitesRes] = await Promise.all([
     db.from('v_residents_priorite').select('*').eq('id', id).single(),
     db.from('v_consultations_detail').select('*').eq('resident_id', id).order('date_consultation', { ascending: false }).limit(10),
     db.from('v_traitements_actifs').select('*').eq('resident_id', id),
@@ -590,6 +590,7 @@ async function _openProfile(id) {
     db.from('contacts_famille').select('*').eq('resident_id', id).order('est_principal', { ascending: false }),
     db.from('historique_sorties').select('*').eq('resident_id', id).order('date_sortie', { ascending: false }),
     db.from('courses').select('*').eq('resident_id', id).order('date_sortie', { ascending: false }).order('heure_depart', { ascending: false }),
+    db.from('visites').select('*').eq('resident_id', id).order('date_visite', { ascending: false }).limit(20),
   ]);
 
   const r             = resRes.data;
@@ -599,6 +600,7 @@ async function _openProfile(id) {
   const contacts      = contactsRes.data || [];
   const histSorties   = histSortiesRes.data || [];
   const histCourses   = histCoursesRes.data || [];
+  const visites       = visitesRes.data || [];
   if (!r) return;
 
   const sa         = isSuperAdmin();
@@ -827,7 +829,7 @@ async function _openProfile(id) {
     // Nouvelle consultation : actif ou vacances seulement
     ...(isActive || isVacances ? [{ label: t('residents.newConsult'), cls: 'btn btn-primary btn-sm', action: () => { closeModal(); openFormConsultation(null, id); } }] : []),
     // PDF : toujours visible, libellé selon statut — ouvre le choix du contenu
-    { label: pdfLabel, cls: 'btn btn-secondary btn-sm', action: () => _openExportChoice(r, cons, trais, contacts, histSorties, histCourses) },
+    { label: pdfLabel, cls: 'btn btn-secondary btn-sm', action: () => _openExportChoice(r, cons, trais, contacts, histSorties, histCourses, visites) },
     // Retour au foyer (vacances)
     ...(isVacances ? [{ label: `<i class="bi bi-house-fill"></i> ${t('depart.btnRestore')}`, cls: 'btn btn-success btn-sm', action: () => { closeModal(); _openRestoreModal(r); } }] : []),
     // Gérer sortie : actif + super_admin → toutes options; actif + admin → vacances uniquement
@@ -966,7 +968,7 @@ async function _openProfileAccueil(id) {
 
   openModal(`<i class="bi bi-folder2-open"></i> ${t('residents.profileTitle')}`, body, [
     { label: `<i class="bi bi-file-earmark-pdf-fill"></i> ${t('common.export')}`, cls: 'btn btn-secondary btn-sm',
-      action: () => _exportPDF(r, [], [], contacts, histSorties, histCourses, 'admin') },
+      action: () => _exportPDF(r, [], [], contacts, histSorties, histCourses, 'admin', visites) },
     ...(isActive ? [{ label: `<i class="bi bi-luggage-fill"></i> ${t('depart.typeVacances')}`, cls: 'btn btn-secondary btn-sm',
       action: () => { closeModal(); _openVacancesAccueil(r); } }] : []),
     ...(isVacances ? [{ label: `<i class="bi bi-house-fill"></i> ${t('depart.btnRestore')}`, cls: 'btn btn-success btn-sm',
@@ -1047,7 +1049,12 @@ function _alerteBadge(s, jours) {
 }
 
 // ── Choix du contenu à exporter ─────────────────────────────
-function _openExportChoice(r, cons, trais, contacts, histSorties, histCourses) {
+function _openExportChoice(r, cons, trais, contacts, histSorties, histCourses, visites = []) {
+  // Réceptionniste : pas de choix — export administratif direct
+  if (isReceptionist()) {
+    _exportPDF(r, [], [], contacts, histSorties, histCourses, 'admin', visites);
+    return;
+  }
   const choices = [
     { mode: 'medical', icon: 'bi-heart-pulse-fill',      color: 'var(--teal-mid)',      label: t('residents.exportMedical'), desc: t('residents.exportMedicalDesc') },
     { mode: 'admin',   icon: 'bi-folder2-open',          color: 'var(--gold)',          label: t('residents.exportAdmin'),   desc: t('residents.exportAdminDesc') },
@@ -1079,15 +1086,18 @@ function _openExportChoice(r, cons, trais, contacts, histSorties, histCourses) {
 
   document.querySelectorAll('.export-choice').forEach(btn =>
     btn.addEventListener('click', () => {
-      _exportPDF(r, cons, trais, contacts, histSorties, histCourses, btn.dataset.mode);
+      _exportPDF(r, cons, trais, contacts, histSorties, histCourses, btn.dataset.mode, visites);
       closeModal();
       _openProfile(r.id);
     })
   );
 }
 
-function _exportPDF(r, cons, trais, contacts, histSorties = [], histCourses = [], mode = 'complet') {
+function _exportPDF(r, cons, trais, contacts, histSorties = [], histCourses = [], mode = 'complet', visites = []) {
   if (!window.jspdf) { alert('Bibliothèque PDF non chargée. Vérifiez votre connexion.'); return; }
+  // Verrou au moment de la génération : la réceptionniste n'exporte JAMAIS
+  // de données médicales, quel que soit le mode demandé par l'appelant.
+  if (isReceptionist()) { mode = 'admin'; cons = []; trais = []; }
   const withMedical = mode !== 'admin';    // sections médicales
   const withAdmin   = mode !== 'medical';  // sections non médicales
   const { jsPDF } = window.jspdf;
@@ -1104,8 +1114,11 @@ function _exportPDF(r, cons, trais, contacts, histSorties = [], histCourses = []
   let y = 0;
 
   const exporter = currentUserInfo();
+  const roleLabel = exporter?.role === 'super_admin' ? 'Super Admin'
+    : exporter?.role === 'receptionniste' ? 'Receptionniste' : 'Admin';
   const exporterLabel = exporter
-    ? `${exporter.prenom || ''} ${exporter.nom || ''}`.trim() + (exporter.email ? ` (${exporter.email})` : '')
+    ? `${exporter.prenom || ''} ${exporter.nom || ''}`.trim()
+      + (exporter.email ? ` (${exporter.email})` : '') + ` — ${roleLabel}`
     : '';
 
   const slug = s => (s || '').toLowerCase()
@@ -1297,6 +1310,26 @@ function _exportPDF(r, cons, trais, contacts, histSorties = [], histCourses = []
   }
 
   if (withAdmin) {
+    // ── Visites familles ─────────────────────────────────────
+    section('VISITES DES FAMILLES');
+    const visitesOk = (visites || []).filter(v => v.statut !== 'annulee');
+    if (visitesOk.length) {
+      doc.autoTable({
+        ...tableOpts, startY: y,
+        head: [['Date', 'Visiteur', 'Relation', 'Personnes', 'Statut']],
+        body: visitesOk.map(v => [
+          v.date_visite ? new Date(v.date_visite).toLocaleDateString('fr-MU') : '—',
+          `${v.visiteur_prenom || ''} ${v.visiteur_nom || ''}`.trim() || '—',
+          v.visiteur_relation || '—',
+          v.nb_personnes || 1,
+          v.statut === 'terminee' ? 'Terminee' : v.statut === 'en_cours' ? 'En cours' : 'Planifiee',
+        ]),
+      });
+      y = doc.lastAutoTable.finalY + 8;
+    } else {
+      emptyLine('Aucune visite enregistree');
+    }
+
     // ── Historique vacances ──────────────────────────────────
     section('HISTORIQUE DES VACANCES');
     if (histSorties.length) {
