@@ -158,29 +158,41 @@ function _chartGender(rows) {
 function _chartAge(rows) {
   const canvas = document.getElementById('chart-age');
   if (!canvas || !window.Chart) return;
-  const now = new Date();
-  const counts = { u40:0, a40:0, a50:0, a60:0, a80:0 };
-  rows.forEach(r => {
-    if (!r.date_naissance) return;
-    const age = Math.floor((now - new Date(r.date_naissance)) / 31557600000);
-    if (age < 40)       counts.u40++;
-    else if (age < 50)  counts.a40++;
-    else if (age < 60)  counts.a50++;
-    else if (age < 80)  counts.a60++;
-    else                counts.a80++;
+  const now  = new Date();
+  const ages = rows
+    .filter(r => r.date_naissance)
+    .map(r => Math.floor((now - new Date(r.date_naissance)) / 31557600000));
+  const maxAge = ages.length ? Math.max(...ages) : 0;
+
+  // Tranches de 5 ans : 50–55, 56–60, … 86–90, puis 91+.
+  // Générées dynamiquement : on s'arrête à la tranche contenant l'âge max.
+  const brackets = [{ lo: 50, hi: 55 }];
+  for (let lo = 56; lo <= 86; lo += 5) brackets.push({ lo, hi: lo + 4 });
+  const visible = brackets.filter((b, i) => i === 0 || b.lo <= maxAge);
+
+  const labels = [];
+  const data   = [];
+  const under50 = ages.filter(a => a < 50).length;
+  if (under50) { labels.push(t('statistics.ageUnder50')); data.push(under50); }
+  visible.forEach(b => {
+    labels.push(`${b.lo}–${b.hi}`);
+    data.push(ages.filter(a => a >= b.lo && a <= b.hi).length);
   });
-  const labels = [
-    t('statistics.ageUnder40'), t('statistics.age40'),
-    t('statistics.age50'), t('statistics.age60'), t('statistics.age80')
-  ];
+  if (maxAge >= 91) {
+    labels.push('91+');
+    data.push(ages.filter(a => a >= 91).length);
+  }
+
+  const PALETTE = ['#a78bfa','#60a5fa','#34d399','#f59e0b','#f87171',
+                   '#2a9090','#c8a44e','#ec4899','#6366f1','#14b8a6','#d97706'];
   _charts.age = new window.Chart(canvas, {
     type:'bar',
     data:{
       labels,
       datasets:[{
         label: t('statistics.byAge'),
-        data: [counts.u40, counts.a40, counts.a50, counts.a60, counts.a80],
-        backgroundColor:['#a78bfa','#60a5fa','#34d399','#f59e0b','#f87171'],
+        data,
+        backgroundColor: labels.map((_, i) => PALETTE[i % PALETTE.length]),
         borderRadius:6
       }]
     },
