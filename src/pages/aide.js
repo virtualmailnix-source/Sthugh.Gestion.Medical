@@ -56,7 +56,7 @@ function _fr() { return `
         <tr><td><i class="bi bi-calendar3"></i></td><td><strong>Rendez-vous</strong></td><td>Calendrier + urgences</td></tr>
         <tr><td><i class="bi bi-list-ol"></i></td><td><strong>Planification</strong></td><td>Rotation des visites médicales 2×/semaine</td></tr>
         <tr><td><i class="bi bi-person-walking"></i></td><td><strong>Visites</strong></td><td>Visites des familles et proches (enregistrement, suivi)</td></tr>
-        <tr><td><i class="bi bi-box-arrow-right"></i></td><td><strong>Sorties & Décès</strong></td><td>Archive des sorties temporaires, départs et décès</td></tr>
+        <tr><td><i class="bi bi-box-arrow-right"></i></td><td><strong>Sorties</strong></td><td>Archive des sorties temporaires, départs et décès</td></tr>
         <tr><td><i class="bi bi-bag-fill"></i></td><td><strong>Courses</strong></td><td>Sorties commissions des résidents autonomes, heures départ/retour, articles achetés</td></tr>
         <tr><td><i class="bi bi-balloon-heart-fill"></i></td><td><strong>Anniversaires</strong></td><td>Célébrations des résidents, alertes automatiques</td></tr>
         <tr><td><i class="bi bi-bell-fill"></i></td><td><strong>Alertes</strong></td><td>Notifications médicaments / anniversaires</td></tr>
@@ -118,8 +118,8 @@ function _fr() { return `
 
     <!-- SORTIES / DÉCÈS -->
     <div class="aide-card aide-card-wide">
-      <div class="aide-card-title"><i class="bi bi-box-arrow-right"></i> Sorties & Décès</div>
-      <img src="src/composants/09-sorties-deces.png" alt="Sorties & Décès" class="aide-illus">
+      <div class="aide-card-title"><i class="bi bi-box-arrow-right"></i> Sorties</div>
+      <img src="src/composants/09-sorties-deces.png" alt="Sorties" class="aide-illus">
       <p>Depuis le <strong>dossier d'un résident actif</strong>, le bouton de sortie permet d'enregistrer l'une des 3 situations suivantes :</p>
       <div class="aide-col3-lg">
         <div style="padding:.75rem;background:rgba(37,99,235,.06);border-radius:var(--radius-sm);border-left:3px solid #2563eb">
@@ -139,7 +139,7 @@ function _fr() { return `
       <div class="aide-tip" style="margin-bottom:.6rem">
         <i class="bi bi-luggage-fill"></i> <strong>Retour de vacances :</strong> lorsque vous cliquez <em>Retour au foyer</em>, la période de vacances (date de départ, date de retour, motif) est automatiquement sauvegardée dans l'historique du résident.
       </div>
-      <div class="aide-tip"><i class="bi bi-info-circle-fill"></i> Les résidents en vacances restent dans la liste principale avec un badge bleu. Décédés et partis n'apparaissent que dans la page <strong>Sorties & Décès</strong> et leurs filtres dédiés.</div>
+      <div class="aide-tip"><i class="bi bi-info-circle-fill"></i> Les résidents en vacances restent dans la liste principale avec un badge bleu. Décédés et partis n'apparaissent que dans la page <strong>Sorties</strong> et leurs filtres dédiés.</div>
     </div>
 
     <!-- VISITES -->
@@ -469,7 +469,7 @@ function _en() { return `
         <tr><td><i class="bi bi-calendar3"></i></td><td><strong>Appointments</strong></td><td>Calendar + emergency slots</td></tr>
         <tr><td><i class="bi bi-list-ol"></i></td><td><strong>Planning</strong></td><td>Medical visit rotation 2×/week</td></tr>
         <tr><td><i class="bi bi-person-walking"></i></td><td><strong>Visits</strong></td><td>Family and friends visits (logging, tracking)</td></tr>
-        <tr><td><i class="bi bi-box-arrow-right"></i></td><td><strong>Exits & Deaths</strong></td><td>Archive of temporary leave, departures and deaths</td></tr>
+        <tr><td><i class="bi bi-box-arrow-right"></i></td><td><strong>Exits</strong></td><td>Archive of temporary leave, departures and deaths</td></tr>
         <tr><td><i class="bi bi-bag-fill"></i></td><td><strong>Shopping</strong></td><td>Errand outings for independent residents, departure/return times, items purchased</td></tr>
         <tr><td><i class="bi bi-balloon-heart-fill"></i></td><td><strong>Birthdays</strong></td><td>Resident celebrations, automatic alerts</td></tr>
         <tr><td><i class="bi bi-bell-fill"></i></td><td><strong>Alerts</strong></td><td>Medication / birthday notifications</td></tr>
@@ -531,8 +531,8 @@ function _en() { return `
 
     <!-- EXITS / DEATHS -->
     <div class="aide-card aide-card-wide">
-      <div class="aide-card-title"><i class="bi bi-box-arrow-right"></i> Exits & Deaths</div>
-      <img src="src/composants/09-sorties-deces.png" alt="Exits & Deaths" class="aide-illus">
+      <div class="aide-card-title"><i class="bi bi-box-arrow-right"></i> Exits</div>
+      <img src="src/composants/09-sorties-deces.png" alt="Exits" class="aide-illus">
       <p>From an <strong>active resident file</strong>, the exit button records one of 3 situations:</p>
       <div class="aide-col3-lg">
         <div style="padding:.75rem;background:rgba(37,99,235,.06);border-radius:var(--radius-sm);border-left:3px solid #2563eb">
@@ -552,7 +552,7 @@ function _en() { return `
       <div class="aide-tip" style="margin-bottom:.6rem">
         <i class="bi bi-luggage-fill"></i> <strong>Return from leave:</strong> when you click <em>Return to home</em>, the vacation period (departure date, actual return date, reason) is automatically saved in the resident's history.
       </div>
-      <div class="aide-tip"><i class="bi bi-info-circle-fill"></i> Residents on vacation remain in the main list with a blue badge. Deceased and departed residents only appear in the <strong>Exits & Deaths</strong> page and their dedicated filters.</div>
+      <div class="aide-tip"><i class="bi bi-info-circle-fill"></i> Residents on vacation remain in the main list with a blue badge. Deceased and departed residents only appear in the <strong>Exits</strong> page and their dedicated filters.</div>
     </div>
 
     <!-- VISITS -->

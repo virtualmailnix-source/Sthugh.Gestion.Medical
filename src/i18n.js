@@ -8,7 +8,7 @@ const T = {
       dashboard:'Tableau de bord', residents:'Résidents', medecins:'Médecins',
       traitements:'Traitements', consultations:'Consultations', rdv:'Rendez-vous',
       planification:'Planification', alertes:'Alertes', statistiques:'Statistiques',
-      aide:'Aide', anniversaires:'Anniversaires', visites:'Visites', departs:'Sorties & Décès',
+      aide:'Aide', anniversaires:'Anniversaires', visites:'Visites', departs:'Sorties',
       courses:'Courses',
     },
     ui: {
@@ -30,7 +30,7 @@ const T = {
       traitements:'Traitements en cours', consultations:'Consultations',
       'rendez-vous':'Rendez-vous', planification:'Planification des visites',
       alertes:'Alertes & Notifications', statistiques:'Statistiques',
-      parametres:'Paramètres', aide:'Aide', anniversaires:'Anniversaires & Célébrations', visites:'Visites', departs:'Sorties & Décès',
+      parametres:'Paramètres', aide:'Aide', anniversaires:'Anniversaires & Célébrations', visites:'Visites', departs:'Sorties',
       courses:'Courses & Commissions', monprofil:'Mon profil',
     },
     common: {
@@ -313,7 +313,7 @@ const T = {
       filterDeces:'Décédés',
       filterDeparts:'Partis',
       filterVacances:'En vacances',
-      archiveTitle:'Sorties & Décès',
+      archiveTitle:'Sorties',
       archiveSubtitle:'Sorties temporaires, départs définitifs et décès des résidents',
       required:'Type de sortie requis',
       adminOnlyVacances:'En tant qu\'Admin, seules les sorties temporaires (vacances) sont autorisées. Contactez le Super Admin pour un départ définitif ou un décès.',
@@ -452,7 +452,7 @@ const T = {
       dashboard:'Dashboard', residents:'Residents', medecins:'Doctors',
       traitements:'Treatments', consultations:'Consultations', rdv:'Appointments',
       planification:'Planning', alertes:'Alerts', statistiques:'Statistics',
-      aide:'Help', anniversaires:'Birthdays', visites:'Visits', departs:'Exits & Deaths',
+      aide:'Help', anniversaires:'Birthdays', visites:'Visits', departs:'Exits',
       courses:'Shopping',
     },
     ui: {
@@ -474,7 +474,7 @@ const T = {
       traitements:'Active Treatments', consultations:'Consultations',
       'rendez-vous':'Appointments', planification:'Visit Planning',
       alertes:'Alerts & Notifications', statistiques:'Statistics',
-      parametres:'Settings', aide:'Help', anniversaires:'Birthdays & Celebrations', visites:'Visits', departs:'Exits & Deaths',
+      parametres:'Settings', aide:'Help', anniversaires:'Birthdays & Celebrations', visites:'Visits', departs:'Exits',
       courses:'Shopping Trips', monprofil:'My profile',
     },
     common: {
@@ -757,7 +757,7 @@ const T = {
       filterDeces:'Deceased',
       filterDeparts:'Departed',
       filterVacances:'On leave',
-      archiveTitle:'Exits & Deaths',
+      archiveTitle:'Exits',
       archiveSubtitle:'Temporary leave, permanent departures and deaths',
       required:'Exit type is required',
       adminOnlyVacances:'As Admin, only temporary leave (vacation) is allowed. Contact the Super Admin for permanent departure or death.',
