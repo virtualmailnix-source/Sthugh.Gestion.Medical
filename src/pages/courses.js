@@ -179,7 +179,7 @@ async function _openForm(course) {
   const isEdit = !!course;
   const residentOptions = autonomes.map(r =>
     `<option value="${r.id}" ${course?.resident_id === r.id ? 'selected' : ''}>
-      ${fullName(r.nom, r.prenom)} — Ch.${r.numero_chambre || '?'}
+      ${fullName(r.nom, r.prenom)} - Ch.${r.numero_chambre || '?'}
     </option>`
   ).join('');
 
@@ -193,7 +193,7 @@ async function _openForm(course) {
         <option value="">— ${t('visites.selectResident')} —</option>
         ${autonomes.map(r =>
           `<option value="${r.id}" ${currentResId === r.id ? 'selected' : ''}>
-            ${fullName(r.nom, r.prenom)} — Ch.${r.numero_chambre || '?'}
+            ${fullName(r.nom, r.prenom)} - Ch.${r.numero_chambre || '?'}
           </option>`
         ).join('')}
       </select>

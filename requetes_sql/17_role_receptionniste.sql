@@ -1,6 +1,6 @@
 -- ============================================================
 --  17_role_receptionniste.sql
---  St Hugh's Anglican Home — Rôle Réceptionniste (accueil)
+--  St Hugh's Anglican Home - Rôle Réceptionniste (accueil)
 --
 --  Accès réceptionniste :
 --    ✓ Résidents : identité / chambre / contacts famille (via v_residents_public)
@@ -8,7 +8,7 @@
 --    ✓ Médecins (lecture : liste + contacts)
 --    ✓ Sorties vacances + retour (RPC dédiées, pas de décès/départ définitif)
 --    ✗ Tout le volet médical : traitements, consultations, rendez-vous,
---      alertes, médicaments, planification — SELECT refusé par RLS
+--      alertes, médicaments, planification - SELECT refusé par RLS
 --
 --  À exécuter APRÈS les fichiers 01 à 16.
 -- ============================================================
@@ -101,7 +101,7 @@ CREATE POLICY "pr_update" ON planning_residents FOR UPDATE TO authenticated USIN
 
 -- Restent accessibles à TOUS les app_users actifs (réceptionniste incluse) :
 --   doctors (lecture), contacts_famille (lecture), visites (familiales),
---   courses, historique_sorties — policies inchangées (fn_is_app_user)
+--   courses, historique_sorties - policies inchangées (fn_is_app_user)
 
 -- ── 4. Les vues respectent la RLS des tables sous-jacentes ──
 -- Sans cela, une vue s'exécute avec les droits de son propriétaire

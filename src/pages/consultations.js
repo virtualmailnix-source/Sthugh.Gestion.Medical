@@ -151,7 +151,7 @@ export async function openFormConsultation(id, prefillResidentId) {
     db.from('doctors').select('id,titre,nom,prenom').eq('actif',true).order('nom'),
   ]);
 
-  const resOpts=(ress||[]).map(r=>`<option value="${r.id}" ${(c.resident_id||prefillResidentId)===r.id?'selected':''}>${r.prenom} ${r.nom} — Ch.${r.numero_chambre||'—'}</option>`).join('');
+  const resOpts=(ress||[]).map(r=>`<option value="${r.id}" ${(c.resident_id||prefillResidentId)===r.id?'selected':''}>${r.prenom} ${r.nom} - Ch.${r.numero_chambre||'—'}</option>`).join('');
   const docOpts=(docs||[]).map(d=>`<option value="${d.id}" ${c.medecin_id===d.id?'selected':''}>${d.titre||'Dr.'} ${d.prenom} ${d.nom}</option>`).join('');
 
   const body=`<form id="form-cons" enctype="multipart/form-data">

@@ -1,5 +1,5 @@
 -- ============================================================
---  06 — Mises à jour du schéma
+--  06 - Mises à jour du schéma
 --  Exécuter en 6e dans Supabase SQL Editor
 --  1. Table contacts_famille (remplace les colonnes uniques)
 --  2. Colonne taille dans residents

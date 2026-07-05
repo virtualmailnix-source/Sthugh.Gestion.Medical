@@ -1,5 +1,5 @@
 -- ============================================================
---  St Hugh's Anglican Home — Rose Hill, Mauritius
+--  St Hugh's Anglican Home - Rose Hill, Mauritius
 --  Système de gestion médicale des résidents
 --  Base de données: stHughAnglican_simpleCabinetMedical
 -- ============================================================

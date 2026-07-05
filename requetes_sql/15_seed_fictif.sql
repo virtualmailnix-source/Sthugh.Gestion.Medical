@@ -1,6 +1,6 @@
 -- ============================================================
 --  15_seed_fictif.sql
---  St Hugh's Anglican Home — Données fictives complètes
+--  St Hugh's Anglican Home - Données fictives complètes
 --  64 résidents + couverture de TOUS les modules de l'app
 --
 --  Prérequis : scripts 01 à 14 déjà exécutés
@@ -15,7 +15,7 @@ BEGIN;
 -- ============================================================
 INSERT INTO doctors (titre, nom, prenom, specialite, telephone, clinique, jours_consultation, notes) VALUES
 ('Dr.', 'PERMALLOO', 'Suresh',    'Médecine Générale', '4641001', 'Clinique Rose Hill',  'Mardi, Vendredi',  'Médecin principal du foyer'),
-('Dr.', 'BAPPOO',    'Meera',     'Gériatrie',         '4652002', 'Hôpital Victoria',    'Lundi, Mercredi',  'Spécialiste gériatrique — visites mardi AM'),
+('Dr.', 'BAPPOO',    'Meera',     'Gériatrie',         '4652002', 'Hôpital Victoria',    'Lundi, Mercredi',  'Spécialiste gériatrique - visites mardi AM'),
 ('Dr.', 'OOZEER',    'Farida',    'Cardiologie',       '4663003', 'Clinique Darné',       'Mardi, Vendredi',  NULL),
 ('Dr.', 'LABONNE',   'Guy',       'Neurologie',        '4674004', 'Cabinet Labonne PAMPLEMOUSSES', 'Mercredi, Samedi', NULL),
 ('Dr.', 'RAMSAMY',   'Priya',     'Médecine Interne',  '4685005', 'Hôpital SSRN',        'Lundi, Jeudi',     NULL);
@@ -45,16 +45,16 @@ INSERT INTO residents (
 ('111','KHODABUX',     'Fatimah',      '1954-08-25','Féminin', '2022-01-17',(SELECT id FROM doctors WHERE nom='RAMSAMY'   LIMIT 1),'A+', 'Aspirine',       'Diabète T2, Rétinopathie',   'Assistance partielle', 2,'Contrôle glycémie quotidien',             163.0, true),
 ('112','COLLEN',       'André',        '1942-01-11','Masculin','2020-05-06',(SELECT id FROM doctors WHERE nom='PERMALLOO' LIMIT 1),'O+', NULL,             'Arthrose lombaire',          'Fauteuil roulant',     3,NULL,                                      172.0, true),
 ('113','GOPAUL',       'Radha',        '1948-03-28','Féminin', '2021-07-19',(SELECT id FROM doctors WHERE nom='BAPPOO'    LIMIT 1),'AB-',NULL,             'HTA, Insuffisance veineuse', 'Assistance partielle', 3,NULL,                                      154.0, true),
-('114','MAROT',        'Robert',       '1933-09-07','Masculin','2016-04-25',(SELECT id FROM doctors WHERE nom='LABONNE'   LIMIT 1),'A+', NULL,             'Démence, Incontinence',      'Alitement',            1,'Port de couches — nuit',                  170.0, true),
+('114','MAROT',        'Robert',       '1933-09-07','Masculin','2016-04-25',(SELECT id FROM doctors WHERE nom='LABONNE'   LIMIT 1),'A+', NULL,             'Démence, Incontinence',      'Alitement',            1,'Port de couches - nuit',                  170.0, true),
 ('115','TEELUCK',      'Parvati',      '1946-06-14','Féminin', '2021-12-01',(SELECT id FROM doctors WHERE nom='RAMSAMY'   LIMIT 1),'O+', NULL,             'HTA, Insuffisance rénale',   'Assistance partielle', 2,'Restriction hydrique 1,5L/j',             158.0, true),
-('116','JAUNBOCCUS',   'Ali',          '1958-12-22','Masculin','2023-09-10',(SELECT id FROM doctors WHERE nom='PERMALLOO' LIMIT 1),'B+', NULL,             NULL,                         'Autonome',             3,'Nouveau résident — bilan initial à faire',168.0, true),
+('116','JAUNBOCCUS',   'Ali',          '1958-12-22','Masculin','2023-09-10',(SELECT id FROM doctors WHERE nom='PERMALLOO' LIMIT 1),'B+', NULL,             NULL,                         'Autonome',             3,'Nouveau résident - bilan initial à faire',168.0, true),
 ('117','JANVIER',      'Gisèle',       '1939-07-05','Féminin', '2018-03-14',(SELECT id FROM doctors WHERE nom='BAPPOO'    LIMIT 1),'A+', NULL,             'ICC, HTA',                   'Fauteuil roulant',     2,'Diurétiques le matin',                   161.0, true),
 ('118','RAMNARAIN',    'Vinod',        '1955-11-30','Masculin','2022-05-08',(SELECT id FROM doctors WHERE nom='OOZEER'    LIMIT 1),'O+', NULL,             'Dyslipidémie, HTA',          'Autonome',             3,NULL,                                      174.0, true),
 ('119','CADERSA',      'Zohra',        '1950-04-02','Féminin', '2021-02-20',(SELECT id FROM doctors WHERE nom='RAMSAMY'   LIMIT 1),'B+', 'Metronidazole',  'Ulcère gastrique, Anémie',   'Assistance partielle', 2,'Repas fractionnés 5x/jour',               156.0, true),
-('120','ROUGET',       'Marcel',       '1931-08-16','Masculin','2015-09-01',(SELECT id FROM doctors WHERE nom='PERMALLOO' LIMIT 1),'A-', NULL,             'Insuffisance rénale ch.',    'Alitement',            1,'Dialyse 3x/semaine — transport organisé', 167.0, true),
+('120','ROUGET',       'Marcel',       '1931-08-16','Masculin','2015-09-01',(SELECT id FROM doctors WHERE nom='PERMALLOO' LIMIT 1),'A-', NULL,             'Insuffisance rénale ch.',    'Alitement',            1,'Dialyse 3x/semaine - transport organisé', 167.0, true),
 ('121','BHOOKUN',      'Kamini',       '1944-02-09','Féminin', '2020-10-15',(SELECT id FROM doctors WHERE nom='BAPPOO'    LIMIT 1),'O+', NULL,             'Ostéoporose, Dépression',    'Assistance partielle', 3,'Suivi psychologique mensuel',             153.0, true),
 ('122','AH-KEE',       'James',        '1949-05-27','Masculin','2021-08-03',(SELECT id FROM doctors WHERE nom='LABONNE'   LIMIT 1),'B+', NULL,             'Parkinson stade 1',          'Assistance partielle', 2,'Tremblements légers',                    167.0, true),
-('123','MOONEAN',      'Anita',        '1941-10-18','Féminin', '2019-11-22',(SELECT id FROM doctors WHERE nom='RAMSAMY'   LIMIT 1),'AB+',NULL,             'HTA, Fibrillation atriale',  'Fauteuil roulant',     2,'Anticoagulant — INR mensuel',            159.0, true),
+('123','MOONEAN',      'Anita',        '1941-10-18','Féminin', '2019-11-22',(SELECT id FROM doctors WHERE nom='RAMSAMY'   LIMIT 1),'AB+',NULL,             'HTA, Fibrillation atriale',  'Fauteuil roulant',     2,'Anticoagulant - INR mensuel',            159.0, true),
 ('124','PILLAY',       'Serge',        '1957-03-14','Masculin','2023-01-05',(SELECT id FROM doctors WHERE nom='PERMALLOO' LIMIT 1),'O+', NULL,             'Diabète T2',                 'Autonome',             3,'Glycémie à surveiller',                  172.0, true),
 ('125','APPASAMY',     'Lata',         '1936-12-01','Féminin', '2016-07-18',(SELECT id FROM doctors WHERE nom='BAPPOO'    LIMIT 1),'A+', NULL,             'Alzheimer stade 3, HTA',     'Alitement',            1,'Alimentation assistée requise',           155.0, true),
 ('126','ALLYBOCUS',    'Yusuf',        '1953-06-09','Masculin','2022-03-25',(SELECT id FROM doctors WHERE nom='OOZEER'    LIMIT 1),'B-', NULL,             'Cardiopathie ischémique',    'Assistance partielle', 2,'Éviter effort physique intense',          168.0, true),
@@ -66,11 +66,11 @@ INSERT INTO residents (
 ('132','WONG',         'Michel',       '1950-11-19','Masculin','2021-09-17',(SELECT id FROM doctors WHERE nom='PERMALLOO' LIMIT 1),'AB+',NULL,             'Dyslipidémie',               'Autonome',             3,NULL,                                      173.0, true),
 ('133','NAGESSUR',     'Sunita',       '1947-05-12','Féminin', '2021-03-05',(SELECT id FROM doctors WHERE nom='BAPPOO'    LIMIT 1),'O+', NULL,             'HTA, Glaucome',              'Assistance partielle', 2,'Pression oculaire à surveiller',          159.0, true),
 ('134','FONG',         'Antoine',      '1934-02-08','Masculin','2016-10-20',(SELECT id FROM doctors WHERE nom='OOZEER'    LIMIT 1),'A+', NULL,             'Fibrillation atriale, ICC',  'Alitement',            1,'Monitoring cardiaque quotidien',          166.0, true),
-('135','BEEHARRY',     'Geeta',        '1940-07-25','Féminin', '2019-05-12',(SELECT id FROM doctors WHERE nom='LABONNE'   LIMIT 1),'B+', NULL,             'Alzheimer, HTA',             'Fauteuil roulant',     2,'Confusion fréquente — repères visuels',   158.0, true),
+('135','BEEHARRY',     'Geeta',        '1940-07-25','Féminin', '2019-05-12',(SELECT id FROM doctors WHERE nom='LABONNE'   LIMIT 1),'B+', NULL,             'Alzheimer, HTA',             'Fauteuil roulant',     2,'Confusion fréquente - repères visuels',   158.0, true),
 ('136','RUGHOOBUR',    'Omar',         '1955-10-04','Masculin','2022-08-01',(SELECT id FROM doctors WHERE nom='RAMSAMY'   LIMIT 1),'O+', NULL,             NULL,                         'Autonome',             3,NULL,                                      171.0, true),
 ('137','MARTIN',       'Louise',       '1946-04-15','Féminin', '2021-01-25',(SELECT id FROM doctors WHERE nom='PERMALLOO' LIMIT 1),'A+', 'Codéine',        'Dépression, HTA',            'Assistance partielle', 3,'Suivi psychiatrique mensuel',             156.0, true),
 ('138','RAMDHONY',     'Deepak',       '1952-12-28','Masculin','2022-11-10',(SELECT id FROM doctors WHERE nom='BAPPOO'    LIMIT 1),'B+', NULL,             'Diabète T2, Neuropathie',    'Autonome',             3,'Examen pieds mensuel',                   170.0, true),
-('139','HOSENALLY',    'Rashida',      '1958-03-17','Féminin', '2024-01-15',(SELECT id FROM doctors WHERE nom='OOZEER'    LIMIT 1),'O+', NULL,             NULL,                         'Assistance partielle', 3,'Arrivée récente — bilans en cours',       163.0, true),
+('139','HOSENALLY',    'Rashida',      '1958-03-17','Féminin', '2024-01-15',(SELECT id FROM doctors WHERE nom='OOZEER'    LIMIT 1),'O+', NULL,             NULL,                         'Assistance partielle', 3,'Arrivée récente - bilans en cours',       163.0, true),
 ('140','CHOW',         'Fernand',      '1937-09-01','Masculin','2017-06-30',(SELECT id FROM doctors WHERE nom='LABONNE'   LIMIT 1),'A-', NULL,             'Parkinson avancé, Démence',  'Alitement',            1,'Alimentation par sonde PEG',              164.0, true),
 ('141','MOONILAL',     'Indira',       '1942-05-20','Féminin', '2020-07-14',(SELECT id FROM doctors WHERE nom='RAMSAMY'   LIMIT 1),'AB+',NULL,             'ICC, Fibrillation',          'Fauteuil roulant',     2,'Pesée quotidienne',                      162.0, true),
 ('142','LEE',          'Christophe',   '1954-01-06','Masculin','2022-04-19',(SELECT id FROM doctors WHERE nom='PERMALLOO' LIMIT 1),'O+', NULL,             'Dyslipidémie, HTA',          'Autonome',             3,NULL,                                      171.0, true),
@@ -107,7 +107,7 @@ INSERT INTO residents (
 ) VALUES
 ('160','RICAUD',   'Simone',   '1938-06-20','Féminin', '2017-09-14',(SELECT id FROM doctors WHERE nom='LABONNE'   LIMIT 1),'A+','Fauteuil roulant',2,157.0,false,'depart','2026-04-15 10:30:00+04','Prise en charge par la famille à domicile'),
 ('161','MOHIT',    'Pradeep',  '1951-12-08','Masculin','2021-11-20',(SELECT id FROM doctors WHERE nom='RAMSAMY'   LIMIT 1),'B+','Autonome',        3,170.0,false,'depart','2026-05-02 09:00:00+04','Transfert en EHPAD à Grand-Baie'),
-('162','DOMINGUE', 'Celestine','1931-03-25','Féminin', '2015-02-10',(SELECT id FROM doctors WHERE nom='PERMALLOO' LIMIT 1),'O-','Alitement',       1,155.0,false,'depart','2026-03-20 14:00:00+04','Décision familiale — retour au domicile du fils');
+('162','DOMINGUE', 'Celestine','1931-03-25','Féminin', '2015-02-10',(SELECT id FROM doctors WHERE nom='PERMALLOO' LIMIT 1),'O-','Alitement',       1,155.0,false,'depart','2026-03-20 14:00:00+04','Décision familiale - retour au domicile du fils');
 
 -- ── 2 résidents décédés ──────────────────────────────────
 INSERT INTO residents (
@@ -116,7 +116,7 @@ INSERT INTO residents (
   statut_depart, date_sortie, motif_deces
 ) VALUES
 ('163','LEVEILLE','Francis','1942-08-12','Masculin','2018-04-16',(SELECT id FROM doctors WHERE nom='BAPPOO' LIMIT 1),'A+','Alitement',       1,168.0,false,'deces','2026-05-18 06:15:00+04','Arrêt cardiaque dans son sommeil'),
-('164','BASTIEN', 'Angèle', '1935-01-07','Féminin', '2016-07-21',(SELECT id FROM doctors WHERE nom='OOZEER' LIMIT 1),'O+','Fauteuil roulant',2,152.0,false,'deces','2026-04-29 14:30:00+04','Pneumonie sévère — complication de grippe');
+('164','BASTIEN', 'Angèle', '1935-01-07','Féminin', '2016-07-21',(SELECT id FROM doctors WHERE nom='OOZEER' LIMIT 1),'O+','Fauteuil roulant',2,152.0,false,'deces','2026-04-29 14:30:00+04','Pneumonie sévère - complication de grippe');
 
 -- ============================================================
 -- 3. CONTACTS FAMILLE (1–2 par résident)
@@ -205,180 +205,180 @@ INSERT INTO traitements (
   resident_id, medicament_id, nom_medicament, dosage, posologie,
   date_debut, duree_jours, traitement_chronique, alerte_renouvellement, actif
 ) VALUES
--- Ch 101 — chronique HTA
+-- Ch 101 - chronique HTA
 ((SELECT id FROM residents WHERE numero_chambre='101' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Amlodipine 5mg' LIMIT 1),'Amlodipine 5mg','5mg','1 comprimé le matin',CURRENT_DATE-180,NULL,true,true,true),
 ((SELECT id FROM residents WHERE numero_chambre='101' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Paracetamol 500mg' LIMIT 1),'Paracetamol 500mg','500mg','1 cp matin et soir si douleur',CURRENT_DATE-30,30,false,true,true),
 
--- Ch 102 — EXPIRE DEMAIN (alerte_24h) + chronique insuline
+-- Ch 102 - EXPIRE DEMAIN (alerte_24h) + chronique insuline
 ((SELECT id FROM residents WHERE numero_chambre='102' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Metformin 500mg' LIMIT 1),'Metformin 500mg','500mg','1 cp matin et soir',CURRENT_DATE-29,30,false,true,true),
 ((SELECT id FROM residents WHERE numero_chambre='102' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Insulin NPH' LIMIT 1),'Insulin NPH','20 UI','20 UI sous-cutané 2x/jour',CURRENT_DATE-90,NULL,true,true,true),
 
--- Ch 103 — aucun traitement (R-103 jamais vue — score priorité max)
+-- Ch 103 - aucun traitement (R-103 jamais vue - score priorité max)
 
--- Ch 104 — urgent ICC (expire aujourd'hui — alerte_24h)
+-- Ch 104 - urgent ICC (expire aujourd'hui - alerte_24h)
 ((SELECT id FROM residents WHERE numero_chambre='104' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Furosemide 40mg' LIMIT 1),'Furosemide 40mg','40mg','1 cp matin',CURRENT_DATE-30,30,false,true,true),
 ((SELECT id FROM residents WHERE numero_chambre='104' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Atorvastatin 40mg' LIMIT 1),'Atorvastatin 40mg','40mg','1 cp le soir',CURRENT_DATE-90,NULL,true,true,true),
 
--- Ch 105 — expire dans 2 jours (alerte_3j)
+-- Ch 105 - expire dans 2 jours (alerte_3j)
 ((SELECT id FROM residents WHERE numero_chambre='105' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Levothyroxine 50mcg' LIMIT 1),'Levothyroxine 50mcg','50mcg','1 cp à jeun le matin',CURRENT_DATE-28,30,false,true,true),
 ((SELECT id FROM residents WHERE numero_chambre='105' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Calcium 500mg' LIMIT 1),'Calcium 500mg','500mg','1 cp soir',CURRENT_DATE-90,NULL,true,true,true),
 
--- Ch 106 — chroniques Alzheimer
+-- Ch 106 - chroniques Alzheimer
 ((SELECT id FROM residents WHERE numero_chambre='106' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Lorazepam 1mg' LIMIT 1),'Lorazepam 1mg','1mg','1 cp le soir',CURRENT_DATE-120,NULL,true,true,true),
 
--- Ch 107 — expire dans 5 jours (alerte_7j)
+-- Ch 107 - expire dans 5 jours (alerte_7j)
 ((SELECT id FROM residents WHERE numero_chambre='107' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Atenolol 50mg' LIMIT 1),'Atenolol 50mg','50mg','1 cp matin',CURRENT_DATE-25,30,false,true,true),
 ((SELECT id FROM residents WHERE numero_chambre='107' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Latanoprost 0.005%' LIMIT 1),'Latanoprost 0.005%','1 goutte','1 goutte/œil le soir',CURRENT_DATE-90,NULL,true,true,true),
 
--- Ch 108 — BPCO
+-- Ch 108 - BPCO
 ((SELECT id FROM residents WHERE numero_chambre='108' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Salbutamol inhaler' LIMIT 1),'Salbutamol inhaler','100mcg','2 bouffées si essoufflement',CURRENT_DATE-45,NULL,true,true,true),
 
--- Ch 109 — Parkinson
+-- Ch 109 - Parkinson
 ((SELECT id FROM residents WHERE numero_chambre='109' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Pregabalin 75mg' LIMIT 1),'Pregabalin 75mg','75mg','1 gélule matin et soir',CURRENT_DATE-90,NULL,true,true,true),
 
--- Ch 110 — HTA simple
+-- Ch 110 - HTA simple
 ((SELECT id FROM residents WHERE numero_chambre='110' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Losartan 50mg' LIMIT 1),'Losartan 50mg','50mg','1 cp matin',CURRENT_DATE-60,NULL,true,true,true),
 
--- Ch 111 — Diabète + antibiotique qui EXPIRE DEMAIN
+-- Ch 111 - Diabète + antibiotique qui EXPIRE DEMAIN
 ((SELECT id FROM residents WHERE numero_chambre='111' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Gliclazide 80mg' LIMIT 1),'Gliclazide 80mg','80mg','1 cp matin',CURRENT_DATE-29,30,false,true,true),
 ((SELECT id FROM residents WHERE numero_chambre='111' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Amoxicillin 500mg' LIMIT 1),'Amoxicillin 500mg','500mg','1 gélule 3x/jour',CURRENT_DATE-6,7,false,true,true),
 
--- Ch 112 — arthrose
+-- Ch 112 - arthrose
 ((SELECT id FROM residents WHERE numero_chambre='112' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Diclofenac 50mg' LIMIT 1),'Diclofenac 50mg','50mg','1 cp matin et soir',CURRENT_DATE-14,30,false,true,true),
 
--- Ch 113 — HTA
+-- Ch 113 - HTA
 ((SELECT id FROM residents WHERE numero_chambre='113' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Enalapril 10mg' LIMIT 1),'Enalapril 10mg','10mg','1 cp matin',CURRENT_DATE-90,NULL,true,true,true),
 
--- Ch 114 — Démence sévère
+-- Ch 114 - Démence sévère
 ((SELECT id FROM residents WHERE numero_chambre='114' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Haloperidol 5mg' LIMIT 1),'Haloperidol 5mg','5mg','1 cp soir',CURRENT_DATE-180,NULL,true,true,true),
 
--- Ch 115 — HTA + IRC
+-- Ch 115 - HTA + IRC
 ((SELECT id FROM residents WHERE numero_chambre='115' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Amlodipine 10mg' LIMIT 1),'Amlodipine 10mg','10mg','1 cp matin',CURRENT_DATE-90,NULL,true,true,true),
 ((SELECT id FROM residents WHERE numero_chambre='115' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Furosemide 40mg' LIMIT 1),'Furosemide 40mg','40mg','1 cp matin',CURRENT_DATE-90,NULL,true,true,true),
 
--- Ch 116 — aucun traitement (nouveau résident, jamais vu)
+-- Ch 116 - aucun traitement (nouveau résident, jamais vu)
 
--- Ch 117 — ICC + expire dans 3 jours (alerte_3j)
+-- Ch 117 - ICC + expire dans 3 jours (alerte_3j)
 ((SELECT id FROM residents WHERE numero_chambre='117' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Furosemide 40mg' LIMIT 1),'Furosemide 40mg','40mg','1 cp matin',CURRENT_DATE-27,30,false,true,true),
 ((SELECT id FROM residents WHERE numero_chambre='117' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Atorvastatin 20mg' LIMIT 1),'Atorvastatin 20mg','20mg','1 cp soir',CURRENT_DATE-90,NULL,true,true,true),
 
--- Ch 118 — dyslipidémie
+-- Ch 118 - dyslipidémie
 ((SELECT id FROM residents WHERE numero_chambre='118' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Simvastatin 20mg' LIMIT 1),'Simvastatin 20mg','20mg','1 cp soir',CURRENT_DATE-90,NULL,true,true,true),
 ((SELECT id FROM residents WHERE numero_chambre='118' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Aspirin 75mg' LIMIT 1),'Aspirin 75mg','75mg','1 cp matin',CURRENT_DATE-90,NULL,true,true,true),
 
--- Ch 119 — ulcère + anémie (traitement ulcère EXPIRE DANS 1 JOUR)
+-- Ch 119 - ulcère + anémie (traitement ulcère EXPIRE DANS 1 JOUR)
 ((SELECT id FROM residents WHERE numero_chambre='119' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Omeprazole 20mg' LIMIT 1),'Omeprazole 20mg','20mg','1 gélule à jeun',CURRENT_DATE-29,30,false,true,true),
 ((SELECT id FROM residents WHERE numero_chambre='119' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Ferrous Sulfate 200mg' LIMIT 1),'Ferrous Sulfate 200mg','200mg','1 cp matin',CURRENT_DATE-30,60,false,true,true),
 
--- Ch 120 — IRC dialyse
+-- Ch 120 - IRC dialyse
 ((SELECT id FROM residents WHERE numero_chambre='120' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='HCTZ 25mg' LIMIT 1),'HCTZ 25mg','25mg','1 cp matin',CURRENT_DATE-180,NULL,true,true,true),
 
--- Ch 121 — ostéoporose + dépression
+-- Ch 121 - ostéoporose + dépression
 ((SELECT id FROM residents WHERE numero_chambre='121' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Sertraline 50mg' LIMIT 1),'Sertraline 50mg','50mg','1 cp matin',CURRENT_DATE-120,NULL,true,true,true),
 ((SELECT id FROM residents WHERE numero_chambre='121' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Vitamin D3 1000IU' LIMIT 1),'Vitamin D3 1000IU','1000UI','1 cp soir',CURRENT_DATE-90,NULL,true,true,true),
 
--- Ch 122 — Parkinson stade 1 (expire dans 6 jours = alerte_7j)
+-- Ch 122 - Parkinson stade 1 (expire dans 6 jours = alerte_7j)
 ((SELECT id FROM residents WHERE numero_chambre='122' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Pregabalin 75mg' LIMIT 1),'Pregabalin 75mg','75mg','1 gélule soir',CURRENT_DATE-24,30,false,true,true),
 
--- Ch 123 — FA + anticoagulant
+-- Ch 123 - FA + anticoagulant
 ((SELECT id FROM residents WHERE numero_chambre='123' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Warfarin 5mg' LIMIT 1),'Warfarin 5mg','5mg','1 cp selon INR',CURRENT_DATE-180,NULL,true,true,true),
 ((SELECT id FROM residents WHERE numero_chambre='123' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Atenolol 50mg' LIMIT 1),'Atenolol 50mg','50mg','1 cp matin',CURRENT_DATE-180,NULL,true,true,true),
 
--- Ch 124 — Diabète T2
+-- Ch 124 - Diabète T2
 ((SELECT id FROM residents WHERE numero_chambre='124' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Metformin 850mg' LIMIT 1),'Metformin 850mg','850mg','1 cp 2x/jour',CURRENT_DATE-90,NULL,true,true,true),
 
--- Ch 125 — Alzheimer + HTA
+-- Ch 125 - Alzheimer + HTA
 ((SELECT id FROM residents WHERE numero_chambre='125' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Amlodipine 5mg' LIMIT 1),'Amlodipine 5mg','5mg','1 cp matin',CURRENT_DATE-180,NULL,true,true,true),
 
--- Ch 126 — cardiopathie
+-- Ch 126 - cardiopathie
 ((SELECT id FROM residents WHERE numero_chambre='126' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Aspirin 100mg' LIMIT 1),'Aspirin 100mg','100mg','1 cp matin',CURRENT_DATE-180,NULL,true,true,true),
 ((SELECT id FROM residents WHERE numero_chambre='126' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Atorvastatin 40mg' LIMIT 1),'Atorvastatin 40mg','40mg','1 cp soir',CURRENT_DATE-180,NULL,true,true,true),
 
--- Ch 127 — HTA
+-- Ch 127 - HTA
 ((SELECT id FROM residents WHERE numero_chambre='127' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Losartan 50mg' LIMIT 1),'Losartan 50mg','50mg','1 cp matin',CURRENT_DATE-90,NULL,true,true,true),
 
--- Ch 128 — BPCO
+-- Ch 128 - BPCO
 ((SELECT id FROM residents WHERE numero_chambre='128' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Salbutamol inhaler' LIMIT 1),'Salbutamol inhaler','100mcg','2 bouffées matin et soir',CURRENT_DATE-90,NULL,true,true,true),
 
--- Ch 129 — Diabète + HTA
+-- Ch 129 - Diabète + HTA
 ((SELECT id FROM residents WHERE numero_chambre='129' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Glibenclamide 5mg' LIMIT 1),'Glibenclamide 5mg','5mg','1 cp matin',CURRENT_DATE-90,NULL,true,true,true),
 ((SELECT id FROM residents WHERE numero_chambre='129' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Enalapril 20mg' LIMIT 1),'Enalapril 20mg','20mg','1 cp matin',CURRENT_DATE-90,NULL,true,true,true),
 
--- Ch 130 — AVC séquelles
+-- Ch 130 - AVC séquelles
 ((SELECT id FROM residents WHERE numero_chambre='130' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Aspirin 100mg' LIMIT 1),'Aspirin 100mg','100mg','1 cp matin',CURRENT_DATE-180,NULL,true,true,true),
 ((SELECT id FROM residents WHERE numero_chambre='130' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Atorvastatin 20mg' LIMIT 1),'Atorvastatin 20mg','20mg','1 cp soir',CURRENT_DATE-180,NULL,true,true,true),
 
--- Ch 131 — HTA + hypothyroïdie
+-- Ch 131 - HTA + hypothyroïdie
 ((SELECT id FROM residents WHERE numero_chambre='131' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Levothyroxine 100mcg' LIMIT 1),'Levothyroxine 100mcg','100mcg','1 cp à jeun',CURRENT_DATE-180,NULL,true,true,true),
 ((SELECT id FROM residents WHERE numero_chambre='131' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Metoprolol 50mg' LIMIT 1),'Metoprolol 50mg','50mg','1 cp matin',CURRENT_DATE-90,NULL,true,true,true),
 
--- Ch 132 — dyslipidémie
+-- Ch 132 - dyslipidémie
 ((SELECT id FROM residents WHERE numero_chambre='132' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Simvastatin 20mg' LIMIT 1),'Simvastatin 20mg','20mg','1 cp soir',CURRENT_DATE-90,NULL,true,true,true),
 
--- Ch 133 — HTA + glaucome (expire dans 4 jours = alerte_7j)
+-- Ch 133 - HTA + glaucome (expire dans 4 jours = alerte_7j)
 ((SELECT id FROM residents WHERE numero_chambre='133' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Amlodipine 5mg' LIMIT 1),'Amlodipine 5mg','5mg','1 cp matin',CURRENT_DATE-26,30,false,true,true),
 ((SELECT id FROM residents WHERE numero_chambre='133' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Timolol 0.5%' LIMIT 1),'Timolol 0.5%','1 goutte','1 goutte/œil 2x/jour',CURRENT_DATE-90,NULL,true,true,true),
 
--- Ch 134 — FA + ICC urgent
+-- Ch 134 - FA + ICC urgent
 ((SELECT id FROM residents WHERE numero_chambre='134' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Furosemide 40mg' LIMIT 1),'Furosemide 40mg','40mg','1 cp matin',CURRENT_DATE-180,NULL,true,true,true),
 ((SELECT id FROM residents WHERE numero_chambre='134' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Warfarin 1mg' LIMIT 1),'Warfarin 1mg','selon INR','1 cp selon dosage INR',CURRENT_DATE-180,NULL,true,true,true),
 
--- Ch 135 — Alzheimer
+-- Ch 135 - Alzheimer
 ((SELECT id FROM residents WHERE numero_chambre='135' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Haloperidol 5mg' LIMIT 1),'Haloperidol 5mg','5mg','1 cp soir',CURRENT_DATE-180,NULL,true,true,true),
 ((SELECT id FROM residents WHERE numero_chambre='135' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Amlodipine 5mg' LIMIT 1),'Amlodipine 5mg','5mg','1 cp matin',CURRENT_DATE-180,NULL,true,true,true),
 
--- Ch 136 — autonome, pas de traitement chronique
+-- Ch 136 - autonome, pas de traitement chronique
 ((SELECT id FROM residents WHERE numero_chambre='136' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Vitamin C 500mg' LIMIT 1),'Vitamin C 500mg','500mg','1 cp matin',CURRENT_DATE-30,60,false,true,true),
 
--- Ch 137 — dépression + HTA
+-- Ch 137 - dépression + HTA
 ((SELECT id FROM residents WHERE numero_chambre='137' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Sertraline 50mg' LIMIT 1),'Sertraline 50mg','50mg','1 cp matin',CURRENT_DATE-90,NULL,true,true,true),
 ((SELECT id FROM residents WHERE numero_chambre='137' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Atenolol 50mg' LIMIT 1),'Atenolol 50mg','50mg','1 cp matin',CURRENT_DATE-90,NULL,true,true,true),
 
--- Ch 138 — Diabète neuropathie
+-- Ch 138 - Diabète neuropathie
 ((SELECT id FROM residents WHERE numero_chambre='138' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Metformin 850mg' LIMIT 1),'Metformin 850mg','850mg','1 cp 2x/jour',CURRENT_DATE-90,NULL,true,true,true),
 ((SELECT id FROM residents WHERE numero_chambre='138' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Pregabalin 75mg' LIMIT 1),'Pregabalin 75mg','75mg','1 gélule soir',CURRENT_DATE-90,NULL,true,true,true),
 
--- Ch 139 — arrivée récente, pas encore de traitement
+-- Ch 139 - arrivée récente, pas encore de traitement
 
--- Ch 140 — Parkinson avancé
+-- Ch 140 - Parkinson avancé
 ((SELECT id FROM residents WHERE numero_chambre='140' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Haloperidol 5mg' LIMIT 1),'Haloperidol 5mg','2.5mg','1/2 cp matin',CURRENT_DATE-180,NULL,true,true,true),
 ((SELECT id FROM residents WHERE numero_chambre='140' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Lorazepam 1mg' LIMIT 1),'Lorazepam 1mg','1mg','1 cp soir',CURRENT_DATE-180,NULL,true,true,true),
 
--- Ch 141 — ICC
+-- Ch 141 - ICC
 ((SELECT id FROM residents WHERE numero_chambre='141' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Furosemide 40mg' LIMIT 1),'Furosemide 40mg','40mg','1 cp matin',CURRENT_DATE-90,NULL,true,true,true),
 ((SELECT id FROM residents WHERE numero_chambre='141' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Atorvastatin 20mg' LIMIT 1),'Atorvastatin 20mg','20mg','1 cp soir',CURRENT_DATE-90,NULL,true,true,true),
 
--- Ch 142 — dyslipidémie HTA
+-- Ch 142 - dyslipidémie HTA
 ((SELECT id FROM residents WHERE numero_chambre='142' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Simvastatin 20mg' LIMIT 1),'Simvastatin 20mg','20mg','1 cp soir',CURRENT_DATE-90,NULL,true,true,true),
 ((SELECT id FROM residents WHERE numero_chambre='142' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Enalapril 10mg' LIMIT 1),'Enalapril 10mg','10mg','1 cp matin',CURRENT_DATE-90,NULL,true,true,true),
 
--- Ch 143 — Diabète (expire dans 2 jours = alerte_3j)
+-- Ch 143 - Diabète (expire dans 2 jours = alerte_3j)
 ((SELECT id FROM residents WHERE numero_chambre='143' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Gliclazide 80mg' LIMIT 1),'Gliclazide 80mg','80mg','1 cp matin',CURRENT_DATE-28,30,false,true,true),
 ((SELECT id FROM residents WHERE numero_chambre='143' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Metformin 500mg' LIMIT 1),'Metformin 500mg','500mg','1 cp soir',CURRENT_DATE-90,NULL,true,true,true),
 
--- Ch 144 — ICC urgent
+-- Ch 144 - ICC urgent
 ((SELECT id FROM residents WHERE numero_chambre='144' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Furosemide 40mg' LIMIT 1),'Furosemide 40mg','40mg','2 cp matin',CURRENT_DATE-180,NULL,true,true,true),
 ((SELECT id FROM residents WHERE numero_chambre='144' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Aspirin 75mg' LIMIT 1),'Aspirin 75mg','75mg','1 cp matin',CURRENT_DATE-180,NULL,true,true,true),
 
--- Ch 145 — HTA + Épilepsie
+-- Ch 145 - HTA + Épilepsie
 ((SELECT id FROM residents WHERE numero_chambre='145' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Losartan 50mg' LIMIT 1),'Losartan 50mg','50mg','1 cp matin',CURRENT_DATE-90,NULL,true,true,true),
 ((SELECT id FROM residents WHERE numero_chambre='145' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Diazepam 5mg' LIMIT 1),'Diazepam 5mg','5mg','1/2 cp si crise',CURRENT_DATE-90,NULL,true,true,true),
 
--- Ch 146 — ulcère
+-- Ch 146 - ulcère
 ((SELECT id FROM residents WHERE numero_chambre='146' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Omeprazole 40mg' LIMIT 1),'Omeprazole 40mg','40mg','1 gélule matin à jeun',CURRENT_DATE-90,NULL,true,true,true),
 
--- Ch 147 — arthrose + dépression
+-- Ch 147 - arthrose + dépression
 ((SELECT id FROM residents WHERE numero_chambre='147' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Paracetamol 1g' LIMIT 1),'Paracetamol 1g','1g','1 cp 3x/jour si douleur',CURRENT_DATE-14,30,false,true,true),
 ((SELECT id FROM residents WHERE numero_chambre='147' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Sertraline 50mg' LIMIT 1),'Sertraline 50mg','50mg','1 cp matin',CURRENT_DATE-120,NULL,true,true,true),
 
--- Ch 148 — Diabète HTA
+-- Ch 148 - Diabète HTA
 ((SELECT id FROM residents WHERE numero_chambre='148' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Metformin 850mg' LIMIT 1),'Metformin 850mg','850mg','1 cp 2x/jour',CURRENT_DATE-60,NULL,true,true,true),
 ((SELECT id FROM residents WHERE numero_chambre='148' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Amlodipine 5mg' LIMIT 1),'Amlodipine 5mg','5mg','1 cp matin',CURRENT_DATE-60,NULL,true,true,true),
 
--- Ch 149 — insuffisance veineuse
+-- Ch 149 - insuffisance veineuse
 ((SELECT id FROM residents WHERE numero_chambre='149' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Aspirin 75mg' LIMIT 1),'Aspirin 75mg','75mg','1 cp matin',CURRENT_DATE-90,NULL,true,true,true),
 
--- Ch 150 — démence sévère (P1)
+-- Ch 150 - démence sévère (P1)
 ((SELECT id FROM residents WHERE numero_chambre='150' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Haloperidol 5mg' LIMIT 1),'Haloperidol 5mg','5mg','1 cp soir',CURRENT_DATE-180,NULL,true,true,true),
 ((SELECT id FROM residents WHERE numero_chambre='150' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Amlodipine 10mg' LIMIT 1),'Amlodipine 10mg','10mg','1 cp matin',CURRENT_DATE-180,NULL,true,true,true),
 ((SELECT id FROM residents WHERE numero_chambre='150' LIMIT 1),(SELECT id FROM medicaments WHERE nom_commercial='Furosemide 40mg' LIMIT 1),'Furosemide 40mg','40mg','1 cp matin',CURRENT_DATE-180,NULL,true,true,true),
@@ -415,40 +415,40 @@ INSERT INTO consultations (
 ((SELECT id FROM residents WHERE numero_chambre='102' LIMIT 1),(SELECT id FROM doctors WHERE nom='BAPPOO'    LIMIT 1),NOW()-INTERVAL '7 days','Suivi diabète','145/90',37.0,80,78.5,171.5,97,'Glycémie 8.2 mmol/L - ajuster insuline','Diabète T2 déséquilibré',CURRENT_DATE+7),
 ((SELECT id FROM residents WHERE numero_chambre='104' LIMIT 1),(SELECT id FROM doctors WHERE nom='PERMALLOO' LIMIT 1),NOW()-INTERVAL '2 days','Contrôle ICC','110/70',36.5,68,59.0,165.0,95,'Œdèmes membres inférieurs modérés','ICC - classe NYHA II',CURRENT_DATE+7),
 ((SELECT id FROM residents WHERE numero_chambre='105' LIMIT 1),(SELECT id FROM doctors WHERE nom='BAPPOO'    LIMIT 1),NOW()-INTERVAL '5 days','Suivi thyroïde','125/75',36.7,70,54.0,152.0,99,'Bilan thyroïdien correct, ostéoporose stable','Hypothyroïdie compensée',CURRENT_DATE+30),
-((SELECT id FROM residents WHERE numero_chambre='106' LIMIT 1),(SELECT id FROM doctors WHERE nom='LABONNE'   LIMIT 1),NOW()-INTERVAL '4 days','Suivi Alzheimer','120/80',36.9,75,65.0,168.0,96,'Désorientation modérée, famille informée','Alzheimer stade 2 — stable',CURRENT_DATE+14),
+((SELECT id FROM residents WHERE numero_chambre='106' LIMIT 1),(SELECT id FROM doctors WHERE nom='LABONNE'   LIMIT 1),NOW()-INTERVAL '4 days','Suivi Alzheimer','120/80',36.9,75,65.0,168.0,96,'Désorientation modérée, famille informée','Alzheimer stade 2 - stable',CURRENT_DATE+14),
 ((SELECT id FROM residents WHERE numero_chambre='108' LIMIT 1),(SELECT id FROM doctors WHERE nom='PERMALLOO' LIMIT 1),NOW()-INTERVAL '1 day', 'Dyspnée légère','130/85',37.1,82,80.0,175.0,94,'Auscultation : sibilants légers','BPCO exacerbation légère',CURRENT_DATE+7),
-((SELECT id FROM residents WHERE numero_chambre='109' LIMIT 1),(SELECT id FROM doctors WHERE nom='BAPPOO'    LIMIT 1),NOW()-INTERVAL '6 days','Suivi Parkinson','115/70',36.6,68,55.0,157.0,98,'Tremblement inchangé, kinésithérapie utile','Parkinson stade 2 — stable',CURRENT_DATE+30),
-((SELECT id FROM residents WHERE numero_chambre='110' LIMIT 1),(SELECT id FROM doctors WHERE nom='OOZEER'    LIMIT 1),NOW()-INTERVAL '8 days','Contrôle HTA','128/78',36.5,74,74.0,168.0,99,'HTA bien contrôlée sous traitement','HTA essentielle — équilibrée',CURRENT_DATE+30),
+((SELECT id FROM residents WHERE numero_chambre='109' LIMIT 1),(SELECT id FROM doctors WHERE nom='BAPPOO'    LIMIT 1),NOW()-INTERVAL '6 days','Suivi Parkinson','115/70',36.6,68,55.0,157.0,98,'Tremblement inchangé, kinésithérapie utile','Parkinson stade 2 - stable',CURRENT_DATE+30),
+((SELECT id FROM residents WHERE numero_chambre='110' LIMIT 1),(SELECT id FROM doctors WHERE nom='OOZEER'    LIMIT 1),NOW()-INTERVAL '8 days','Contrôle HTA','128/78',36.5,74,74.0,168.0,99,'HTA bien contrôlée sous traitement','HTA essentielle - équilibrée',CURRENT_DATE+30),
 ((SELECT id FROM residents WHERE numero_chambre='111' LIMIT 1),(SELECT id FROM doctors WHERE nom='RAMSAMY'   LIMIT 1),NOW()-INTERVAL '3 days','Infection urinaire','135/85',37.8,88,60.0,163.0,97,'BU positive, antibiotique débuté','Infection urinaire basse',CURRENT_DATE+7),
 ((SELECT id FROM residents WHERE numero_chambre='112' LIMIT 1),(SELECT id FROM doctors WHERE nom='PERMALLOO' LIMIT 1),NOW()-INTERVAL '10 days','Lombalgies aiguës','140/82',36.7,76,79.0,172.0,98,'Douleurs lombaires L4-L5','Arthrose lombaire exacerbée',CURRENT_DATE+14),
-((SELECT id FROM residents WHERE numero_chambre='113' LIMIT 1),(SELECT id FROM doctors WHERE nom='BAPPOO'    LIMIT 1),NOW()-INTERVAL '12 days','Visite routine','132/80',36.6,72,56.0,154.0,99,'RAS','HTA, Insuffisance veineuse — stable',CURRENT_DATE+30),
-((SELECT id FROM residents WHERE numero_chambre='114' LIMIT 1),(SELECT id FROM doctors WHERE nom='LABONNE'   LIMIT 1),NOW()-INTERVAL '5 days','Agitation nocturne','118/72',36.8,80,65.0,170.0,97,'Agitation nocturne accrue','Démence — ajuster haloperidol',CURRENT_DATE+7),
-((SELECT id FROM residents WHERE numero_chambre='115' LIMIT 1),(SELECT id FROM doctors WHERE nom='RAMSAMY'   LIMIT 1),NOW()-INTERVAL '9 days','Bilan rénal','130/82',36.5,70,57.0,158.0,98,'Créatinine 148 µmol/L — stable','IRC stade 3 — stable',CURRENT_DATE+30),
+((SELECT id FROM residents WHERE numero_chambre='113' LIMIT 1),(SELECT id FROM doctors WHERE nom='BAPPOO'    LIMIT 1),NOW()-INTERVAL '12 days','Visite routine','132/80',36.6,72,56.0,154.0,99,'RAS','HTA, Insuffisance veineuse - stable',CURRENT_DATE+30),
+((SELECT id FROM residents WHERE numero_chambre='114' LIMIT 1),(SELECT id FROM doctors WHERE nom='LABONNE'   LIMIT 1),NOW()-INTERVAL '5 days','Agitation nocturne','118/72',36.8,80,65.0,170.0,97,'Agitation nocturne accrue','Démence - ajuster haloperidol',CURRENT_DATE+7),
+((SELECT id FROM residents WHERE numero_chambre='115' LIMIT 1),(SELECT id FROM doctors WHERE nom='RAMSAMY'   LIMIT 1),NOW()-INTERVAL '9 days','Bilan rénal','130/82',36.5,70,57.0,158.0,98,'Créatinine 148 µmol/L - stable','IRC stade 3 - stable',CURRENT_DATE+30),
 
 -- Consultations moyennes (15–29 jours)
-((SELECT id FROM residents WHERE numero_chambre='117' LIMIT 1),(SELECT id FROM doctors WHERE nom='BAPPOO'    LIMIT 1),NOW()-INTERVAL '18 days','Essoufflements','118/75',36.8,72,58.0,161.0,96,'Œdèmes réduits — diurétique efficace','ICC contrôlée',CURRENT_DATE+14),
-((SELECT id FROM residents WHERE numero_chambre='118' LIMIT 1),(SELECT id FROM doctors WHERE nom='OOZEER'    LIMIT 1),NOW()-INTERVAL '20 days','Bilan lipidique','128/80',36.5,70,78.0,174.0,99,'Cholestérol 5.8 mmol/L — traitement maintenu','Dyslipidémie',CURRENT_DATE+30),
+((SELECT id FROM residents WHERE numero_chambre='117' LIMIT 1),(SELECT id FROM doctors WHERE nom='BAPPOO'    LIMIT 1),NOW()-INTERVAL '18 days','Essoufflements','118/75',36.8,72,58.0,161.0,96,'Œdèmes réduits - diurétique efficace','ICC contrôlée',CURRENT_DATE+14),
+((SELECT id FROM residents WHERE numero_chambre='118' LIMIT 1),(SELECT id FROM doctors WHERE nom='OOZEER'    LIMIT 1),NOW()-INTERVAL '20 days','Bilan lipidique','128/80',36.5,70,78.0,174.0,99,'Cholestérol 5.8 mmol/L - traitement maintenu','Dyslipidémie',CURRENT_DATE+30),
 ((SELECT id FROM residents WHERE numero_chambre='119' LIMIT 1),(SELECT id FROM doctors WHERE nom='RAMSAMY'   LIMIT 1),NOW()-INTERVAL '15 days','Douleurs épigastriques','120/75',36.7,68,49.0,156.0,98,'Gastroscopie à programmer','Ulcère gastrique',CURRENT_DATE+14),
-((SELECT id FROM residents WHERE numero_chambre='120' LIMIT 1),(SELECT id FROM doctors WHERE nom='PERMALLOO' LIMIT 1),NOW()-INTERVAL '22 days','Dialyse — suivi','100/65',36.5,65,57.0,167.0,95,'Dialyse bien tolérée','IRC terminale — dialysé',CURRENT_DATE+7),
-((SELECT id FROM residents WHERE numero_chambre='121' LIMIT 1),(SELECT id FROM doctors WHERE nom='BAPPOO'    LIMIT 1),NOW()-INTERVAL '14 days','Suivi dépression','120/76',36.6,70,52.0,153.0,99,'Humeur améliorée sous sertraline','Dépression — rémission partielle',CURRENT_DATE+30),
-((SELECT id FROM residents WHERE numero_chambre='122' LIMIT 1),(SELECT id FROM doctors WHERE nom='LABONNE'   LIMIT 1),NOW()-INTERVAL '16 days','Tremblement aggravé','125/78',36.7,72,69.0,167.0,98,'Tremblements bilatéraux maintenant','Parkinson stade 1-2 — progression',CURRENT_DATE+14),
-((SELECT id FROM residents WHERE numero_chambre='123' LIMIT 1),(SELECT id FROM doctors WHERE nom='RAMSAMY'   LIMIT 1),NOW()-INTERVAL '14 days','INR mensuel','135/85',36.5,75,62.0,159.0,97,'INR 2.4 — dans la cible','FA anticoagulée — équilibrée',CURRENT_DATE+30),
+((SELECT id FROM residents WHERE numero_chambre='120' LIMIT 1),(SELECT id FROM doctors WHERE nom='PERMALLOO' LIMIT 1),NOW()-INTERVAL '22 days','Dialyse - suivi','100/65',36.5,65,57.0,167.0,95,'Dialyse bien tolérée','IRC terminale - dialysé',CURRENT_DATE+7),
+((SELECT id FROM residents WHERE numero_chambre='121' LIMIT 1),(SELECT id FROM doctors WHERE nom='BAPPOO'    LIMIT 1),NOW()-INTERVAL '14 days','Suivi dépression','120/76',36.6,70,52.0,153.0,99,'Humeur améliorée sous sertraline','Dépression - rémission partielle',CURRENT_DATE+30),
+((SELECT id FROM residents WHERE numero_chambre='122' LIMIT 1),(SELECT id FROM doctors WHERE nom='LABONNE'   LIMIT 1),NOW()-INTERVAL '16 days','Tremblement aggravé','125/78',36.7,72,69.0,167.0,98,'Tremblements bilatéraux maintenant','Parkinson stade 1-2 - progression',CURRENT_DATE+14),
+((SELECT id FROM residents WHERE numero_chambre='123' LIMIT 1),(SELECT id FROM doctors WHERE nom='RAMSAMY'   LIMIT 1),NOW()-INTERVAL '14 days','INR mensuel','135/85',36.5,75,62.0,159.0,97,'INR 2.4 - dans la cible','FA anticoagulée - équilibrée',CURRENT_DATE+30),
 
 -- Consultations anciennes >30 jours (déclenchent alerte pas_vu_30j)
 ((SELECT id FROM residents WHERE numero_chambre='107' LIMIT 1),(SELECT id FROM doctors WHERE nom='RAMSAMY'   LIMIT 1),NOW()-INTERVAL '38 days','Dernière consultation','140/88',36.9,80,63.0,160.0,96,'Glaucome stable, HTA non optimale','HTA, Glaucome',CURRENT_DATE+7),
-((SELECT id FROM residents WHERE numero_chambre='124' LIMIT 1),(SELECT id FROM doctors WHERE nom='PERMALLOO' LIMIT 1),NOW()-INTERVAL '55 days','Bilan diabète','148/90',37.0,82,80.0,172.0,97,'Glycémie à jeun 9.8 — revoir metformine','Diabète T2 déséquilibré',CURRENT_DATE+7),
-((SELECT id FROM residents WHERE numero_chambre='143' LIMIT 1),(SELECT id FROM doctors WHERE nom='BAPPOO'    LIMIT 1),NOW()-INTERVAL '42 days','Suivi diabète','135/82',36.8,75,56.0,157.0,98,'Rétinopathie stable — ophtalmo à voir','Diabète T2 rétinopathie',CURRENT_DATE+7),
-((SELECT id FROM residents WHERE numero_chambre='150' LIMIT 1),(SELECT id FROM doctors WHERE nom='LABONNE'   LIMIT 1),NOW()-INTERVAL '65 days','Agitation','105/68',36.7,72,58.0,165.0,95,'Démence très avancée, grabataire','Démence sévère — fin de vie',CURRENT_DATE+7),
+((SELECT id FROM residents WHERE numero_chambre='124' LIMIT 1),(SELECT id FROM doctors WHERE nom='PERMALLOO' LIMIT 1),NOW()-INTERVAL '55 days','Bilan diabète','148/90',37.0,82,80.0,172.0,97,'Glycémie à jeun 9.8 - revoir metformine','Diabète T2 déséquilibré',CURRENT_DATE+7),
+((SELECT id FROM residents WHERE numero_chambre='143' LIMIT 1),(SELECT id FROM doctors WHERE nom='BAPPOO'    LIMIT 1),NOW()-INTERVAL '42 days','Suivi diabète','135/82',36.8,75,56.0,157.0,98,'Rétinopathie stable - ophtalmo à voir','Diabète T2 rétinopathie',CURRENT_DATE+7),
+((SELECT id FROM residents WHERE numero_chambre='150' LIMIT 1),(SELECT id FROM doctors WHERE nom='LABONNE'   LIMIT 1),NOW()-INTERVAL '65 days','Agitation','105/68',36.7,72,58.0,165.0,95,'Démence très avancée, grabataire','Démence sévère - fin de vie',CURRENT_DATE+7),
 
 -- Quelques autres pour diversifier
 ((SELECT id FROM residents WHERE numero_chambre='125' LIMIT 1),(SELECT id FROM doctors WHERE nom='BAPPOO'    LIMIT 1),NOW()-INTERVAL '7 days','Alimentation','108/70',36.5,68,46.0,155.0,96,'Poids stable sous alimentation assistée','Alzheimer stade 3',CURRENT_DATE+14),
-((SELECT id FROM residents WHERE numero_chambre='126' LIMIT 1),(SELECT id FROM doctors WHERE nom='OOZEER'    LIMIT 1),NOW()-INTERVAL '11 days','Cardio suivi','120/75',36.6,65,71.0,168.0,97,'ECG stable, douleurs thoraciques absentes','Cardiopathie ischémique — stable',CURRENT_DATE+30),
-((SELECT id FROM residents WHERE numero_chambre='130' LIMIT 1),(SELECT id FROM doctors WHERE nom='LABONNE'   LIMIT 1),NOW()-INTERVAL '6 days','Rééducation','125/80',36.7,74,72.0,171.0,98,'Progrès kiné — marche avec aide','AVC séquelles — amélioration',CURRENT_DATE+14),
-((SELECT id FROM residents WHERE numero_chambre='134' LIMIT 1),(SELECT id FROM doctors WHERE nom='OOZEER'    LIMIT 1),NOW()-INTERVAL '4 days','ICC urgence','100/65',37.2,95,64.0,166.0,90,'Décompensation cardiaque — hospitalisation évitée','ICC décompensée',CURRENT_DATE+7),
+((SELECT id FROM residents WHERE numero_chambre='126' LIMIT 1),(SELECT id FROM doctors WHERE nom='OOZEER'    LIMIT 1),NOW()-INTERVAL '11 days','Cardio suivi','120/75',36.6,65,71.0,168.0,97,'ECG stable, douleurs thoraciques absentes','Cardiopathie ischémique - stable',CURRENT_DATE+30),
+((SELECT id FROM residents WHERE numero_chambre='130' LIMIT 1),(SELECT id FROM doctors WHERE nom='LABONNE'   LIMIT 1),NOW()-INTERVAL '6 days','Rééducation','125/80',36.7,74,72.0,171.0,98,'Progrès kiné - marche avec aide','AVC séquelles - amélioration',CURRENT_DATE+14),
+((SELECT id FROM residents WHERE numero_chambre='134' LIMIT 1),(SELECT id FROM doctors WHERE nom='OOZEER'    LIMIT 1),NOW()-INTERVAL '4 days','ICC urgence','100/65',37.2,95,64.0,166.0,90,'Décompensation cardiaque - hospitalisation évitée','ICC décompensée',CURRENT_DATE+7),
 ((SELECT id FROM residents WHERE numero_chambre='140' LIMIT 1),(SELECT id FROM doctors WHERE nom='LABONNE'   LIMIT 1),NOW()-INTERVAL '5 days','Parkinson avancé','105/68',36.6,70,52.0,164.0,96,'Rigidité musculaire totale','Parkinson terminal',CURRENT_DATE+14),
-((SELECT id FROM residents WHERE numero_chambre='144' LIMIT 1),(SELECT id FROM doctors WHERE nom='OOZEER'    LIMIT 1),NOW()-INTERVAL '3 days','Contrôle ICC','102/65',36.8,78,61.0,168.0,93,'Surcharge hydrique réduite sous furosémide','ICC — amélioration lente',CURRENT_DATE+7),
-((SELECT id FROM residents WHERE numero_chambre='148' LIMIT 1),(SELECT id FROM doctors WHERE nom='BAPPOO'    LIMIT 1),NOW()-INTERVAL '8 days','Diabète HTA','138/85',36.7,78,77.0,172.0,97,'Glycémie correcte, HTA bien contrôlée','Diabète T2 + HTA — équilibrés',CURRENT_DATE+30),
-((SELECT id FROM residents WHERE numero_chambre='154' LIMIT 1),(SELECT id FROM doctors WHERE nom='OOZEER'    LIMIT 1),NOW()-INTERVAL '2 days','INR urgent','108/68',36.5,68,59.0,167.0,95,'INR 4.8 — trop élevé, ajuster warfarine','FA ICC — surdosage warfarine',CURRENT_DATE+7),
+((SELECT id FROM residents WHERE numero_chambre='144' LIMIT 1),(SELECT id FROM doctors WHERE nom='OOZEER'    LIMIT 1),NOW()-INTERVAL '3 days','Contrôle ICC','102/65',36.8,78,61.0,168.0,93,'Surcharge hydrique réduite sous furosémide','ICC - amélioration lente',CURRENT_DATE+7),
+((SELECT id FROM residents WHERE numero_chambre='148' LIMIT 1),(SELECT id FROM doctors WHERE nom='BAPPOO'    LIMIT 1),NOW()-INTERVAL '8 days','Diabète HTA','138/85',36.7,78,77.0,172.0,97,'Glycémie correcte, HTA bien contrôlée','Diabète T2 + HTA - équilibrés',CURRENT_DATE+30),
+((SELECT id FROM residents WHERE numero_chambre='154' LIMIT 1),(SELECT id FROM doctors WHERE nom='OOZEER'    LIMIT 1),NOW()-INTERVAL '2 days','INR urgent','108/68',36.5,68,59.0,167.0,95,'INR 4.8 - trop élevé, ajuster warfarine','FA ICC - surdosage warfarine',CURRENT_DATE+7),
 -- Décédés (historique)
 ((SELECT id FROM residents WHERE numero_chambre='163' LIMIT 1),(SELECT id FROM doctors WHERE nom='BAPPOO'    LIMIT 1),'2026-05-15 10:00:00+04','Dernière visite avant décès','95/60',38.2,88,51.0,168.0,88,'Altération état général sévère','ICC terminale',NULL),
 ((SELECT id FROM residents WHERE numero_chambre='164' LIMIT 1),(SELECT id FROM doctors WHERE nom='OOZEER'    LIMIT 1),'2026-04-25 09:30:00+04','Pneumonie sévère','105/70',39.1,110,44.0,152.0,84,'Pneumonie bilatérale','Pneumonie sévère',NULL);
@@ -458,16 +458,16 @@ INSERT INTO consultations (
 -- ============================================================
 INSERT INTO rendez_vous (resident_id, medecin_id, date_rdv, motif, statut, est_urgence, duree_minutes) VALUES
 -- À venir (planifiés)
-((SELECT id FROM residents WHERE numero_chambre='102' LIMIT 1),(SELECT id FROM doctors WHERE nom='BAPPOO'    LIMIT 1),NOW()+INTERVAL '2 days','Suivi diabète — ajustement insuline','planifie',false,30),
-((SELECT id FROM residents WHERE numero_chambre='104' LIMIT 1),(SELECT id FROM doctors WHERE nom='PERMALLOO' LIMIT 1),NOW()+INTERVAL '1 day', 'URGENCE — œdèmes aggravés','planifie',true,20),
-((SELECT id FROM residents WHERE numero_chambre='107' LIMIT 1),(SELECT id FROM doctors WHERE nom='RAMSAMY'   LIMIT 1),NOW()+INTERVAL '3 days','Rattrapage visite — non vue depuis 38j','planifie',false,30),
+((SELECT id FROM residents WHERE numero_chambre='102' LIMIT 1),(SELECT id FROM doctors WHERE nom='BAPPOO'    LIMIT 1),NOW()+INTERVAL '2 days','Suivi diabète - ajustement insuline','planifie',false,30),
+((SELECT id FROM residents WHERE numero_chambre='104' LIMIT 1),(SELECT id FROM doctors WHERE nom='PERMALLOO' LIMIT 1),NOW()+INTERVAL '1 day', 'URGENCE - œdèmes aggravés','planifie',true,20),
+((SELECT id FROM residents WHERE numero_chambre='107' LIMIT 1),(SELECT id FROM doctors WHERE nom='RAMSAMY'   LIMIT 1),NOW()+INTERVAL '3 days','Rattrapage visite - non vue depuis 38j','planifie',false,30),
 ((SELECT id FROM residents WHERE numero_chambre='111' LIMIT 1),(SELECT id FROM doctors WHERE nom='RAMSAMY'   LIMIT 1),NOW()+INTERVAL '4 days','Contrôle antibiothérapie IU','planifie',false,20),
 ((SELECT id FROM residents WHERE numero_chambre='115' LIMIT 1),(SELECT id FROM doctors WHERE nom='RAMSAMY'   LIMIT 1),NOW()+INTERVAL '5 days','Bilan rénal trimestriel','planifie',false,30),
 ((SELECT id FROM residents WHERE numero_chambre='122' LIMIT 1),(SELECT id FROM doctors WHERE nom='LABONNE'   LIMIT 1),NOW()+INTERVAL '7 days','Réévaluation Parkinson','planifie',false,45),
-((SELECT id FROM residents WHERE numero_chambre='124' LIMIT 1),(SELECT id FROM doctors WHERE nom='PERMALLOO' LIMIT 1),NOW()+INTERVAL '2 days','Urgence glycémie — non vu 55j','planifie',true,20),
+((SELECT id FROM residents WHERE numero_chambre='124' LIMIT 1),(SELECT id FROM doctors WHERE nom='PERMALLOO' LIMIT 1),NOW()+INTERVAL '2 days','Urgence glycémie - non vu 55j','planifie',true,20),
 ((SELECT id FROM residents WHERE numero_chambre='134' LIMIT 1),(SELECT id FROM doctors WHERE nom='OOZEER'    LIMIT 1),NOW()+INTERVAL '1 day', 'Contrôle post-décompensation ICC','planifie',true,30),
-((SELECT id FROM residents WHERE numero_chambre='143' LIMIT 1),(SELECT id FROM doctors WHERE nom='BAPPOO'    LIMIT 1),NOW()+INTERVAL '3 days','Rattrapage — non vue 42j','planifie',false,30),
-((SELECT id FROM residents WHERE numero_chambre='150' LIMIT 1),(SELECT id FROM doctors WHERE nom='LABONNE'   LIMIT 1),NOW()+INTERVAL '4 days','Famille présente — évaluation soins palliatifs','planifie',false,60),
+((SELECT id FROM residents WHERE numero_chambre='143' LIMIT 1),(SELECT id FROM doctors WHERE nom='BAPPOO'    LIMIT 1),NOW()+INTERVAL '3 days','Rattrapage - non vue 42j','planifie',false,30),
+((SELECT id FROM residents WHERE numero_chambre='150' LIMIT 1),(SELECT id FROM doctors WHERE nom='LABONNE'   LIMIT 1),NOW()+INTERVAL '4 days','Famille présente - évaluation soins palliatifs','planifie',false,60),
 ((SELECT id FROM residents WHERE numero_chambre='154' LIMIT 1),(SELECT id FROM doctors WHERE nom='OOZEER'    LIMIT 1),NOW()+INTERVAL '1 day', 'Contrôle INR surdosage','planifie',true,20),
 -- Passés (effectués / absent)
 ((SELECT id FROM residents WHERE numero_chambre='110' LIMIT 1),(SELECT id FROM doctors WHERE nom='OOZEER'    LIMIT 1),NOW()-INTERVAL '8 days','Contrôle HTA','effectue',false,20),
@@ -481,25 +481,25 @@ INSERT INTO rendez_vous (resident_id, medecin_id, date_rdv, motif, statut, est_u
 -- ============================================================
 INSERT INTO alertes (type, resident_id, titre, message, priorite, lue, traitee) VALUES
 -- Médicaments expirant bientôt
-('medicament_24h',(SELECT id FROM residents WHERE numero_chambre='102' LIMIT 1),'Metformin 500mg — expire demain','Le traitement Metformin 500mg de BOODHOO Ramesh (Ch.102) expire le '||(CURRENT_DATE+1)::TEXT||'.',1,false,false),
-('medicament_24h',(SELECT id FROM residents WHERE numero_chambre='104' LIMIT 1),'Furosemide 40mg — expire aujourd''hui','Le traitement Furosemide 40mg de LAGESSE Pierre (Ch.104) expire aujourd''hui.',1,false,false),
-('medicament_24h',(SELECT id FROM residents WHERE numero_chambre='111' LIMIT 1),'Amoxicillin 500mg — expire demain','Antibiotique KHODABUX Fatimah (Ch.111) — à renouveler ou arrêter selon avis médical.',1,false,false),
-('medicament_24h',(SELECT id FROM residents WHERE numero_chambre='119' LIMIT 1),'Omeprazole 20mg — expire demain','Traitement ulcère CADERSA Zohra (Ch.119) à renouveler.',1,false,false),
+('medicament_24h',(SELECT id FROM residents WHERE numero_chambre='102' LIMIT 1),'Metformin 500mg - expire demain','Le traitement Metformin 500mg de BOODHOO Ramesh (Ch.102) expire le '||(CURRENT_DATE+1)::TEXT||'.',1,false,false),
+('medicament_24h',(SELECT id FROM residents WHERE numero_chambre='104' LIMIT 1),'Furosemide 40mg - expire aujourd''hui','Le traitement Furosemide 40mg de LAGESSE Pierre (Ch.104) expire aujourd''hui.',1,false,false),
+('medicament_24h',(SELECT id FROM residents WHERE numero_chambre='111' LIMIT 1),'Amoxicillin 500mg - expire demain','Antibiotique KHODABUX Fatimah (Ch.111) - à renouveler ou arrêter selon avis médical.',1,false,false),
+('medicament_24h',(SELECT id FROM residents WHERE numero_chambre='119' LIMIT 1),'Omeprazole 20mg - expire demain','Traitement ulcère CADERSA Zohra (Ch.119) à renouveler.',1,false,false),
 -- Résidents non vus depuis >30j
-('pas_vu_30j',   (SELECT id FROM residents WHERE numero_chambre='107' LIMIT 1),'RAMSAMY Asha — non vue depuis 38 jours','Dernière consultation : '||(CURRENT_DATE-38)::TEXT||'. À planifier en priorité.',2,false,false),
-('pas_vu_30j',   (SELECT id FROM residents WHERE numero_chambre='124' LIMIT 1),'PILLAY Serge — non vu depuis 55 jours','Dernière consultation : '||(CURRENT_DATE-55)::TEXT||'. Glycémie préoccupante.',1,false,false),
-('pas_vu_30j',   (SELECT id FROM residents WHERE numero_chambre='143' LIMIT 1),'SEENEEVASSEN Pushpa — non vue depuis 42 jours','Dernière consultation : '||(CURRENT_DATE-42)::TEXT||'. Diabète à surveiller.',2,false,false),
-('pas_vu_30j',   (SELECT id FROM residents WHERE numero_chambre='150' LIMIT 1),'DUPONT Georges — non vu depuis 65 jours','Dernière consultation : '||(CURRENT_DATE-65)::TEXT||'. État préoccupant.',1,false,false),
+('pas_vu_30j',   (SELECT id FROM residents WHERE numero_chambre='107' LIMIT 1),'RAMSAMY Asha - non vue depuis 38 jours','Dernière consultation : '||(CURRENT_DATE-38)::TEXT||'. À planifier en priorité.',2,false,false),
+('pas_vu_30j',   (SELECT id FROM residents WHERE numero_chambre='124' LIMIT 1),'PILLAY Serge - non vu depuis 55 jours','Dernière consultation : '||(CURRENT_DATE-55)::TEXT||'. Glycémie préoccupante.',1,false,false),
+('pas_vu_30j',   (SELECT id FROM residents WHERE numero_chambre='143' LIMIT 1),'SEENEEVASSEN Pushpa - non vue depuis 42 jours','Dernière consultation : '||(CURRENT_DATE-42)::TEXT||'. Diabète à surveiller.',2,false,false),
+('pas_vu_30j',   (SELECT id FROM residents WHERE numero_chambre='150' LIMIT 1),'DUPONT Georges - non vu depuis 65 jours','Dernière consultation : '||(CURRENT_DATE-65)::TEXT||'. État préoccupant.',1,false,false),
 -- Jamais vus
-('visite_requise',(SELECT id FROM residents WHERE numero_chambre='103' LIMIT 1),'OOZEER Fatima — aucune consultation enregistrée','Résidente depuis 2023-03-01 sans consultation. Bilan initial requis.',1,false,false),
-('visite_requise',(SELECT id FROM residents WHERE numero_chambre='116' LIMIT 1),'JAUNBOCCUS Ali — aucune consultation enregistrée','Nouveau résident (2023-09-10) sans bilan initial.',1,false,false),
-('visite_requise',(SELECT id FROM residents WHERE numero_chambre='139' LIMIT 1),'HOSENALLY Rashida — aucune consultation enregistrée','Arrivée 2024-01-15. Bilans en cours non finalisés.',2,false,false),
+('visite_requise',(SELECT id FROM residents WHERE numero_chambre='103' LIMIT 1),'OOZEER Fatima - aucune consultation enregistrée','Résidente depuis 2023-03-01 sans consultation. Bilan initial requis.',1,false,false),
+('visite_requise',(SELECT id FROM residents WHERE numero_chambre='116' LIMIT 1),'JAUNBOCCUS Ali - aucune consultation enregistrée','Nouveau résident (2023-09-10) sans bilan initial.',1,false,false),
+('visite_requise',(SELECT id FROM residents WHERE numero_chambre='139' LIMIT 1),'HOSENALLY Rashida - aucune consultation enregistrée','Arrivée 2024-01-15. Bilans en cours non finalisés.',2,false,false),
 -- Urgences
-('urgence',      (SELECT id FROM residents WHERE numero_chambre='134' LIMIT 1),'FONG Antoine — décompensation cardiaque','Décompensation ICC détectée. Médecin contacté. Surveillance renforcée.',1,false,false),
-('urgence',      (SELECT id FROM residents WHERE numero_chambre='154' LIMIT 1),'MARIE Bernard — surdosage Warfarine','INR 4.8 — risque hémorragique. Dr. OOZEER prévenu. Arrêt warfarine.',1,false,false),
+('urgence',      (SELECT id FROM residents WHERE numero_chambre='134' LIMIT 1),'FONG Antoine - décompensation cardiaque','Décompensation ICC détectée. Médecin contacté. Surveillance renforcée.',1,false,false),
+('urgence',      (SELECT id FROM residents WHERE numero_chambre='154' LIMIT 1),'MARIE Bernard - surdosage Warfarine','INR 4.8 - risque hémorragique. Dr. OOZEER prévenu. Arrêt warfarine.',1,false,false),
 -- Autre
 ('autre',        NULL,'Médecin de garde 12 juin 2026','Dr. PERMALLOO assure la permanence ce week-end. Tel : 4641001.',3,false,false),
-('autre',        (SELECT id FROM residents WHERE numero_chambre='120' LIMIT 1),'ROUGET Marcel — transport dialyse vendredi','Rappel : ambulance confirmée vendredi 8h pour dialyse hôpital.',3,true,true);
+('autre',        (SELECT id FROM residents WHERE numero_chambre='120' LIMIT 1),'ROUGET Marcel - transport dialyse vendredi','Rappel : ambulance confirmée vendredi 8h pour dialyse hôpital.',3,true,true);
 
 -- ============================================================
 -- 8. PLANNING VISITES + PLANIFICATION
@@ -512,20 +512,20 @@ VALUES
 
 -- Résidents assignés aux créneaux
 INSERT INTO planning_residents (planning_id, resident_id, ordre, statut) VALUES
--- Slot 1 (demain — Dr. Permalloo)
+-- Slot 1 (demain - Dr. Permalloo)
 ((SELECT id FROM planning_visites WHERE date_visite=CURRENT_DATE+1 LIMIT 1),(SELECT id FROM residents WHERE numero_chambre='104' LIMIT 1),1,'planifie'),
 ((SELECT id FROM planning_visites WHERE date_visite=CURRENT_DATE+1 LIMIT 1),(SELECT id FROM residents WHERE numero_chambre='124' LIMIT 1),2,'planifie'),
 ((SELECT id FROM planning_visites WHERE date_visite=CURRENT_DATE+1 LIMIT 1),(SELECT id FROM residents WHERE numero_chambre='154' LIMIT 1),3,'planifie'),
 ((SELECT id FROM planning_visites WHERE date_visite=CURRENT_DATE+1 LIMIT 1),(SELECT id FROM residents WHERE numero_chambre='120' LIMIT 1),4,'planifie'),
 ((SELECT id FROM planning_visites WHERE date_visite=CURRENT_DATE+1 LIMIT 1),(SELECT id FROM residents WHERE numero_chambre='103' LIMIT 1),5,'planifie'),
 ((SELECT id FROM planning_visites WHERE date_visite=CURRENT_DATE+1 LIMIT 1),(SELECT id FROM residents WHERE numero_chambre='116' LIMIT 1),6,'planifie'),
--- Slot 2 (dans 3 jours — Dr. Bappoo)
+-- Slot 2 (dans 3 jours - Dr. Bappoo)
 ((SELECT id FROM planning_visites WHERE date_visite=CURRENT_DATE+3 LIMIT 1),(SELECT id FROM residents WHERE numero_chambre='102' LIMIT 1),1,'planifie'),
 ((SELECT id FROM planning_visites WHERE date_visite=CURRENT_DATE+3 LIMIT 1),(SELECT id FROM residents WHERE numero_chambre='107' LIMIT 1),2,'planifie'),
 ((SELECT id FROM planning_visites WHERE date_visite=CURRENT_DATE+3 LIMIT 1),(SELECT id FROM residents WHERE numero_chambre='143' LIMIT 1),3,'planifie'),
 ((SELECT id FROM planning_visites WHERE date_visite=CURRENT_DATE+3 LIMIT 1),(SELECT id FROM residents WHERE numero_chambre='125' LIMIT 1),4,'planifie'),
 ((SELECT id FROM planning_visites WHERE date_visite=CURRENT_DATE+3 LIMIT 1),(SELECT id FROM residents WHERE numero_chambre='129' LIMIT 1),5,'planifie'),
--- Slot 3 (dans 7 jours — Dr. Oozeer)
+-- Slot 3 (dans 7 jours - Dr. Oozeer)
 ((SELECT id FROM planning_visites WHERE date_visite=CURRENT_DATE+7 LIMIT 1),(SELECT id FROM residents WHERE numero_chambre='134' LIMIT 1),1,'planifie'),
 ((SELECT id FROM planning_visites WHERE date_visite=CURRENT_DATE+7 LIMIT 1),(SELECT id FROM residents WHERE numero_chambre='144' LIMIT 1),2,'planifie'),
 ((SELECT id FROM planning_visites WHERE date_visite=CURRENT_DATE+7 LIMIT 1),(SELECT id FROM residents WHERE numero_chambre='150' LIMIT 1),3,'planifie'),
@@ -551,7 +551,7 @@ INSERT INTO visites (
 ((SELECT id FROM residents WHERE numero_chambre='122' LIMIT 1),'AH-KEE','Linda','59145678','Fille',               1,'[]',                                                                       CURRENT_DATE-3,NOW()-INTERVAL '4 days'-INTERVAL '2 hours',NOW()-INTERVAL '4 days'-INTERVAL '1 hour',false,'terminee',NULL),
 ((SELECT id FROM residents WHERE numero_chambre='130' LIMIT 1),'LENOIR','Anne','59923456','Fille',                2,'[{"nom":"LENOIR","prenom":"Paul"}]',                                        CURRENT_DATE-5,NOW()-INTERVAL '6 days'-INTERVAL '2 hours',NOW()-INTERVAL '6 days'-INTERVAL '30 min',false,'terminee','Ravi des progrès kiné'),
 -- Visite annulée
-((SELECT id FROM residents WHERE numero_chambre='135' LIMIT 1),'BEEHARRY','Vijay','59478901','Fils',              1,'[]',                                                                       CURRENT_DATE-1,NULL,NULL,true,'annulee','Annulée — fils malade');
+((SELECT id FROM residents WHERE numero_chambre='135' LIMIT 1),'BEEHARRY','Vijay','59478901','Fils',              1,'[]',                                                                       CURRENT_DATE-1,NULL,NULL,true,'annulee','Annulée - fils malade');
 
 -- ============================================================
 -- 10. HISTORIQUE SORTIES (vacances précédentes)
@@ -570,7 +570,7 @@ INSERT INTO historique_sorties (
 ((SELECT id FROM residents WHERE numero_chambre='108' LIMIT 1),'2025-09-01','2025-09-08','2025-09-10','Vacances à Trou d''Eau Douce');
 
 -- ============================================================
--- 11. COURSES (résidents autonomes — sorties commissions)
+-- 11. COURSES (résidents autonomes - sorties commissions)
 -- ============================================================
 INSERT INTO courses (
   resident_id, date_sortie, heure_depart, heure_retour, est_rentre, articles, notes

@@ -1,5 +1,5 @@
 -- ============================================================
---  05 — App Users & Authentification
+--  05 - App Users & Authentification
 --  Exécuter en 5e dans Supabase SQL Editor
 --  SuperAdmin : accès complet
 --  Admin      : lecture + saisie consultations/traitements/RDV

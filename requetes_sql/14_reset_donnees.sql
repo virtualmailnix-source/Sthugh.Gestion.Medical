@@ -1,14 +1,14 @@
 -- ============================================================
 --  14_reset_donnees.sql
---  St Hugh's Anglican Home — Remise à vierge des données
+--  St Hugh's Anglican Home - Remise à vierge des données
 --
 --  EFFET : supprime tous les résidents, médecins, médicaments
 --          et données médicales associées. Ne touche PAS :
 --            - app_users  (comptes du personnel)
---            - cabinet    (nom, adresse, téléphone du foyer — config établissement)
+--            - cabinet    (nom, adresse, téléphone du foyer - config établissement)
 --
 --  À EXÉCUTER depuis le Supabase SQL Editor (pas depuis l'app).
---  Irréversible — faire un backup avant si nécessaire.
+--  Irréversible - faire un backup avant si nécessaire.
 -- ============================================================
 
 BEGIN;

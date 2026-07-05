@@ -1,6 +1,6 @@
 /* ============================================================
-   St Hugh Anglican — Cabinet Médical PWA
-   Feuille de style principale — Design luxe
+   St Hugh Anglican - Cabinet Médical PWA
+   Feuille de style principale - Design luxe
    ============================================================ */
 
 /* ========== CSS VARIABLES ========== */
@@ -63,7 +63,7 @@
 
 [data-theme="dark"] {
   --mission:         #032727;
-  --teal-dark:       #6ecece;   /* teal clair — pour textes sur fond sombre */
+  --teal-dark:       #6ecece;   /* teal clair - pour textes sur fond sombre */
   --teal-mid:        #2a9090;
   --teal-light:      #3aadad;
   --teal-pale:       #1a3d3d;
@@ -84,7 +84,7 @@
   --shadow-deep:     0 12px 48px rgba(0,0,0,.55);
   --nav-bg-scroll:   rgba(10,46,46,.97);
 
-  /* Teintes adaptatives — versions sombres lisibles */
+  /* Teintes adaptatives - versions sombres lisibles */
   --tint-blue-bg:    #173a5e;
   --tint-blue-fg:    #8ec4f8;
   --tint-red-bg:     #4a1d1d;
@@ -437,7 +437,7 @@ input, select, textarea { font-family: inherit; }
 .badge-absent    { color: #6b7280; }
 .badge-actif     { color: #15803d; }
 .badge-inactif   { color: #b91c1c; }
-/* Badges neutres — gardent un fond léger pour la lisibilité (ex: numéro de chambre) */
+/* Badges neutres - gardent un fond léger pour la lisibilité (ex: numéro de chambre) */
 .badge-teal { color: var(--teal-dark); background: var(--teal-pale); border-left: none; padding: .2rem .55rem; }
 .badge-gold { color: #92400e; background: #fef3c7; border-left: none; padding: .2rem .55rem; }
 
@@ -1052,7 +1052,7 @@ select.form-control { cursor: pointer; }
 .role-super { background: var(--teal-pale); color: var(--teal-dark); }
 .role-admin { background: #fef9c3; color: #92400e; }
 
-/* ========== DARK MODE — OVERRIDES FONDS ========== */
+/* ========== DARK MODE - OVERRIDES FONDS ========== */
 /*
  * En dark mode --teal-dark devient clair (#6ecece) pour les textes.
  * Les éléments qui l'utilisent comme fond doivent être explicitement surchargés.
@@ -1157,7 +1157,7 @@ select.form-control { cursor: pointer; }
   color: var(--teal-dark);
 }
 
-/* Lisibilité navigation dark mode — textes clairs sur fond sombre plat */
+/* Lisibilité navigation dark mode - textes clairs sur fond sombre plat */
 [data-theme="dark"] .nav-link {
   color: rgba(255,255,255,.88);
 }

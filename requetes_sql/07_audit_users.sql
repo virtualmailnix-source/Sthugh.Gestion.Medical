@@ -1,5 +1,5 @@
 -- ============================================================
---  07 — Journal d'audit + mise à jour app_users
+--  07 - Journal d'audit + mise à jour app_users
 --  Exécuter en 7e dans Supabase SQL Editor
 --  1. Colonnes email, telephone, poste dans app_users
 --  2. Table audit_log (qui fait quoi, quand)

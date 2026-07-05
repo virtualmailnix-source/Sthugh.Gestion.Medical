@@ -1,6 +1,6 @@
 -- ============================================================
 --  22_rdv_consultations.sql
---  St Hugh's Anglican Home — Unification RDV / Consultations
+--  St Hugh's Anglican Home - Unification RDV / Consultations
 --
 --  Règle métier : un RDV et une consultation sont la même entité
 --  à deux moments différents.

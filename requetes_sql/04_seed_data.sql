@@ -1,5 +1,5 @@
 -- ============================================================
--- Données initiales — St Hugh's Anglican Home
+-- Données initiales - St Hugh's Anglican Home
 -- Rose Hill, Mauritius
 -- ============================================================
 

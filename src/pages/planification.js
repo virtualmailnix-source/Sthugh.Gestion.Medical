@@ -108,7 +108,7 @@ async function _loadSlots() {
           <div>
             <div style="font-family:Georgia,serif;font-weight:700;font-size:1rem">${formatDate(s.date_visite,{full:true})}</div>
             <div style="font-size:.82rem;color:var(--text-light)">
-              ${s.heure_debut} — ${s.heure_fin}
+              ${s.heure_debut} - ${s.heure_fin}
               &bull; ${s.medecin_titre||'Dr.'} ${s.medecin_prenom||''} ${s.medecin_nom||'—'}
             </div>
           </div>
@@ -184,14 +184,14 @@ async function _openSlotDetail(slotId) {
     </div>`;
 
   openModal(
-    `<i class="bi bi-calendar3"></i> Slot — ${formatDate(slot.date_visite,{full:true})}`,
+    `<i class="bi bi-calendar3"></i> Slot - ${formatDate(slot.date_visite,{full:true})}`,
     body,
     [{ label:'Fermer', cls:'btn btn-primary', action: closeModal }],
     'modal-xl'
   );
 
   // onclick : #modal-body est un élément permanent et _openSlotDetail se rappelle
-  // après chaque action — addEventListener empilerait un handler par action
+  // après chaque action - addEventListener empilerait un handler par action
   document.getElementById('modal-body').onclick = async e => {
     const btn = e.target.closest('button[data-action]');
     if (!btn) return;

@@ -1,7 +1,7 @@
 -- ============================================================
 -- 13_courses_historique.sql
--- A. historique_sorties — archive des séjours vacances
--- B. courses           — sorties commissions (résidents autonomes)
+-- A. historique_sorties - archive des séjours vacances
+-- B. courses           - sorties commissions (résidents autonomes)
 -- ============================================================
 
 -- ── A. historique_sorties ────────────────────────────────────

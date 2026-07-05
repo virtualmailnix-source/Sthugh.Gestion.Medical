@@ -1,5 +1,5 @@
 -- ============================================================
---  Fonctions, Triggers & Vues — St Hugh's Medical System
+--  Fonctions, Triggers & Vues - St Hugh's Medical System
 -- ============================================================
 
 -- Trigger updated_at
@@ -231,7 +231,7 @@ BEGIN
     VALUES (
       'medicament_24h',
       t.resident_id,
-      'Médicament à renouveler — ' || t.nom_medicament,
+      'Médicament à renouveler - ' || t.nom_medicament,
       'Le traitement "' || t.nom_medicament || '" se termine le ' || TO_CHAR(t.date_fin,'DD/MM/YYYY') || '. Renouvellement requis.',
       1
     );
@@ -243,7 +243,7 @@ BEGIN
   SELECT
     'pas_vu_30j',
     r.id,
-    'Consultation requise — ' || r.prenom || ' ' || r.nom,
+    'Consultation requise - ' || r.prenom || ' ' || r.nom,
     r.prenom || ' ' || r.nom || ' n''a pas eu de consultation depuis plus de 30 jours.',
     2
   FROM v_residents_priorite r

@@ -1,6 +1,6 @@
 -- ============================================================
 --  18_contacts_email.sql
---  St Hugh's Anglican Home — Email sur les contacts famille
+--  St Hugh's Anglican Home - Email sur les contacts famille
 --
 --  Champ optionnel : affiché en lien mailto: dans l'application.
 --  (La table doctors possède déjà une colonne email.)

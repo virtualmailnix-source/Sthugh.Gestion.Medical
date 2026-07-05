@@ -93,7 +93,7 @@ export async function renderDashboard(container) {
             ${aRacheter.map(m=>`<tr>
               <td style="font-weight:600">${fullName(m.resident_nom,m.resident_prenom)}</td>
               <td><span class="badge badge-teal">${m.numero_chambre||'—'}</span></td>
-              <td>${m.nom_medicament}${m.dosage?' — '+m.dosage:''}</td>
+              <td>${m.nom_medicament}${m.dosage?' - '+m.dosage:''}</td>
               <td>${m.stock_restant !== null ? Math.round(m.stock_restant)+' '+(m.unite||'') : '—'}</td>
               <td>${m.autonomie_jours !== null ? m.autonomie_jours+' '+t('common.days') : (m.date_epuisement ? formatDate(m.date_epuisement) : '—')}</td>
               <td>${m.statut_stock === 'rouge'
@@ -118,7 +118,7 @@ export async function renderDashboard(container) {
             ${meds.map(m=>`<tr>
               <td style="font-weight:600">${fullName(m.resident_nom,m.resident_prenom)}</td>
               <td><span class="badge badge-teal">${m.numero_chambre||'—'}</span></td>
-              <td>${m.nom_medicament}${m.dosage?' — '+m.dosage:''}</td>
+              <td>${m.nom_medicament}${m.dosage?' - '+m.dosage:''}</td>
               <td>${formatDate(m.date_fin)}</td>
               <td>${_alerteBadge(m.statut_alerte)}</td>
             </tr>`).join('')}
@@ -186,7 +186,7 @@ export async function renderDashboard(container) {
                 <i class="bi ${_alerteIcon(a.type)} alert-icon"></i>
                 <div class="alert-content">
                   <div class="alert-title">${a.titre}</div>
-                  ${a.residents ? `<div class="alert-msg">${a.residents.prenom} ${a.residents.nom} — ${t('common.room')} ${a.residents.numero_chambre||'—'}</div>` : ''}
+                  ${a.residents ? `<div class="alert-msg">${a.residents.prenom} ${a.residents.nom} - ${t('common.room')} ${a.residents.numero_chambre||'—'}</div>` : ''}
                   <div class="alert-time">${formatDate(a.created_at,{time:true})}</div>
                 </div>
               </div>`).join('')

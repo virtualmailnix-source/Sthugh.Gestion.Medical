@@ -116,7 +116,7 @@ export async function renderAlertes(container) {
     })
   );
 
-  // Délégation d'actions — attachée UNE SEULE fois (l'élément est recréé à chaque render de page)
+  // Délégation d'actions - attachée UNE SEULE fois (l'élément est recréé à chaque render de page)
   document.getElementById('alertes-list')?.addEventListener('click', async e => {
     const btn = e.target.closest('button[data-action]');
     if (!btn) return;
@@ -176,7 +176,7 @@ async function _load() {
           ${t(TYPE_LABEL_KEYS[a.type]) || a.type}
         </div>
         <div class="alert-title">${a.titre}</div>
-        ${a.residents ? `<div class="alert-msg">${a.residents.prenom} ${a.residents.nom} — ${t('alerts.room')} ${a.residents.numero_chambre||'—'}</div>` : ''}
+        ${a.residents ? `<div class="alert-msg">${a.residents.prenom} ${a.residents.nom} - ${t('alerts.room')} ${a.residents.numero_chambre||'—'}</div>` : ''}
         ${a.message ? `<div class="alert-msg" style="margin-top:.2rem">${a.message}</div>` : ''}
         <div class="alert-time">${formatDate(a.created_at,{time:true})}</div>
       </div>

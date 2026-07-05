@@ -1,5 +1,5 @@
 /* ============================================================
-   Internationalisation — FR / EN
+   Internationalisation - FR / EN
    ============================================================ */
 
 const T = {
@@ -53,7 +53,7 @@ const T = {
     priority: { p1:'P1 Urgent', p2:'P2 Élevé', p3:'P3 Normal' },
 
     dashboard: {
-      title:'Tableau de bord', subtitle:"St Hugh's Anglican Home — Vue d'ensemble",
+      title:'Tableau de bord', subtitle:"St Hugh's Anglican Home - Vue d'ensemble",
       newRdv:'Nouveau RDV', newConsult:'Consultation',
       activeResidents:'Résidents actifs', unreadAlerts:'Alertes non lues',
       urgentMeds:'Médicaments urgents', notSeen30:'Pas vu depuis 30j+',
@@ -94,7 +94,7 @@ const T = {
       newConsult:'Nouvelle consultation', newTreatment:'Nouveau traitement', newRdv:'Nouveau RDV',
       formTitle:'Nouveau résident', formTitleEdit:'Modifier résident',
       photo:'Photo de profil', changePhoto:'Changer', removePhoto:'Supprimer photo',
-      photoChoose:'Choisir une photo', photoSizeNote:'JPG, PNG, WebP — max 2 Mo',
+      photoChoose:'Choisir une photo', photoSizeNote:'JPG, PNG, WebP - max 2 Mo',
       photoTooLarge:'Photo trop lourde (max 2 Mo)', uploadErrPhoto:'Erreur upload photo',
       identity:'Identité', sectionContact:'Coordonnées & Contacts',
       sectionMedical:'Informations médicales', sectionAdmin:'Administration',
@@ -111,7 +111,7 @@ const T = {
       priorityLevel:'Niveau de priorité', medNotes:'Notes médicales',
       treatingDoctor:'Médecin traitant', selectDoctor:'— Sélectionner un médecin —',
       noneDoctor:'— Aucun —',
-      p1option:'P1 — Urgent', p2option:'P2 — Élevé', p3option:'P3 — Normal',
+      p1option:'P1 - Urgent', p2option:'P2 - Élevé', p3option:'P3 - Normal',
       familyContacts:'Contacts famille', addContact:'Ajouter un contact',
       contactName:'Nom *', contactPhone:'Téléphone', contactRelation:'Relation',
       contactEmail:'Email (facultatif)',
@@ -127,7 +127,7 @@ const T = {
       exportChoiceTitle:'Exporter le dossier',
       exportChoiceSub:'Choisissez le contenu à exporter',
       exportMedical:'Dossier médical', exportMedicalDesc:'Informations médicales, traitements et consultations uniquement',
-      exportAdmin:'Dossier administratif', exportAdminDesc:'Contacts famille, historique vacances et courses — sans données médicales',
+      exportAdmin:'Dossier administratif', exportAdminDesc:'Contacts famille, historique vacances et courses - sans données médicales',
       exportFull:'Dossier complet', exportFullDesc:'Toutes les informations (médicales et administratives)',
       backToProfile:'Retour au dossier',
     },
@@ -149,7 +149,7 @@ const T = {
     },
 
     treatments: {
-      title:'Traitements en cours', subtitle:'Suivi des médicaments — alertes et renouvellements',
+      title:'Traitements en cours', subtitle:'Suivi des médicaments - alertes et renouvellements',
       searchPlaceholder:'Résident, médicament…',
       addTreatment:'Ajouter traitement',
       filterAll:'Tous', filterUrgent:'Urgents (24h)', filterSoon:'Bientôt (3j)',
@@ -227,12 +227,12 @@ const T = {
       spo2:'Saturation O₂ (%)', spo2Short:'SpO₂ (%)',
       bmiLabel:'IMC :', bmi:'IMC (calculé auto)', observations:'Observations',
       diagnosis:'Diagnostic', treatmentNote:'Traitement prescrit', nextRdv:'Prochain RDV',
-      prescription:'Ordonnance (PDF, JPG, PNG — max 5 Mo)',
+      prescription:'Ordonnance (PDF, JPG, PNG - max 5 Mo)',
       prescriptionChoose:'Choisir un fichier', prescriptionNone:'Aucun fichier choisi',
       prescriptionRemove:'Retirer', prescriptionView:'Voir ordonnance',
-      fromRdv:'RDV', fromRdvTitle:'Issu d\'un rendez-vous échu — géré dans la page Rendez-vous',
+      fromRdv:'RDV', fromRdvTitle:'Issu d\'un rendez-vous échu - géré dans la page Rendez-vous',
       uploadDrag:'Glisser ou cliquer pour uploader',
-      uploadSizeNote:'PDF ou image — max 5 Mo',
+      uploadSizeNote:'PDF ou image - max 5 Mo',
       seeCurrentFile:'Voir le fichier actuel',
       notes:'Notes', viewTitle:'Consultation',
       saved:'Consultation enregistrée', modified:'Consultation modifiée', deleted:'Consultation supprimée',
@@ -263,7 +263,7 @@ const T = {
     },
 
     planning: {
-      title:'Planification des visites', subtitle:'2 visites médicales/semaine — rotation dynamique des 64 résidents',
+      title:'Planification des visites', subtitle:'2 visites médicales/semaine - rotation dynamique des 64 résidents',
       newSlot:'Nouveau slot de visite',
       priorityList:'Prochains à planifier', prioritySorted:'Trié par urgence',
       nextSlots:'Prochains slots', residents:'résidents',
@@ -281,7 +281,7 @@ const T = {
     },
 
     alerts: {
-      title:'Alertes & Notifications', subtitle:'Médicaments urgents — résidents non vus',
+      title:'Alertes & Notifications', subtitle:'Médicaments urgents - résidents non vus',
       generateAlerts:'Générer alertes', markAllRead:'Tout marquer lu',
       filterAll:'Toutes', filterUnread:'Non lues', filterUntreated:'Non traitées',
       filterMeds:'Médicaments', filterVisits:'Visites',
@@ -289,7 +289,7 @@ const T = {
       markRead:'Marquer lue', markDone:'Marquer traitée',
       generated:'Alertes générées', markedRead:'Alerte marquée comme lue', markedDone:'Alerte traitée',
       allMarkedRead:'Toutes les alertes marquées comme lues',
-      typeMed24h:'Médicament — 24h', typeMedOut:'Médicament épuisé',
+      typeMed24h:'Médicament - 24h', typeMedOut:'Médicament épuisé',
       typeNotSeen:'Pas vu 30j+', typeUrgent:'Urgence', typeAnniversaire:'Anniversaire',
       typeVisitReq:'Visite requise', typeRdvMiss:'RDV manqué', typeOther:'Autre',
       tabAll:'Toutes', tabMeds:'Médicaments', tabVisits:'Visites',
@@ -299,7 +299,7 @@ const T = {
     },
 
     statistics: {
-      title:'Statistiques', subtitle:'Activité médicale — 30 derniers jours',
+      title:'Statistiques', subtitle:'Activité médicale - 30 derniers jours',
       consultations30:'Consultations (30 jours)', byPriority:'Résidents par priorité',
       byMobility:'Résidents par mobilité', topMeds:'Médicaments les plus prescrits',
       noData:'Aucune donnée disponible',
@@ -356,10 +356,10 @@ const T = {
       required:'Type de sortie requis',
       adminOnlyVacances:'En tant qu\'Admin, seules les sorties temporaires (vacances) sont autorisées. Contactez le Super Admin pour un départ définitif ou un décès.',
       profileDeceased:'Dossier de Décès',
-      profileDeparted:'Dossier Archivé — Parti(e)',
+      profileDeparted:'Dossier Archivé - Parti(e)',
       deceasedOn:'Décédé(e) le',
       departedOn:'Parti(e) le',
-      archivedReadOnly:'Dossier archivé — lecture seule',
+      archivedReadOnly:'Dossier archivé - lecture seule',
       pdfDeces:'PDF Dossier Décès',
       pdfDepart:'PDF Dossier Archivé',
       tabHistorique:'Historique médical',
@@ -401,7 +401,7 @@ const T = {
     },
 
     anniversaires: {
-      title:'Anniversaires', subtitle:"Célébrations des résidents — St Hugh's Anglican Home",
+      title:'Anniversaires', subtitle:"Célébrations des résidents - St Hugh's Anglican Home",
       todaySection:"Anniversaires du jour", upcomingSection:'Cette semaine',
       monthSection:'Ce mois-ci', allSection:'Tous les anniversaires',
       yearsOld:'ans', noBirthday:'Aucun anniversaire',
@@ -475,7 +475,7 @@ const T = {
 
     monprofil: {
       title:'Mon profil',
-      subtitle:'Informations de votre compte — lecture seule',
+      subtitle:'Informations de votre compte - lecture seule',
       labelNom:'Nom complet',
       labelEmail:'Adresse email',
       labelRole:'Rôle',
@@ -535,7 +535,7 @@ const T = {
     priority: { p1:'P1 Urgent', p2:'P2 High', p3:'P3 Normal' },
 
     dashboard: {
-      title:'Dashboard', subtitle:"St Hugh's Anglican Home — Overview",
+      title:'Dashboard', subtitle:"St Hugh's Anglican Home - Overview",
       newRdv:'New appointment', newConsult:'Consultation',
       activeResidents:'Active residents', unreadAlerts:'Unread alerts',
       urgentMeds:'Urgent medications', notSeen30:'Not seen 30d+',
@@ -576,7 +576,7 @@ const T = {
       newConsult:'New consultation', newTreatment:'New treatment', newRdv:'New appointment',
       formTitle:'New resident', formTitleEdit:'Edit resident',
       photo:'Profile photo', changePhoto:'Change', removePhoto:'Remove photo',
-      photoChoose:'Choose a photo', photoSizeNote:'JPG, PNG, WebP — max 2 MB',
+      photoChoose:'Choose a photo', photoSizeNote:'JPG, PNG, WebP - max 2 MB',
       photoTooLarge:'Photo too large (max 2 MB)', uploadErrPhoto:'Photo upload error',
       identity:'Identity', sectionContact:'Contact information',
       sectionMedical:'Medical information', sectionAdmin:'Administration',
@@ -593,7 +593,7 @@ const T = {
       priorityLevel:'Priority level', medNotes:'Medical notes',
       treatingDoctor:'Attending doctor', selectDoctor:'— Select a doctor —',
       noneDoctor:'— None —',
-      p1option:'P1 — Urgent', p2option:'P2 — High', p3option:'P3 — Normal',
+      p1option:'P1 - Urgent', p2option:'P2 - High', p3option:'P3 - Normal',
       familyContacts:'Family contacts', addContact:'Add contact',
       contactName:'Name *', contactPhone:'Phone', contactRelation:'Relation',
       contactEmail:'Email (optional)',
@@ -609,7 +609,7 @@ const T = {
       exportChoiceTitle:'Export file',
       exportChoiceSub:'Choose the content to export',
       exportMedical:'Medical file', exportMedicalDesc:'Medical information, treatments and consultations only',
-      exportAdmin:'Administrative file', exportAdminDesc:'Family contacts, vacation and shopping history — no medical data',
+      exportAdmin:'Administrative file', exportAdminDesc:'Family contacts, vacation and shopping history - no medical data',
       exportFull:'Complete file', exportFullDesc:'All information (medical and administrative)',
       backToProfile:'Back to file',
     },
@@ -631,7 +631,7 @@ const T = {
     },
 
     treatments: {
-      title:'Active treatments', subtitle:'Medication tracking — alerts and renewals',
+      title:'Active treatments', subtitle:'Medication tracking - alerts and renewals',
       searchPlaceholder:'Resident, medication…',
       addTreatment:'Add treatment',
       filterAll:'All', filterUrgent:'Urgent (24h)', filterSoon:'Soon (3d)',
@@ -709,12 +709,12 @@ const T = {
       spo2:'O₂ saturation (%)', spo2Short:'SpO₂ (%)',
       bmiLabel:'BMI:', bmi:'BMI (auto-calculated)', observations:'Observations',
       diagnosis:'Diagnosis', treatmentNote:'Prescribed treatment', nextRdv:'Suggested next appointment',
-      prescription:'Prescription (PDF, JPG, PNG — max 5 MB)',
+      prescription:'Prescription (PDF, JPG, PNG - max 5 MB)',
       prescriptionChoose:'Choose file', prescriptionNone:'No file chosen',
       prescriptionRemove:'Remove', prescriptionView:'View prescription',
-      fromRdv:'Appt', fromRdvTitle:'From a past appointment — managed in the Appointments page',
+      fromRdv:'Appt', fromRdvTitle:'From a past appointment - managed in the Appointments page',
       uploadDrag:'Drag or click to upload',
-      uploadSizeNote:'PDF or image — max 5 MB',
+      uploadSizeNote:'PDF or image - max 5 MB',
       seeCurrentFile:'View current file',
       notes:'Notes', viewTitle:'Consultation',
       saved:'Consultation saved', modified:'Consultation updated', deleted:'Consultation deleted',
@@ -745,7 +745,7 @@ const T = {
     },
 
     planning: {
-      title:'Visit planning', subtitle:'2 medical visits/week — dynamic rotation of 64 residents',
+      title:'Visit planning', subtitle:'2 medical visits/week - dynamic rotation of 64 residents',
       newSlot:'New visit slot',
       priorityList:'Next to schedule', prioritySorted:'Sorted by urgency',
       nextSlots:'Upcoming slots', residents:'residents',
@@ -763,7 +763,7 @@ const T = {
     },
 
     alerts: {
-      title:'Alerts & Notifications', subtitle:'Urgent medications — residents not seen',
+      title:'Alerts & Notifications', subtitle:'Urgent medications - residents not seen',
       generateAlerts:'Generate alerts', markAllRead:'Mark all as read',
       filterAll:'All', filterUnread:'Unread', filterUntreated:'Unresolved',
       filterMeds:'Medications', filterVisits:'Visits',
@@ -771,7 +771,7 @@ const T = {
       markRead:'Mark as read', markDone:'Mark as resolved',
       generated:'Alerts generated', markedRead:'Alert marked as read', markedDone:'Alert resolved',
       allMarkedRead:'All alerts marked as read',
-      typeMed24h:'Medication — 24h', typeMedOut:'Medication out',
+      typeMed24h:'Medication - 24h', typeMedOut:'Medication out',
       typeNotSeen:'Not seen 30d+', typeUrgent:'Emergency', typeAnniversaire:'Birthday',
       typeVisitReq:'Visit required', typeRdvMiss:'Missed appointment', typeOther:'Other',
       tabAll:'All', tabMeds:'Medications', tabVisits:'Visits',
@@ -781,7 +781,7 @@ const T = {
     },
 
     statistics: {
-      title:'Statistics', subtitle:'Medical activity — last 30 days',
+      title:'Statistics', subtitle:'Medical activity - last 30 days',
       consultations30:'Consultations (30 days)', byPriority:'Residents by priority',
       byMobility:'Residents by mobility', topMeds:'Most prescribed medications',
       noData:'No data available',
@@ -838,10 +838,10 @@ const T = {
       required:'Exit type is required',
       adminOnlyVacances:'As Admin, only temporary leave (vacation) is allowed. Contact the Super Admin for permanent departure or death.',
       profileDeceased:'Death Record',
-      profileDeparted:'Archived File — Departed',
+      profileDeparted:'Archived File - Departed',
       deceasedOn:'Deceased on',
       departedOn:'Departed on',
-      archivedReadOnly:'Archived file — read only',
+      archivedReadOnly:'Archived file - read only',
       pdfDeces:'PDF Death Record',
       pdfDepart:'PDF Archived File',
       tabHistorique:'Medical history',
@@ -883,7 +883,7 @@ const T = {
     },
 
     anniversaires: {
-      title:'Birthdays', subtitle:"Residents' celebrations — St Hugh's Anglican Home",
+      title:'Birthdays', subtitle:"Residents' celebrations - St Hugh's Anglican Home",
       todaySection:"Today's birthdays", upcomingSection:'This week',
       monthSection:'This month', allSection:'All birthdays',
       yearsOld:'years old', noBirthday:'No birthday',
@@ -957,7 +957,7 @@ const T = {
 
     monprofil: {
       title:'My profile',
-      subtitle:'Your account information — read only',
+      subtitle:'Your account information - read only',
       labelNom:'Full name',
       labelEmail:'Email address',
       labelRole:'Role',

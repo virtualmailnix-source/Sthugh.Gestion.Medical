@@ -1,5 +1,5 @@
 -- ============================================================
--- Row Level Security — St Hugh's Medical System
+-- Row Level Security - St Hugh's Medical System
 -- ============================================================
 
 ALTER TABLE doctors           ENABLE ROW LEVEL SECURITY;

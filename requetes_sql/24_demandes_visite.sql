@@ -1,6 +1,6 @@
 -- ============================================================
 --  24_demandes_visite.sql
---  St Hugh's Anglican Home — Demandes de visite en ligne
+--  St Hugh's Anglican Home - Demandes de visite en ligne
 --
 --  Flux : site public → Edge Function visit-request (webhook
 --  sécurisé, insertion en service role) → validation/refus par

@@ -1,6 +1,6 @@
 -- ============================================================
 --  21_deces_cleanup.sql
---  St Hugh's Anglican Home — Cohérence des dossiers décédés
+--  St Hugh's Anglican Home - Cohérence des dossiers décédés
 --
 --  Au passage du statut à « décédé » :
 --    - niveau_priorite → NULL (plus de score d'urgence)
@@ -46,7 +46,7 @@ CREATE TRIGGER trg_resident_deces
   FOR EACH ROW EXECUTE FUNCTION fn_on_resident_deces();
 
 -- La contrainte doit tolérer NULL (NULL IN (1,2,3) n'est pas FALSE,
--- donc la contrainte existante passe déjà — rien à modifier).
+-- donc la contrainte existante passe déjà - rien à modifier).
 
 -- ── 2. Correction rétroactive des décédés existants ─────────
 UPDATE residents SET niveau_priorite = NULL, actif = FALSE
@@ -97,7 +97,7 @@ BEGIN
     VALUES (
       'medicament_24h',
       t.resident_id,
-      'Médicament à renouveler — ' || t.nom_medicament,
+      'Médicament à renouveler - ' || t.nom_medicament,
       'Le traitement "' || t.nom_medicament || '" se termine le ' || TO_CHAR(t.date_fin,'DD/MM/YYYY') || '. Renouvellement requis.',
       1
     );
@@ -109,7 +109,7 @@ BEGIN
   SELECT
     'pas_vu_30j',
     r.id,
-    'Consultation requise — ' || r.prenom || ' ' || r.nom,
+    'Consultation requise - ' || r.prenom || ' ' || r.nom,
     r.prenom || ' ' || r.nom || ' n''a pas eu de consultation depuis plus de 30 jours.',
     2
   FROM v_residents_priorite r

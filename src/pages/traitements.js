@@ -157,7 +157,7 @@ function _openRestock(trow) {
 
   const body = `<form id="form-restock">
     <p style="margin-bottom:.75rem">
-      <strong>${trow.nom_medicament}</strong> — ${trow.resident_prenom} ${trow.resident_nom}
+      <strong>${trow.nom_medicament}</strong> - ${trow.resident_prenom} ${trow.resident_nom}
     </p>
     <div style="font-size:.85rem;color:var(--text-light);margin-bottom:1rem">
       ${t('treatments.restockCurrent')} : <strong>${trow.stock_restant !== null ? Math.round(trow.stock_restant) : '—'} ${trow.unite || ''}</strong>
@@ -234,7 +234,7 @@ export async function openFormTraitement(id, prefillResidentId) {
   const { data: docs } = await db.from('doctors').select('id,titre,nom,prenom').eq('actif',true).order('nom');
 
   const resOpts = (residents||[]).map(r=>
-    `<option value="${r.id}" ${(tData.resident_id||prefillResidentId)===r.id?'selected':''}>${r.prenom} ${r.nom} — Ch.${r.numero_chambre||'—'}</option>`
+    `<option value="${r.id}" ${(tData.resident_id||prefillResidentId)===r.id?'selected':''}>${r.prenom} ${r.nom} - Ch.${r.numero_chambre||'—'}</option>`
   ).join('');
   const docOpts = (docs||[]).map(d=>
     `<option value="${d.id}" ${tData.prescrit_par===d.id?'selected':''}>${d.titre||'Dr.'} ${d.prenom} ${d.nom}</option>`
@@ -478,7 +478,7 @@ async function _submitTrt(id, prev = {}) {
 async function _renewTraitement(trow) {
   if (!trow) return;
   const body = `<form id="form-renew">
-    <p style="margin-bottom:1rem">${t('treatments.renewFor')} <strong>${trow.nom_medicament}</strong> — <strong>${trow.resident_prenom} ${trow.resident_nom}</strong></p>
+    <p style="margin-bottom:1rem">${t('treatments.renewFor')} <strong>${trow.nom_medicament}</strong> - <strong>${trow.resident_prenom} ${trow.resident_nom}</strong></p>
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">${t('treatments.newStartDate')} <span class="required">*</span></label>

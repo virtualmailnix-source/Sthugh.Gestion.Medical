@@ -1,6 +1,6 @@
 -- ============================================================
 --  09_seed_400_residents.sql
---  Données de test — 400 résidents fictifs avec médecins,
+--  Données de test - 400 résidents fictifs avec médecins,
 --  traitements, consultations et rendez-vous
 --  Contexte : Rose Hill, Mauritius
 --  À exécuter APRÈS les fichiers 01 à 08
@@ -119,12 +119,12 @@ DECLARE
   ];
   diagnostics TEXT[] := ARRAY[
     'HTA bien contrôlée','Diabète équilibré sous traitement',
-    'Arthrose stable — kinésithérapie recommandée',
-    'Insuffisance cardiaque compensée','BPCO stable — poursuite traitement',
-    'Traitement adapté — contrôle à 3 mois','Glycémie à surveiller',
-    'TA légèrement élevée — ajuster traitement','Bon état général',
-    'Infection respiratoire légère — antibiotique 5j','Anémie légère',
-    'Équilibre perturbé — bilan chute','État stationnaire',
+    'Arthrose stable - kinésithérapie recommandée',
+    'Insuffisance cardiaque compensée','BPCO stable - poursuite traitement',
+    'Traitement adapté - contrôle à 3 mois','Glycémie à surveiller',
+    'TA légèrement élevée - ajuster traitement','Bon état général',
+    'Infection respiratoire légère - antibiotique 5j','Anémie légère',
+    'Équilibre perturbé - bilan chute','État stationnaire',
     'Amélioration nette','Pas de changement notable'
   ];
 
@@ -167,7 +167,7 @@ BEGIN
   FROM doctors WHERE actif = TRUE;
 
   IF doc_ids IS NULL OR array_length(doc_ids, 1) = 0 THEN
-    RAISE EXCEPTION 'Aucun médecin trouvé — exécutez d''abord 04_seed_data.sql';
+    RAISE EXCEPTION 'Aucun médecin trouvé - exécutez d''abord 04_seed_data.sql';
   END IF;
 
   FOR i IN 1..400 LOOP

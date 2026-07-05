@@ -10,7 +10,7 @@ const MGR_T = {
     save: 'Enregistrer', cancel: 'Annuler', loading: 'Chargement…',
     sectionUsers: 'Utilisateurs', sectionJournal: "Journal d'activité",
     /* login */
-    adminPanel: "Panneau d'administration — Super Admin",
+    adminPanel: "Panneau d'administration - Super Admin",
     emailLabel: 'Adresse email', passwordLabel: 'Mot de passe',
     loginBtn: 'Se connecter', signingIn: 'Connexion…',
     invalidCreds: 'Identifiants incorrects.',
@@ -79,7 +79,7 @@ const MGR_T = {
     save: 'Save', cancel: 'Cancel', loading: 'Loading…',
     sectionUsers: 'Users', sectionJournal: 'Activity log',
     /* login */
-    adminPanel: 'Administration panel — Super Admin',
+    adminPanel: 'Administration panel - Super Admin',
     emailLabel: 'Email address', passwordLabel: 'Password',
     loginBtn: 'Sign in', signingIn: 'Signing in…',
     invalidCreds: 'Invalid credentials.',
@@ -170,12 +170,12 @@ function _applyMgrLang() {
   if (cancelBtn) cancelBtn.textContent = _mgrT('cancel');
   if (saveBtn)   saveBtn.textContent   = _mgrT('save');
 
-  /* filtres du journal — options */
+  /* filtres du journal - options */
   _rebuildFilterOptions();
 }
 
 function _rebuildFilterOptions() {
-  /* filtre utilisateur — only option[value=""] */
+  /* filtre utilisateur - only option[value=""] */
   const selUser = document.getElementById('filter-user');
   if (selUser) {
     const emptyOpt = selUser.querySelector('option[value=""]');
@@ -420,7 +420,7 @@ function _openUserModal(user = null) {
 
   document.getElementById('modal-title').textContent = isNew
     ? _mgrT('newUserTitle')
-    : `${_mgrT('editUserTitle')} — ${user.prenom} ${user.nom}`;
+    : `${_mgrT('editUserTitle')} - ${user.prenom} ${user.nom}`;
 
   document.getElementById('modal-body').innerHTML = `
     <div class="form-grid">
@@ -1087,7 +1087,7 @@ function _auditSummary(a, locale) {
       if (d.resident) parts.push(d.resident);
       if (d.type)     parts.push(d.type);
       if (d.source)   parts.push(d.source);
-      return _esc(parts.join(' — ')) || '—';
+      return _esc(parts.join(' - ')) || '—';
     }
     const row   = a.details?.new || a.details?.old || {};
     const parts = [];
@@ -1100,6 +1100,6 @@ function _auditSummary(a, locale) {
     if (row.date_rdv)            parts.push(new Date(row.date_rdv).toLocaleDateString(locale));
     if (row.email && a.table_name === 'app_users') parts.push(row.email);
     if (row.numero_chambre)      parts.push(`${_getLang()==='en'?'Rm.':'Ch.'} ${row.numero_chambre}`);
-    return _esc(parts.slice(0, 3).join(' — ')) || '—';
+    return _esc(parts.slice(0, 3).join(' - ')) || '—';
   } catch { return '—'; }
 }

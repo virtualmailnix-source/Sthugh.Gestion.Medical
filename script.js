@@ -151,7 +151,7 @@ function _startApp(user) {
   window.addEventListener('online',  _updateNet);
   window.addEventListener('offline', _updateNet);
 
-  // Sidebar — collapse/expand desktop
+  // Sidebar - collapse/expand desktop
   document.getElementById('btn-sidebar-collapse')?.addEventListener('click', () => {
     const sidebar = document.getElementById('sidebar');
     sidebar?.classList.toggle('collapsed');
@@ -167,7 +167,7 @@ function _startApp(user) {
     }
   });
 
-  // Sidebar — mobile
+  // Sidebar - mobile
   document.getElementById('btn-mobile-menu')?.addEventListener('click', () => {
     document.getElementById('sidebar')?.classList.add('mobile-open');
     document.getElementById('sidebar-overlay')?.classList.remove('hidden');
@@ -258,7 +258,7 @@ async function _loadBadges() {
     const bv = document.getElementById('badge-visites');
     if (bv) { bv.textContent = vc || 0; bv.style.display = (vc || 0) > 0 ? 'flex' : 'none'; }
 
-    // Badge anniversaires (aujourd'hui + demain) — vue accessible à tous les rôles
+    // Badge anniversaires (aujourd'hui + demain) - vue accessible à tous les rôles
     const { data: residents } = await db.from('v_residents_public')
       .select('date_naissance').eq('actif', true).not('date_naissance', 'is', null);
     const now = new Date();

@@ -100,7 +100,7 @@ async function _loadResidents() {
   _renderPagination(count || 0);
 
   // onclick (et non addEventListener) : _loadResidents est rappelée à chaque
-  // filtre/recherche sur le même élément — les listeners s'empileraient
+  // filtre/recherche sur le même élément - les listeners s'empileraient
   wrap.onclick = e => {
     const btn = e.target.closest('button[data-action]');
     const row = e.target.closest('tr[data-id]');
@@ -499,7 +499,7 @@ function _initFormEvents(r, isNew) {
     _initContactRemove(row);
   });
 
-  // Init suppression sur les contacts existants
+  // Brancher la suppression sur les contacts existants
   document.querySelectorAll('.contact-row').forEach(row => _initContactRemove(row));
 }
 
@@ -534,7 +534,7 @@ async function _submitResident(id) {
       .upload(path, photoFile, { contentType: photoFile.type || 'image/jpeg' });
     if (upErr) {
       // Upload échoué : on sauvegarde quand même le résident sans photo
-      toastError(t('residents.uploadErrPhoto') + ' — ' + upErr.message);
+      toastError(t('residents.uploadErrPhoto') + ' - ' + upErr.message);
     } else {
       const { data: urlData } = db.storage.from('photos-residents').getPublicUrl(path);
       data.photo_url = urlData?.publicUrl ?? null;
@@ -593,7 +593,7 @@ async function _openProfile(id) {
     // Vue unifiée : consultations saisies + RDV échus (règle métier)
     db.from('v_consultations_unifiees').select('*').eq('resident_id', id).order('date_consultation', { ascending: false }).limit(10),
     db.from('v_traitements_actifs').select('*').eq('resident_id', id),
-    // RDV futurs uniquement — les échus apparaissent côté consultations
+    // RDV futurs uniquement - les échus apparaissent côté consultations
     db.from('v_rdv_detail').select('*').eq('resident_id', id)
       .gte('date_rdv', new Date().toISOString())
       .not('statut', 'in', '(annule,absent)')
@@ -626,7 +626,7 @@ async function _openProfile(id) {
           <div style="flex:1">
             <div style="font-weight:600">${escapeHtml(c.nom)}
               ${c.est_principal ? `<span class="badge badge-teal" style="font-size:.68rem;margin-left:.4rem">${t('residents.primaryBadge')}</span>` : ''}
-              ${c.relation ? `<span style="color:var(--text-light);font-weight:400"> — ${escapeHtml(c.relation)}</span>` : ''}
+              ${c.relation ? `<span style="color:var(--text-light);font-weight:400"> - ${escapeHtml(c.relation)}</span>` : ''}
             </div>
             ${c.telephone ? `<div style="font-size:.83rem;color:var(--text-light);margin-top:.15rem"><i class="bi bi-telephone"></i> <a href="${telHref(c.telephone)}" style="color:inherit">${escapeHtml(c.telephone)}</a></div>` : ''}
             ${c.email ? `<div style="font-size:.83rem;color:var(--text-light);margin-top:.15rem"><i class="bi bi-envelope"></i> <a href="mailto:${escapeHtml(c.email)}" style="color:inherit">${escapeHtml(c.email)}</a></div>` : ''}
@@ -784,7 +784,7 @@ async function _openProfile(id) {
       ${trais.length ? trais.map(tr => `
         <div class="consult-mini">
           <div class="consult-mini-header">
-            <span style="font-weight:700">${tr.nom_medicament}${tr.dosage ? ' — ' + tr.dosage : ''}</span>
+            <span style="font-weight:700">${tr.nom_medicament}${tr.dosage ? ' - ' + tr.dosage : ''}</span>
             ${isArchived ? '' : _alerteBadge(tr.statut_alerte, tr.jours_restants)}
           </div>
           <div class="consult-mini-body">${tr.posologie}</div>
@@ -818,14 +818,14 @@ async function _openProfile(id) {
             <span class="consult-mini-date">${formatDate(rv.date_rdv, { time: true })}</span>
             <span class="badge ${rv.statut === 'effectue' ? 'badge-confirme' : rv.statut === 'annule' ? 'badge-annule' : 'badge-planifie'}">${t('status.' + rv.statut) || rv.statut}</span>
           </div>
-          <div class="consult-mini-body">${rv.motif || t('appointments.title')} — ${rv.medecin_titre || ''} ${rv.medecin_nom || ''}</div>
+          <div class="consult-mini-body">${rv.motif || t('appointments.title')} - ${rv.medecin_titre || ''} ${rv.medecin_nom || ''}</div>
         </div>`).join('')
         : `<div class="empty-state"><i class="bi bi-calendar-x"></i><p>${t('residents.noRdv')}</p></div>`}
     </div>` : ''}`;
 
   // Titre et boutons du modal selon le statut
   const modalTitle = r.statut_depart === 'deces'
-    ? `✝ ${t('depart.profileDeceased')} — ${fullName(r.nom, r.prenom)}`
+    ? `✝ ${t('depart.profileDeceased')} - ${fullName(r.nom, r.prenom)}`
     : r.statut_depart === 'depart'
     ? `<i class="bi bi-door-open-fill"></i> ${t('depart.profileDeparted')}`
     : `<i class="bi bi-folder2-open"></i> ${t('residents.profileTitle')}`;
@@ -841,7 +841,7 @@ async function _openProfile(id) {
     ...(sa && r.statut_depart !== 'deces' ? [{ label: t('common.modify'), cls: 'btn btn-secondary btn-sm', action: () => { closeModal(); openFormResident(id); } }] : []),
     // Nouvelle consultation : actif ou vacances seulement
     ...(isActive || isVacances ? [{ label: t('residents.newConsult'), cls: 'btn btn-primary btn-sm', action: () => { closeModal(); openFormConsultation(null, id); } }] : []),
-    // PDF : toujours visible, libellé selon statut — ouvre le choix du contenu
+    // PDF : toujours visible, libellé selon statut - ouvre le choix du contenu
     { label: pdfLabel, cls: 'btn btn-secondary btn-sm', action: () => _openExportChoice(r, cons, trais, contacts, histSorties, histCourses, visites, rdvs) },
     // Retour au foyer (vacances)
     ...(isVacances ? [{ label: `<i class="bi bi-house-fill"></i> ${t('depart.btnRestore')}`, cls: 'btn btn-success btn-sm', action: () => { closeModal(); _openRestoreModal(r); } }] : []),
@@ -871,7 +871,7 @@ async function _openProfile(id) {
   });
 }
 
-// ── Profil réceptionniste : identité, contacts, visites — rien de médical ──
+// ── Profil réceptionniste : identité, contacts, visites - rien de médical ──
 async function _openProfileAccueil(id) {
   const [resRes, contactsRes, histSortiesRes, histCoursesRes, visitesRes] = await Promise.all([
     db.from('v_residents_public').select('*').eq('id', id).single(),
@@ -898,7 +898,7 @@ async function _openProfileAccueil(id) {
           <div style="flex:1">
             <div style="font-weight:600">${escapeHtml(c.nom)}
               ${c.est_principal ? `<span class="badge badge-teal" style="font-size:.68rem;margin-left:.4rem">${t('residents.primaryBadge')}</span>` : ''}
-              ${c.relation ? `<span style="color:var(--text-light);font-weight:400"> — ${escapeHtml(c.relation)}</span>` : ''}
+              ${c.relation ? `<span style="color:var(--text-light);font-weight:400"> - ${escapeHtml(c.relation)}</span>` : ''}
             </div>
             ${c.telephone ? `<div style="font-size:.83rem;color:var(--text-light);margin-top:.15rem"><i class="bi bi-telephone"></i> <a href="${telHref(c.telephone)}" style="color:inherit">${escapeHtml(c.telephone)}</a></div>` : ''}
             ${c.email ? `<div style="font-size:.83rem;color:var(--text-light);margin-top:.15rem"><i class="bi bi-envelope"></i> <a href="mailto:${escapeHtml(c.email)}" style="color:inherit">${escapeHtml(c.email)}</a></div>` : ''}
@@ -974,7 +974,7 @@ async function _openProfileAccueil(id) {
             <span class="consult-mini-date">${formatDate(v.date_visite)}</span>
             <span class="badge ${v.statut === 'terminee' ? 'badge-actif' : v.statut === 'annulee' ? 'badge-annule' : 'badge-planifie'}">${t('visites.status' + v.statut.charAt(0).toUpperCase() + v.statut.slice(1).replace('_c','C')) || v.statut}</span>
           </div>
-          <div class="consult-mini-body">${escapeHtml(fullName(v.visiteur_nom, v.visiteur_prenom))}${v.relation ? ' — ' + escapeHtml(v.relation) : ''} (${v.nb_personnes || 1} pers.)</div>
+          <div class="consult-mini-body">${escapeHtml(fullName(v.visiteur_nom, v.visiteur_prenom))}${v.relation ? ' - ' + escapeHtml(v.relation) : ''} (${v.nb_personnes || 1} pers.)</div>
         </div>`).join('')
         : `<div class="empty-state"><i class="bi bi-person-x"></i><p>${t('visites.noVisits')}</p></div>`}
     </div>`;
@@ -1004,7 +1004,7 @@ async function _openProfileAccueil(id) {
   );
 }
 
-// Sortie vacances côté accueil — passe par la RPC (RLS bloque l'UPDATE direct)
+// Sortie vacances côté accueil - passe par la RPC (RLS bloque l'UPDATE direct)
 function _openVacancesAccueil(r) {
   const body = `<form id="form-vac">
     <div class="form-row">
@@ -1023,7 +1023,7 @@ function _openVacancesAccueil(r) {
     </div>
   </form>`;
 
-  openModal(`<i class="bi bi-luggage-fill"></i> ${t('depart.typeVacances')} — ${fullName(r.nom, r.prenom)}`, body, [
+  openModal(`<i class="bi bi-luggage-fill"></i> ${t('depart.typeVacances')} - ${fullName(r.nom, r.prenom)}`, body, [
     { label: t('common.cancel'), cls: 'btn btn-secondary', action: closeModal },
     { label: t('common.save'), cls: 'btn btn-primary', action: async () => {
       const fd = new FormData(document.getElementById('form-vac'));
@@ -1063,7 +1063,7 @@ function _alerteBadge(s, jours) {
 
 // ── Choix du contenu à exporter ─────────────────────────────
 function _openExportChoice(r, cons, trais, contacts, histSorties, histCourses, visites = [], rdvs = []) {
-  // Réceptionniste : pas de choix — export administratif direct
+  // Réceptionniste : pas de choix - export administratif direct
   if (isReceptionist()) {
     _exportPDF(r, [], [], contacts, histSorties, histCourses, 'admin', visites, []);
     return;
@@ -1076,7 +1076,7 @@ function _openExportChoice(r, cons, trais, contacts, histSorties, histCourses, v
 
   const body = `
     <p style="font-size:.88rem;color:var(--text-light);margin-bottom:1rem">
-      ${t('residents.exportChoiceSub')} — <strong>${fullName(r.nom, r.prenom)}</strong>
+      ${t('residents.exportChoiceSub')} - <strong>${fullName(r.nom, r.prenom)}</strong>
     </p>
     <div style="display:flex;flex-direction:column;gap:.6rem">
       ${choices.map(c => `
@@ -1131,7 +1131,7 @@ function _exportPDF(r, cons, trais, contacts, histSorties = [], histCourses = []
     : exporter?.role === 'receptionniste' ? 'Receptionniste' : 'Admin';
   const exporterLabel = exporter
     ? `${exporter.prenom || ''} ${exporter.nom || ''}`.trim()
-      + (exporter.email ? ` (${exporter.email})` : '') + ` — ${roleLabel}`
+      + (exporter.email ? ` (${exporter.email})` : '') + ` - ${roleLabel}`
     : '';
 
   const slug = s => (s || '').toLowerCase()
@@ -1183,9 +1183,9 @@ function _exportPDF(r, cons, trais, contacts, histSorties = [], histCourses = []
 
   const modeLabel = mode === 'medical' ? 'MEDICAL' : mode === 'admin' ? 'ADMINISTRATIF' : 'COMPLET';
   const docType = isDeces
-    ? `DOSSIER DE DECES${mode !== 'complet' ? ' — ' + modeLabel : ''}`
+    ? `DOSSIER DE DECES${mode !== 'complet' ? ' - ' + modeLabel : ''}`
     : isDepart
-    ? `DOSSIER ARCHIVE${mode !== 'complet' ? ' — ' + modeLabel : ''}`
+    ? `DOSSIER ARCHIVE${mode !== 'complet' ? ' - ' + modeLabel : ''}`
     : `DOSSIER ${modeLabel}`;
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8);
@@ -1410,10 +1410,10 @@ function _exportPDF(r, cons, trais, contacts, histSorties = [], histCourses = []
   // ── Pied de page sur chaque page ───────────────────────────
   const nb = doc.internal.getNumberOfPages();
   const footerDoc = isDeces
-    ? "Dossier de Deces — Confidentiel — St Hugh's Anglican Home"
+    ? "Dossier de Deces - Confidentiel - St Hugh's Anglican Home"
     : isDepart
-    ? "Dossier Archive — Confidentiel — St Hugh's Anglican Home"
-    : "Dossier confidentiel — St Hugh's Anglican Home";
+    ? "Dossier Archive - Confidentiel - St Hugh's Anglican Home"
+    : "Dossier confidentiel - St Hugh's Anglican Home";
   const dateStr = new Date().toLocaleDateString('fr-MU');
 
   for (let i = 1; i <= nb; i++) {
@@ -1530,7 +1530,7 @@ export function _openDepartModal(r) {
   </form>`;
 
   openModal(
-    `<i class="bi bi-box-arrow-right"></i> ${t('depart.title')} — ${fullName(r.nom, r.prenom)}`,
+    `<i class="bi bi-box-arrow-right"></i> ${t('depart.title')} - ${fullName(r.nom, r.prenom)}`,
     body,
     [
       { label: t('common.cancel'), cls: 'btn btn-secondary', action: closeModal },
@@ -1539,7 +1539,7 @@ export function _openDepartModal(r) {
     'modal-lg'
   );
 
-  // Show/hide fields based on type
+  // Afficher les champs selon le type de sortie choisi
   document.querySelectorAll('input[name="type_sortie"]').forEach(radio => {
     radio.addEventListener('change', () => {
       const v = document.querySelector('input[name="type_sortie"]:checked')?.value;
@@ -1575,8 +1575,8 @@ async function _submitDepart(id) {
   // Supabase retourne [] si la RLS a bloqué silencieusement sans erreur
   if (!saved || saved.length === 0) {
     toastError(getLang() === 'en'
-      ? 'Update blocked by database policy — run 12_fix_rls_departs.sql'
-      : 'Bloqué par la base — exécutez 12_fix_rls_departs.sql dans Supabase');
+      ? 'Update blocked by database policy - run 12_fix_rls_departs.sql'
+      : 'Bloqué par la base - exécutez 12_fix_rls_departs.sql dans Supabase');
     return;
   }
   toastSuccess(t('depart.confirmed'));

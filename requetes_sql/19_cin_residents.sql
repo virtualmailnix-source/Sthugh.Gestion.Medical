@@ -1,6 +1,6 @@
 -- ============================================================
 --  19_cin_residents.sql
---  St Hugh's Anglican Home — Champ CIN (carte d'identité) résident
+--  St Hugh's Anglican Home - Champ CIN (carte d'identité) résident
 --
 --  Format mauricien : 14 caractères alphanumériques, commence
 --  par une lettre. NULL accepté pour les résidents existants ;

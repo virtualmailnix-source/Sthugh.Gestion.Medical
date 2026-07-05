@@ -154,7 +154,7 @@ function _visitCard(v) {
         </div>
         <div style="font-size:.88rem;font-weight:600;color:var(--teal-dark)">
           <i class="bi bi-person-fill" style="margin-right:.3rem"></i>${v.visiteur_prenom} ${v.visiteur_nom}
-          ${v.visiteur_relation ? `<span style="font-weight:400;color:var(--text-light)"> — ${escapeHtml(v.visiteur_relation)}</span>` : ''}
+          ${v.visiteur_relation ? `<span style="font-weight:400;color:var(--text-light)"> - ${escapeHtml(v.visiteur_relation)}</span>` : ''}
           ${v.visiteur_telephone ? `<span style="font-size:.78rem;color:var(--text-light);margin-left:.5rem"><i class="bi bi-telephone"></i> <a href="${telHref(v.visiteur_telephone)}" style="color:inherit">${v.visiteur_telephone}</a></span>` : ''}
         </div>
         ${othersTxt}
@@ -220,7 +220,7 @@ async function _openFormVisite(id) {
     .order('nom').limit(300);
 
   const resOpts = (resList || []).map(r =>
-    `<option value="${r.id}" ${v.resident_id === r.id ? 'selected' : ''}>${r.prenom} ${r.nom} — Ch.${r.numero_chambre || '—'}</option>`
+    `<option value="${r.id}" ${v.resident_id === r.id ? 'selected' : ''}>${r.prenom} ${r.nom} - Ch.${r.numero_chambre || '—'}</option>`
   ).join('');
 
   const others = v.autres_visiteurs || [];
@@ -312,7 +312,7 @@ async function _openFormVisite(id) {
     'modal-xl'
   );
 
-  // Add other visitor row
+  // Ajout d'une ligne visiteur supplémentaire
   document.getElementById('btn-add-other')?.addEventListener('click', () => {
     const c = document.getElementById('others-container');
     const idx = c.querySelectorAll('.other-row').length;
@@ -322,7 +322,7 @@ async function _openFormVisite(id) {
     _initOtherRemove(div.firstElementChild);
   });
 
-  // Init existing other rows
+  // Brancher la suppression sur les lignes existantes
   document.querySelectorAll('.other-row').forEach(row => _initOtherRemove(row));
 }
 
@@ -377,7 +377,7 @@ async function _submitVisite(id) {
     notes:               fd.get('notes')?.trim() || null,
   };
 
-  // If departure time is set, mark as terminée
+  // Une heure de départ renseignée vaut visite terminée
   if (data.heure_depart) data.statut = 'terminee';
 
   const { error } = id
@@ -470,13 +470,13 @@ async function _openDemandeModal(d) {
 
   const resOpts = actifs.map(r =>
     `<option value="${r.id}" ${d.resident_id === r.id ? 'selected' : ''}>
-      ${escapeHtml(fullName(r.nom, r.prenom))} — Ch.${r.numero_chambre || '?'}${r.statut_depart === 'vacances' ? ' (' + t('depart.badgeVacances') + ')' : ''}
+      ${escapeHtml(fullName(r.nom, r.prenom))} - Ch.${r.numero_chambre || '?'}${r.statut_depart === 'vacances' ? ' (' + t('depart.badgeVacances') + ')' : ''}
     </option>`).join('');
 
   const body = `
     <div style="background:var(--bg-alt);border-radius:var(--radius-sm);padding:.85rem 1rem;margin-bottom:1rem">
       <div style="font-weight:700;margin-bottom:.35rem">${escapeHtml(fullName(d.demandeur_nom, d.demandeur_prenom))}
-        ${d.lien_parente ? `<span style="font-weight:400;color:var(--text-light)"> — ${escapeHtml(d.lien_parente)}</span>` : ''}
+        ${d.lien_parente ? `<span style="font-weight:400;color:var(--text-light)"> - ${escapeHtml(d.lien_parente)}</span>` : ''}
       </div>
       <div style="font-size:.85rem;color:var(--text-light)">
         <i class="bi bi-envelope"></i> <a href="mailto:${escapeHtml(d.demandeur_email)}" style="color:inherit">${escapeHtml(d.demandeur_email)}</a>
@@ -495,7 +495,7 @@ async function _openDemandeModal(d) {
       <div class="form-group">
         <label class="form-label">${t('demandes.colStatus')}</label>
         <div>${d.statut === 'validee' ? t('demandes.statusApproved') : t('demandes.statusRefused')}
-          ${d.motif_refus ? ` — ${escapeHtml(d.motif_refus)}` : ''}</div>
+          ${d.motif_refus ? ` - ${escapeHtml(d.motif_refus)}` : ''}</div>
       </div>
     ` : `
       <form id="form-demande">
@@ -542,7 +542,7 @@ async function _openDemandeModal(d) {
       fullName(r.nom, r.prenom).toLowerCase().includes(q) ||
       String(r.numero_chambre || '').toLowerCase().includes(q));
     sel.innerHTML = filtered.map(r =>
-      `<option value="${r.id}">${escapeHtml(fullName(r.nom, r.prenom))} — Ch.${r.numero_chambre || '?'}${r.statut_depart === 'vacances' ? ' (' + t('depart.badgeVacances') + ')' : ''}</option>`
+      `<option value="${r.id}">${escapeHtml(fullName(r.nom, r.prenom))} - Ch.${r.numero_chambre || '?'}${r.statut_depart === 'vacances' ? ' (' + t('depart.badgeVacances') + ')' : ''}</option>`
     ).join('');
   });
 }
@@ -580,7 +580,7 @@ async function _approveDemande(d) {
     date_visite: dateVisite,
     est_planifiee: true,
     statut: 'planifiee',
-    notes: `${t('demandes.noteOrigin')} — ${creneau === 'matin' ? t('demandes.slotMorning') : t('demandes.slotAfternoon')}${d.message ? '\n' + d.message : ''}`,
+    notes: `${t('demandes.noteOrigin')} - ${creneau === 'matin' ? t('demandes.slotMorning') : t('demandes.slotAfternoon')}${d.message ? '\n' + d.message : ''}`,
   });
   if (vErr) { toastError(vErr.message); return; }
 

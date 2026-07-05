@@ -1,6 +1,6 @@
 -- ============================================================
 --  16_reboot_complet.sql
---  St Hugh's Anglican Home — Reboot complet de la base
+--  St Hugh's Anglican Home - Reboot complet de la base
 --
 --  EFFET : supprime TOUTES les données fictives (résidents,
 --          médecins, médicaments, et toutes les tables liées)
@@ -10,13 +10,13 @@
 --    - cabinet    (remis à jour via ON CONFLICT DO NOTHING)
 --
 --  À EXÉCUTER depuis le Supabase SQL Editor.
---  Irréversible — faire un backup avant si nécessaire.
+--  Irréversible - faire un backup avant si nécessaire.
 -- ============================================================
 
 BEGIN;
 
 -- ============================================================
--- PARTIE 1 — NETTOYAGE COMPLET
+-- PARTIE 1 - NETTOYAGE COMPLET
 -- ============================================================
 
 -- Tables dépendantes des résidents
@@ -38,7 +38,7 @@ TRUNCATE TABLE doctors          RESTART IDENTITY CASCADE;
 TRUNCATE TABLE medicaments      RESTART IDENTITY CASCADE;
 
 -- ============================================================
--- PARTIE 2 — DONNÉES DE BASE (état post-installation)
+-- PARTIE 2 - DONNÉES DE BASE (état post-installation)
 -- ============================================================
 
 -- ── Cabinet ──────────────────────────────────────────────────
@@ -54,7 +54,7 @@ Tél: 4641124'
 ) ON CONFLICT DO NOTHING;
 
 -- ============================================================
--- PARTIE 3 — VÉRIFICATION
+-- PARTIE 3 - VÉRIFICATION
 -- ============================================================
 SELECT
   'doctors'    AS table_name, COUNT(*) AS lignes FROM doctors

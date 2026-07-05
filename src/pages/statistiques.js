@@ -32,7 +32,7 @@ export async function renderStatistiques(container) {
 
     <div class="stats-charts-grid2" style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.25rem">
       <div class="card">
-        <div class="card-header"><div class="card-title"><i class="bi bi-capsule-pill"></i> Médicaments — état des traitements</div></div>
+        <div class="card-header"><div class="card-title"><i class="bi bi-capsule-pill"></i> Médicaments - état des traitements</div></div>
         <div class="card-body"><div class="chart-container"><canvas id="chart-meds"></canvas></div></div>
       </div>
       <div class="card" style="overflow:hidden">

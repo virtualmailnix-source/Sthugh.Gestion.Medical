@@ -210,8 +210,8 @@ async function _generateAlerts() {
       type:        'anniversaire',
       resident_id: r.id,
       titre:       r.diffDays === 0
-        ? `${getLang()==='en'?'Birthday today':'Anniversaire aujourd\'hui'} — ${fullName(r.nom, r.prenom)}`
-        : `${getLang()==='en'?'Birthday tomorrow':'Anniversaire demain'} — ${fullName(r.nom, r.prenom)}`,
+        ? `${getLang()==='en'?'Birthday today':'Anniversaire aujourd\'hui'} - ${fullName(r.nom, r.prenom)}`
+        : `${getLang()==='en'?'Birthday tomorrow':'Anniversaire demain'} - ${fullName(r.nom, r.prenom)}`,
       message:     r.diffDays === 0
         ? `${fullName(r.nom, r.prenom)} ${getLang()==='en'?'turns':'fête ses'} ${r.age} ${t('anniversaires.yearsOld')} ${getLang()==='en'?'today':'aujourd\'hui'} !`
         : `${fullName(r.nom, r.prenom)} ${getLang()==='en'?'will turn':'fêtera ses'} ${r.age} ${t('anniversaires.yearsOld')} ${getLang()==='en'?'tomorrow':'demain'}.`,

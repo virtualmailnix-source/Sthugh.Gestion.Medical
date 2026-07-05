@@ -131,7 +131,7 @@ CREATE POLICY "visites_delete_super" ON visites
   FOR DELETE TO authenticated USING (fn_is_super_admin());
 
 -- ============================================================
--- 4. Storage policies — bucket "photos-residents"
+-- 4. Storage policies - bucket "photos-residents"
 --    Utilise CREATE POLICY sur storage.objects (syntaxe correcte Supabase)
 -- ============================================================
 

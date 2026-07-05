@@ -1,6 +1,6 @@
 -- ============================================================
 --  20_traitements_stock.sql
---  St Hugh's Anglican Home — Stock & ravitaillement des traitements
+--  St Hugh's Anglican Home - Stock & ravitaillement des traitements
 --
 --  Principe : le stock restant est RECALCULÉ À LA VOLÉE dans la vue
 --  (pas de cron) à partir du stock saisi et de la consommation/jour :

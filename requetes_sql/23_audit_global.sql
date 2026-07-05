@@ -1,6 +1,6 @@
 -- ============================================================
 --  23_audit_global.sql
---  St Hugh's Anglican Home — Journal d'activité : traçabilité totale
+--  St Hugh's Anglican Home - Journal d'activité : traçabilité totale
 --
 --  1. Trigger d'audit générique amélioré :
 --     - UPDATE : ne stocke que le diff (champs réellement modifiés)

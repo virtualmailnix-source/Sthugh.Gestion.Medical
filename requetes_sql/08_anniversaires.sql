@@ -32,7 +32,7 @@ BEGIN
   SELECT
     'anniversaire',
     r.id,
-    'Anniversaire aujourd''hui — ' || r.prenom || ' ' || r.nom,
+    'Anniversaire aujourd''hui - ' || r.prenom || ' ' || r.nom,
     r.prenom || ' ' || r.nom || ' fête ses '
       || (EXTRACT(YEAR FROM CURRENT_DATE)::int - EXTRACT(YEAR FROM r.date_naissance)::int)
       || ' ans aujourd''hui !',
@@ -53,7 +53,7 @@ BEGIN
   SELECT
     'anniversaire',
     r.id,
-    'Anniversaire demain — ' || r.prenom || ' ' || r.nom,
+    'Anniversaire demain - ' || r.prenom || ' ' || r.nom,
     r.prenom || ' ' || r.nom || ' fêtera ses '
       || (EXTRACT(YEAR FROM CURRENT_DATE)::int - EXTRACT(YEAR FROM r.date_naissance)::int + 1)
       || ' ans le ' || TO_CHAR(r.date_naissance, 'DD/MM') || '.',
