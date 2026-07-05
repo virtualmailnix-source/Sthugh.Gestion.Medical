@@ -17,6 +17,10 @@
 -- ============================================================
 
 -- ── 0. Élargir la colonne action (LOGIN_FAILED > 10 caractères) ──
+-- La vue v_audit_log référence la colonne : PostgreSQL refuse de
+-- modifier le type tant qu'elle existe. On la supprime ici, elle est
+-- recréée à l'étape 4 avec security_invoker.
+DROP VIEW IF EXISTS v_audit_log;
 ALTER TABLE audit_log ALTER COLUMN action TYPE VARCHAR(20);
 
 -- ── 1. Fonction trigger générique avec diff ──────────────────
@@ -95,24 +99,32 @@ $$;
 -- ── 2. Attacher l'audit à TOUTES les tables du schéma public ─
 -- Couvre les tables existantes ET celles ajoutées ensuite :
 -- ré-exécuter ce bloc après toute création de table (idempotent).
+-- Les tables qui n'appartiennent pas à l'utilisateur courant
+-- (extensions, tables système déposées dans public) sont ignorées
+-- avec un NOTICE au lieu de faire échouer tout le script.
 DO $$
 DECLARE
   t RECORD;
 BEGIN
   FOR t IN
-    SELECT table_name
-    FROM information_schema.tables
-    WHERE table_schema = 'public'
-      AND table_type = 'BASE TABLE'
-      AND table_name <> 'audit_log'
+    SELECT c.relname AS table_name
+    FROM pg_class c
+    JOIN pg_namespace n ON n.oid = c.relnamespace
+    WHERE n.nspname = 'public'
+      AND c.relkind = 'r'
+      AND c.relname <> 'audit_log'
   LOOP
-    EXECUTE format('DROP TRIGGER IF EXISTS trg_audit_%I ON %I', t.table_name, t.table_name);
-    EXECUTE format(
-      'CREATE TRIGGER trg_audit_%I
-         AFTER INSERT OR UPDATE OR DELETE ON %I
-         FOR EACH ROW EXECUTE FUNCTION fn_audit_trigger()',
-      t.table_name, t.table_name
-    );
+    BEGIN
+      EXECUTE format('DROP TRIGGER IF EXISTS trg_audit_%I ON %I', t.table_name, t.table_name);
+      EXECUTE format(
+        'CREATE TRIGGER trg_audit_%I
+           AFTER INSERT OR UPDATE OR DELETE ON %I
+           FOR EACH ROW EXECUTE FUNCTION fn_audit_trigger()',
+        t.table_name, t.table_name
+      );
+    EXCEPTION WHEN insufficient_privilege THEN
+      RAISE NOTICE 'Table % ignorée (droits insuffisants)', t.table_name;
+    END;
   END LOOP;
 END;
 $$;
@@ -132,11 +144,30 @@ CREATE TRIGGER trg_audit_immutable
   BEFORE UPDATE OR DELETE ON audit_log
   FOR EACH ROW EXECUTE FUNCTION fn_audit_immutable();
 
--- ── 4. Lecture réservée au Super Admin ───────────────────────
+-- ── 4. Recréer la vue, lecture réservée au Super Admin ───────
+-- (supprimée à l'étape 0 pour permettre l'ALTER COLUMN)
 -- La vue doit respecter la RLS de audit_log (policy audit_read,
 -- fn_is_super_admin) : sans security_invoker elle s'exécute avec
 -- les droits de son propriétaire et contourne la restriction.
+CREATE VIEW v_audit_log AS
+SELECT
+  a.id,
+  a.action,
+  a.table_name,
+  a.record_id,
+  a.details,
+  a.created_at,
+  a.auth_user_id,
+  u.nom        AS user_nom,
+  u.prenom     AS user_prenom,
+  u.role       AS user_role,
+  u.email      AS user_email,
+  u.poste      AS user_poste
+FROM audit_log a
+LEFT JOIN app_users u ON u.auth_user_id = a.auth_user_id;
+
 ALTER VIEW v_audit_log SET (security_invoker = on);
+GRANT SELECT ON v_audit_log TO authenticated;
 
 -- ── 5. Événements hors tables ────────────────────────────────
 -- Connexions (réussies/échouées), déconnexions, exports PDF.
