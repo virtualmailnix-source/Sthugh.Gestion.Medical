@@ -4,6 +4,7 @@ import { toastSuccess, toastError } from '../toast.js';
 import { formatDate, formatTime, fullName, escapeHtml, debounce, nowLocalInput, todayISO, telHref } from '../utils.js';
 import { t, getLang }               from '../i18n.js';
 import { currentUserInfo }          from '../auth.js';
+import { resolvePhotos }            from '../photos.js';
 
 let _filter = 'today';
 
@@ -78,6 +79,7 @@ async function _load() {
   ]);
   if (error) { toastError(t('visites.noVisits')); wrap.innerHTML = ''; return; }
 
+  await resolvePhotos(resPubRes.data || []);
   const resById = {};
   (resPubRes.data || []).forEach(r => { resById[r.id] = r; });
   const rows = (data || []).map(v => ({ ...v, residents: resById[v.resident_id] || null }));

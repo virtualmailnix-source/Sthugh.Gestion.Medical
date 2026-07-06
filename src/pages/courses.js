@@ -4,6 +4,7 @@ import { toastSuccess, toastError } from '../toast.js';
 import { formatDate, fullName, escapeHtml, todayISO, nowLocalInput, initials } from '../utils.js';
 import { t, getLang }               from '../i18n.js';
 import { isSuperAdmin }             from '../auth.js';
+import { resolvePhotos }            from '../photos.js';
 
 let _filter = 'today';
 let _autonomes = []; // cache résidents autonomes pour le select
@@ -77,6 +78,7 @@ async function _load() {
   ]);
   if (error) { toastError(t('common.error')); return; }
 
+  await resolvePhotos(resPubRes.data || []);
   const resById = {};
   (resPubRes.data || []).forEach(r => { resById[r.id] = r; });
   const rows = (data || []).map(c => ({ ...c, residents: resById[c.resident_id] || null }));

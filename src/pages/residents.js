@@ -9,6 +9,7 @@ import { openFormConsultation }        from './consultations.js';
 import { openFormRdv }                 from './rendez-vous.js';
 import { isSuperAdmin, isReceptionist, currentUserInfo } from '../auth.js';
 import { t, getLang }                  from '../i18n.js';
+import { resolvePhotos, uploadPhoto, removePhoto } from '../photos.js';
 
 const PAGE_SIZE = 15;
 let _page = 1, _search = '', _filter = 'actif';
@@ -96,6 +97,7 @@ async function _loadResidents() {
   const { data, error, count } = await query;
   if (error) { toastError('Erreur chargement résidents'); return; }
 
+  await resolvePhotos(data || []);
   wrap.innerHTML = isReceptionist() ? _tableAccueilHTML(data || []) : _tableHTML(data || []);
   _renderPagination(count || 0);
 
@@ -263,6 +265,7 @@ export async function openFormResident(id) {
     existingContacts = contacts || [];
   }
   const r = res || {};
+  await resolvePhotos(r);   // photo_url -> URL signée, _photo_path -> chemin
 
   const { data: docs } = await db.from('doctors').select('id,titre,nom,prenom').eq('actif', true).order('nom');
   const doctors = docs || [];
@@ -277,9 +280,9 @@ export async function openFormResident(id) {
     <div class="form-section">
       <div class="form-section-title"><i class="bi bi-camera-fill"></i> ${t('residents.photo')} <span style="font-weight:400;font-size:.8rem;color:var(--text-light)">(${getLang()==='en'?'optional':'facultatif'})</span></div>
       <div style="display:flex;align-items:center;gap:1.25rem">
-        <div id="photo-preview" style="width:76px;height:76px;border-radius:50%;background:var(--teal-pale);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;border:2px solid var(--card-border)">
+        <div id="photo-preview" data-path="${escapeHtml(r._photo_path || '')}" style="width:76px;height:76px;border-radius:50%;background:var(--teal-pale);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;border:2px solid var(--card-border)">
           ${r.photo_url
-            ? `<img src="${r.photo_url}" style="width:100%;height:100%;object-fit:cover">`
+            ? `<img src="${r.photo_url}" style="width:100%;height:100%;object-fit:cover" onerror="this.remove()">`
             : `<span id="photo-initials" style="font-size:1.6rem;font-weight:700;color:var(--teal-dark)">${initials(r.nom || '?', r.prenom || '?')}</span>`}
         </div>
         <div style="display:flex;flex-direction:column;gap:.5rem">
@@ -287,7 +290,7 @@ export async function openFormResident(id) {
             <i class="bi bi-upload"></i> ${t('residents.photoChoose')}
             <input type="file" id="photo-input" accept="image/jpeg,image/png,image/webp" style="display:none">
           </label>
-          ${r.photo_url ? `<button type="button" id="btn-rm-photo" class="btn btn-secondary btn-sm" style="color:#dc2626;border-color:#dc2626"><i class="bi bi-trash3-fill"></i> ${t('residents.removePhoto')}</button>` : ''}
+          ${r._photo_path || r.photo_url ? `<button type="button" id="btn-rm-photo" class="btn btn-secondary btn-sm" style="color:#dc2626;border-color:#dc2626"><i class="bi bi-trash3-fill"></i> ${t('residents.removePhoto')}</button>` : ''}
           <div style="font-size:.75rem;color:var(--text-light)">${t('residents.photoSizeNote')}</div>
         </div>
       </div>
@@ -522,25 +525,23 @@ async function _submitResident(id) {
   const data = Object.fromEntries([...fd.entries()].filter(([, v]) => v !== ''));
   if (data.cin) data.cin = data.cin.toUpperCase();
 
-  // Photo
+  // Photo : bucket privé, on stocke le CHEMIN (nom UUID), jamais d'URL.
+  // L'ancien fichier est retiré du bucket en cas de remplacement/suppression.
   const photoFile    = document.getElementById('photo-input')?.files[0];
   const photoRemoved = document.getElementById('photo-preview')?.dataset.removed === 'true';
+  const oldPath      = document.getElementById('photo-preview')?.dataset.path || null;
 
   if (photoFile) {
-    const ext  = photoFile.name.split('.').pop().toLowerCase();
-    const path = `residents/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
-    const { error: upErr } = await db.storage
-      .from('photos-residents')
-      .upload(path, photoFile, { contentType: photoFile.type || 'image/jpeg' });
-    if (upErr) {
-      // Upload échoué : on sauvegarde quand même le résident sans photo
+    try {
+      data.photo_url = await uploadPhoto(photoFile);
+      if (oldPath) removePhoto(oldPath);
+    } catch (upErr) {
+      // Upload échoué : on sauvegarde quand même le résident sans changer la photo
       toastError(t('residents.uploadErrPhoto') + ' - ' + upErr.message);
-    } else {
-      const { data: urlData } = db.storage.from('photos-residents').getPublicUrl(path);
-      data.photo_url = urlData?.publicUrl ?? null;
     }
   } else if (photoRemoved) {
     data.photo_url = null;
+    if (oldPath) removePhoto(oldPath);
   }
 
   // Collecter les contacts depuis le DOM
@@ -613,6 +614,7 @@ async function _openProfile(id) {
   const histCourses   = histCoursesRes.data || [];
   const visites       = visitesRes.data || [];
   if (!r) return;
+  await resolvePhotos(r);   // chemin -> URL signée (bucket privé)
 
   const sa         = isSuperAdmin();
   const isArchived = r.statut_depart === 'deces' || r.statut_depart === 'depart';
@@ -664,9 +666,7 @@ async function _openProfile(id) {
 
   const body = `
     <div class="resident-profile-head">
-      ${r.photo_url
-        ? `<img src="${r.photo_url}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid rgba(255,255,255,.3);${r.statut_depart === 'deces' ? 'filter:grayscale(60%)' : ''}">`
-        : `<div class="resident-avatar-lg" style="${r.statut_depart === 'deces' ? 'filter:grayscale(60%)' : ''}">${initials(r.nom, r.prenom)}</div>`}
+      ${_avatarHead(r)}
       <div>
         <div style="font-family:Georgia,serif;font-size:1.25rem;font-weight:700">${fullName(r.nom, r.prenom)}</div>
         <div style="font-size:.85rem;opacity:.8;margin-top:.2rem">
@@ -691,7 +691,8 @@ async function _openProfile(id) {
     </div>
 
     <div class="tab-pane active" data-pane="infos">
-      <table style="width:100%;font-size:.9rem">
+      <div style="display:flex;gap:1.5rem;align-items:flex-start;flex-wrap:wrap-reverse">
+      <table style="flex:1;min-width:260px;font-size:.9rem">
         ${_row(t('residents.cin'), r.cin ? escapeHtml(r.cin) : '—')}
         ${_row(t('residents.treatingDoctor'), r.medecin_nom ? (r.medecin_titre || 'Dr.') + ' ' + r.medecin_prenom + ' ' + r.medecin_nom : '—')}
         ${_row(t('residents.profileLabelAdmission'), formatDate(r.date_entree))}
@@ -713,6 +714,8 @@ async function _openProfile(id) {
           ${_row(t('residents.profileLabelScore'), r.score_priorite + ' / 100+')}
         ` : ''}
       </table>
+      ${_photoInfos(r)}
+      </div>
       ${histSorties.length ? `
         <div style="margin-top:1.25rem">
           <div style="font-weight:600;font-size:.85rem;color:var(--teal-dark);margin-bottom:.5rem;display:flex;align-items:center;gap:.4rem">
@@ -887,6 +890,7 @@ async function _openProfileAccueil(id) {
   const histCourses = histCoursesRes.data || [];
   const visites     = visitesRes.data || [];
   if (!r) return;
+  await resolvePhotos(r);   // chemin -> URL signée (bucket privé)
 
   const isVacances = r.statut_depart === 'vacances';
   const isActive   = !r.statut_depart;
@@ -908,9 +912,7 @@ async function _openProfileAccueil(id) {
 
   const body = `
     <div class="resident-profile-head">
-      ${r.photo_url
-        ? `<img src="${r.photo_url}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid rgba(255,255,255,.3)">`
-        : `<div class="resident-avatar-lg">${initials(r.nom, r.prenom)}</div>`}
+      ${_avatarHead(r)}
       <div>
         <div style="font-family:Georgia,serif;font-size:1.25rem;font-weight:700">${fullName(r.nom, r.prenom)}</div>
         <div style="font-size:.85rem;opacity:.8;margin-top:.2rem">
@@ -926,12 +928,15 @@ async function _openProfileAccueil(id) {
     </div>
 
     <div class="tab-pane active" data-pane="infos">
-      <table style="width:100%;font-size:.9rem">
+      <div style="display:flex;gap:1.5rem;align-items:flex-start;flex-wrap:wrap-reverse">
+      <table style="flex:1;min-width:260px;font-size:.9rem">
         ${_row(t('residents.cin'), r.cin ? escapeHtml(r.cin) : '—')}
         ${_row(t('residents.profileLabelAdmission'), formatDate(r.date_entree))}
         ${r.statut_depart === 'vacances' && r.date_sortie ? _row(t('depart.badgeVacances'), formatDate(r.date_sortie) + (r.date_retour_prevue ? ' → ' + formatDate(r.date_retour_prevue) : '')) : ''}
         ${r.statut_depart === 'depart' && r.date_sortie ? _row(t('depart.departedOn'), formatDate(r.date_sortie)) : ''}
       </table>
+      ${_photoInfos(r)}
+      </div>
       ${histSorties.length ? `
         <div style="margin-top:1.25rem">
           <div style="font-weight:600;font-size:.85rem;color:var(--teal-dark);margin-bottom:.5rem">
@@ -1046,6 +1051,28 @@ function _row(label, val) {
     <td style="font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:var(--text-light);padding:.5rem 0;width:38%;vertical-align:top">${label}</td>
     <td style="padding:.5rem 0">${val}</td>
   </tr>`;
+}
+
+// Avatar du header de modale : initiales, recouvertes par la photo si
+// elle existe. Si l'URL signée échoue, l'image se retire d'elle-même
+// et les initiales réapparaissent (aucune image cassée).
+function _avatarHead(r) {
+  const gray = r.statut_depart === 'deces' ? 'filter:grayscale(60%)' : '';
+  return `<div class="resident-avatar-lg" style="position:relative;overflow:hidden;${gray}">
+    ${initials(r.nom, r.prenom)}
+    ${r.photo_url ? `<img src="${r.photo_url}" alt="" onerror="this.remove()" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">` : ''}
+  </div>`;
+}
+
+// Photo du dossier (onglet Infos) : portrait à droite de la fiche.
+// Placeholder neutre (icône personne sur fond teal pâle) pendant le
+// chargement, sans photo, ou si l'URL signée a expiré.
+function _photoInfos(r) {
+  const gray = r.statut_depart === 'deces' ? ';filter:grayscale(60%)' : '';
+  return `<div style="width:150px;height:190px;border-radius:var(--radius-sm);background:var(--teal-pale);border:2px solid var(--card-border);overflow:hidden;position:relative;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin:0 auto${gray}">
+    <i class="bi bi-person-fill" style="font-size:3.5rem;color:var(--teal-dark);opacity:.45"></i>
+    ${r.photo_url ? `<img src="${r.photo_url}" alt="" onerror="this.remove()" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">` : ''}
+  </div>`;
 }
 
 function _alerteBadge(s, jours) {

@@ -4,6 +4,7 @@ import { toastSuccess, toastError } from '../toast.js';
 import { formatDate, formatAge, initials, fullName, escapeHtml } from '../utils.js';
 import { t }                        from '../i18n.js';
 import { isSuperAdmin, isReceptionist } from '../auth.js';
+import { resolvePhotos }            from '../photos.js';
 
 let _filter = 'all';
 
@@ -77,6 +78,7 @@ async function _load() {
 
   const { data, error } = await q;
   if (error) { toastError(t('common.error')); return; }
+  await resolvePhotos(data || []);
 
   const rows = data || [];
 

@@ -3,6 +3,7 @@ import { toastSuccess, toastError } from '../toast.js';
 import { initials, fullName }       from '../utils.js';
 import { t, getLang }               from '../i18n.js';
 import { isMedicalStaff }           from '../auth.js';
+import { resolvePhotos }            from '../photos.js';
 
 export async function renderAnniversaires(container) {
   container.innerHTML = `
@@ -59,6 +60,7 @@ async function _load() {
 
   if (error) { toastError(t('anniversaires.loadError')); wrap.innerHTML = ''; return; }
 
+  await resolvePhotos(data || []);
   const now = new Date();
   _allData = (data || []).map(r => {
     const dob  = new Date(r.date_naissance);
