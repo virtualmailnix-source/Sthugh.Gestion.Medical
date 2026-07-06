@@ -20,9 +20,14 @@
 --      trigger d'audit générique (pas de pollution du journal),
 --      ni trg_audit_immutable (le journal append-only se vide
 --      donc bien par TRUNCATE, jamais par DELETE).
---    - Le DELETE sur storage.objects retire les fichiers côté
---      API/URLs signées ; pour un ménage parfait du stockage
---      physique, vider aussi les buckets via Dashboard > Storage.
+--    - STOCKAGE : Supabase interdit le DELETE direct sur
+--      storage.objects (trigger storage.protect_delete, erreur
+--      42501). Les fichiers photos/ordonnances devenus orphelins
+--      se suppriment via l'API Storage : lancer ensuite
+--      MAJ/reset_storage.sh (ou Dashboard > Storage : vider le
+--      dossier residents/ de photos-residents en GARDANT users/,
+--      et tout le bucket ordonnances). La vérification finale
+--      affiche le nombre de fichiers restant à purger.
 --
 --  À EXÉCUTER depuis le Supabase SQL Editor (projet MÉDICAL).
 --  Irréversible - faire un backup avant si nécessaire.
@@ -56,18 +61,12 @@ TRUNCATE TABLE doctors          RESTART IDENTITY CASCADE;
 TRUNCATE TABLE medicaments      RESTART IDENTITY CASCADE;
 
 -- ============================================================
--- PARTIE 2 - STOCKAGE (buckets privés, session 8)
+-- PARTIE 2 - STOCKAGE : rien ici (interdit en SQL)
 -- ============================================================
-
--- Photos des résidents : tout sauf le dossier users/ qui contient
--- les avatars du personnel (app_users est conservé)
-DELETE FROM storage.objects
- WHERE bucket_id = 'photos-residents'
-   AND name NOT LIKE 'users/%';
-
--- Ordonnances scannées : tout
-DELETE FROM storage.objects
- WHERE bucket_id = 'ordonnances';
+-- Le nettoyage des buckets se fait APRÈS ce script, hors SQL :
+--   bash /home/hsergio/Bureau/MAJ/reset_storage.sh
+-- (supprime residents/ du bucket photos-residents en gardant
+-- users/, et vide le bucket ordonnances, via l'API Storage)
 
 -- ============================================================
 -- PARTIE 3 - DONNÉES DE BASE (état post-installation)
@@ -103,10 +102,10 @@ UNION ALL SELECT 'planning_visites',  COUNT(*) FROM planning_visites
 UNION ALL SELECT 'planning_residents',COUNT(*) FROM planning_residents
 UNION ALL SELECT 'contacts_famille',  COUNT(*) FROM contacts_famille
 UNION ALL SELECT 'audit_log',         COUNT(*) FROM audit_log
-UNION ALL SELECT 'storage photos (hors users/)',
+UNION ALL SELECT 'storage photos orphelines (a purger via reset_storage.sh)',
   COUNT(*) FROM storage.objects
   WHERE bucket_id = 'photos-residents' AND name NOT LIKE 'users/%'
-UNION ALL SELECT 'storage ordonnances',
+UNION ALL SELECT 'storage ordonnances orphelines (a purger via reset_storage.sh)',
   COUNT(*) FROM storage.objects WHERE bucket_id = 'ordonnances'
 ORDER BY table_name;
 
