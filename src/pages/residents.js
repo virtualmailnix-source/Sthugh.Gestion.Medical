@@ -292,7 +292,6 @@ export async function openFormResident(id) {
             <input type="file" id="photo-input" accept="image/jpeg,image/png,image/webp" style="display:none">
           </label>
           ${r._photo_path || r.photo_url ? `<button type="button" id="btn-rm-photo" class="btn btn-secondary btn-sm" style="color:#dc2626;border-color:#dc2626"><i class="bi bi-trash3-fill"></i> ${t('residents.removePhoto')}</button>` : ''}
-          <div style="font-size:.75rem;color:var(--text-light)">${t('residents.photoSizeNote')}</div>
         </div>
       </div>
     </div>
@@ -459,9 +458,9 @@ function _contactRowHTML(c) {
 }
 
 function _initFormEvents(r, isNew) {
-  // Photo : éditeur (redimensionnement + compression auto > 2 Mo) puis
-  // aperçu. Le fichier préparé est gardé sur l'input (_preparedFile) et
-  // repris par _submitResident.
+  // Photo : éditeur (recadrage + compression auto > 2 Mo) puis aperçu.
+  // Le fichier préparé est gardé sur l'input (_preparedFile) et repris
+  // par _submitResident.
   document.getElementById('photo-input')?.addEventListener('change', async e => {
     const input = e.target;
     const f = input.files[0];

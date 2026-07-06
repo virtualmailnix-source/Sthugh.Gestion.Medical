@@ -45,7 +45,6 @@ export async function renderMonProfil(container) {
           </label>
           ${me._photo_path ? `<button type="button" id="btn-rm-avatar" class="btn btn-secondary btn-sm" style="color:#dc2626;border-color:#dc2626"><i class="bi bi-trash3-fill"></i> ${t('monprofil.photoRemove')}</button>` : ''}
         </div>
-        <div style="font-size:.75rem;color:var(--text-light);margin-bottom:1rem">${t('monprofil.photoNote')}</div>
         <div style="font-size:1.25rem;font-weight:700;color:var(--text-primary);margin-bottom:.35rem">
           ${(u.prenom || '')} ${(u.nom || '')}
         </div>
@@ -84,7 +83,7 @@ export async function renderMonProfil(container) {
   document.getElementById('profil-photo-input')?.addEventListener('change', async e => {
     const file = e.target.files[0];
     if (!file) return;
-    // Éditeur : redimensionnement au choix, compression auto > 2 Mo
+    // Éditeur : recadrage au choix, compression auto > 2 Mo
     const prepared = await prepareImage(file);
     e.target.value = '';
     if (!prepared) return;
