@@ -1,4 +1,5 @@
-import { getLang } from '../i18n.js';
+import { getLang }      from '../i18n.js';
+import { isSuperAdmin } from '../auth.js';
 
 export function renderAide(container) {
   const lang = getLang();
@@ -383,7 +384,7 @@ function _fr() { return `
             <li>Enregistrer un <strong>départ définitif</strong> <i class="bi bi-door-open-fill"></i></li>
             <li>Enregistrer un <strong>décès</strong> ✝</li>
             <li>Supprimer des sorties courses</li>
-            <li>Créer des comptes utilisateurs (via St Hugh's Manager)</li>
+            <li>Créer des comptes utilisateurs (menu Administration)</li>
           </ul>
         </div>
       </div>
@@ -400,7 +401,7 @@ function _fr() { return `
         <li>Votre rôle (Admin ou Super Admin)</li>
         <li>Le bouton <strong>Se déconnecter</strong></li>
       </ul>
-      <div class="aide-tip"><i class="bi bi-info-circle-fill"></i> Le profil est en <strong>lecture seule</strong>, pour modifier vos informations, contactez votre Super Admin via St Hugh's Manager.</div>
+      <div class="aide-tip"><i class="bi bi-info-circle-fill"></i> Le profil est en <strong>lecture seule</strong>, pour modifier vos informations, contactez votre Super Admin.</div>
     </div>
 
     <!-- SUPPORT -->
@@ -409,11 +410,50 @@ function _fr() { return `
       <img src="src/composants/16-support.png" alt="Support" class="aide-illus">
       <p>En cas de problème ou de question sur l'utilisation de l'application :</p>
       <ul class="aide-list">
-        <li>Contactez votre <strong>Super Admin</strong> via St Hugh's Manager</li>
+        <li>Contactez votre <strong>Super Admin</strong></li>
         <li>Pour les problèmes de compte (mot de passe oublié, accès refusé), signalez-le à l'administrateur système</li>
         <li>Pour les problèmes techniques graves (application inaccessible, données manquantes), contactez le responsable IT de l'établissement</li>
       </ul>
     </div>
+
+    ${isSuperAdmin() ? `
+    <!-- ADMINISTRATION - visible Super Admin uniquement -->
+    <div class="aide-card aide-card-full">
+      <div class="aide-card-title"><i class="bi bi-shield-check-fill"></i> Administration (réservé au Super Admin)</div>
+      <p>Le menu <strong>Administration</strong> de la barre latérale (visible uniquement avec votre rôle) regroupe la <strong>gestion des comptes utilisateurs</strong> et le <strong>journal d'activité</strong>. L'ancien panneau séparé « Gestion Panel » est désormais intégré ici : plus rien à ouvrir dans un autre onglet.</p>
+      <div class="aide-col3">
+        <div style="padding:.7rem .9rem;background:rgba(22,163,74,.06);border-radius:var(--radius-sm);border-left:3px solid #16a34a">
+          <div style="font-weight:700;font-size:.85rem;color:var(--tint-green-fg);margin-bottom:.3rem"><i class="bi bi-person-plus-fill"></i> Créer un compte</div>
+          <ol class="aide-steps" style="font-size:.8rem;margin:0">
+            <li>Onglet <strong>Utilisateurs</strong> puis <strong>Nouvel utilisateur</strong></li>
+            <li>Prénom, nom, email, téléphone, poste</li>
+            <li>Choisir le rôle : Admin, Réceptionniste ou Super Admin</li>
+            <li>Mot de passe temporaire (min. 8 caractères)</li>
+            <li>Enregistrer : la personne peut se connecter aussitôt</li>
+          </ol>
+        </div>
+        <div style="padding:.7rem .9rem;background:rgba(217,119,6,.07);border-radius:var(--radius-sm);border-left:3px solid #d97706">
+          <div style="font-weight:700;font-size:.85rem;color:var(--tint-amber-fg);margin-bottom:.3rem"><i class="bi bi-pencil-fill"></i> Modifier / Désactiver</div>
+          <ul class="aide-list" style="font-size:.8rem;margin:0">
+            <li>Modifiable : prénom, nom, téléphone, poste, <strong>rôle</strong> (l'email jamais)</li>
+            <li><strong>Désactiver</strong> (recommandé) : bloque l'accès sans rien effacer, réactivable</li>
+            <li><strong>Supprimer</strong> : retire le compte de l'application ; le compte Supabase Auth demeure côté serveur</li>
+            <li>Votre propre compte ne peut être ni désactivé ni supprimé depuis le panel</li>
+          </ul>
+        </div>
+        <div style="padding:.7rem .9rem;background:rgba(37,99,235,.06);border-radius:var(--radius-sm);border-left:3px solid #2563eb">
+          <div style="font-weight:700;font-size:.85rem;color:var(--tint-blue-fg);margin-bottom:.3rem"><i class="bi bi-journal-text"></i> Journal d'activité</div>
+          <ul class="aide-list" style="font-size:.8rem;margin:0">
+            <li>Chaque création, modification, suppression est tracée, ainsi que les connexions et exports</li>
+            <li>Filtres par utilisateur, table, action et période</li>
+            <li>Cliquer sur une ligne : détail champ par champ (avant / après)</li>
+            <li><strong>Export CSV</strong> du journal filtré (bouton à côté de Filtrer)</li>
+          </ul>
+        </div>
+      </div>
+      <div class="aide-tip" style="margin-top:.75rem"><i class="bi bi-people-fill"></i> <strong>Rôles :</strong> <strong>Admin</strong> = infirmières, personnel soignant (volet médical complet, pas de gestion des résidents ni des comptes). <strong>Réceptionniste</strong> = accueil (identité, contacts, visites, sorties, courses, anniversaires ; jamais le volet médical). <strong>Super Admin</strong> = direction / IT (tout, plus ce menu Administration).</div>
+      <div class="aide-tip" style="margin-top:.5rem"><i class="bi bi-lock-fill"></i> Le journal est en <strong>lecture seule</strong> (append-only) : il ne peut être ni modifié ni effacé, même par un Super Admin. Ces restrictions sont appliquées par la base elle-même (RLS et triggers PostgreSQL), pas seulement par l'interface.</div>
+    </div>` : ''}
 
   </div>
 </div>`; }
@@ -796,7 +836,7 @@ function _en() { return `
             <li>Record a <strong>permanent departure</strong> <i class="bi bi-door-open-fill"></i></li>
             <li>Record a <strong>death</strong> ✝</li>
             <li>Delete shopping trip records</li>
-            <li>Create user accounts (via St Hugh's Manager)</li>
+            <li>Create user accounts (Administration menu)</li>
           </ul>
         </div>
       </div>
@@ -813,7 +853,7 @@ function _en() { return `
         <li>Your role (Admin or Super Admin)</li>
         <li>The <strong>Log out</strong> button</li>
       </ul>
-      <div class="aide-tip"><i class="bi bi-info-circle-fill"></i> The profile is <strong>read-only</strong>, to change your details, contact your Super Admin via St Hugh's Manager.</div>
+      <div class="aide-tip"><i class="bi bi-info-circle-fill"></i> The profile is <strong>read-only</strong>, to change your details, contact your Super Admin.</div>
     </div>
 
     <!-- SUPPORT -->
@@ -822,11 +862,50 @@ function _en() { return `
       <img src="src/composants/16-support.png" alt="Support" class="aide-illus">
       <p>If you have a problem or a question about using the application:</p>
       <ul class="aide-list">
-        <li>Contact your <strong>Super Admin</strong> via St Hugh's Manager</li>
+        <li>Contact your <strong>Super Admin</strong></li>
         <li>For account issues (forgotten password, access denied), report it to the system administrator</li>
         <li>For serious technical issues (application inaccessible, missing data), contact the facility's IT manager</li>
       </ul>
     </div>
+
+    ${isSuperAdmin() ? `
+    <!-- ADMINISTRATION - Super Admin only -->
+    <div class="aide-card aide-card-full">
+      <div class="aide-card-title"><i class="bi bi-shield-check-fill"></i> Administration (Super Admin only)</div>
+      <p>The <strong>Administration</strong> menu in the sidebar (visible only with your role) gathers <strong>user account management</strong> and the <strong>activity log</strong>. The former separate "Management Panel" is now integrated here: nothing to open in another tab anymore.</p>
+      <div class="aide-col3">
+        <div style="padding:.7rem .9rem;background:rgba(22,163,74,.06);border-radius:var(--radius-sm);border-left:3px solid #16a34a">
+          <div style="font-weight:700;font-size:.85rem;color:var(--tint-green-fg);margin-bottom:.3rem"><i class="bi bi-person-plus-fill"></i> Create an account</div>
+          <ol class="aide-steps" style="font-size:.8rem;margin:0">
+            <li><strong>Users</strong> tab, then <strong>New user</strong></li>
+            <li>First name, last name, email, phone, position</li>
+            <li>Choose the role: Admin, Receptionist or Super Admin</li>
+            <li>Temporary password (min. 8 characters)</li>
+            <li>Save: the person can sign in right away</li>
+          </ol>
+        </div>
+        <div style="padding:.7rem .9rem;background:rgba(217,119,6,.07);border-radius:var(--radius-sm);border-left:3px solid #d97706">
+          <div style="font-weight:700;font-size:.85rem;color:var(--tint-amber-fg);margin-bottom:.3rem"><i class="bi bi-pencil-fill"></i> Edit / Deactivate</div>
+          <ul class="aide-list" style="font-size:.8rem;margin:0">
+            <li>Editable: first name, last name, phone, position, <strong>role</strong> (never the email)</li>
+            <li><strong>Deactivate</strong> (recommended): blocks access without erasing anything, reversible</li>
+            <li><strong>Delete</strong>: removes the account from the app; the Supabase Auth account remains server-side</li>
+            <li>Your own account can be neither deactivated nor deleted from the panel</li>
+          </ul>
+        </div>
+        <div style="padding:.7rem .9rem;background:rgba(37,99,235,.06);border-radius:var(--radius-sm);border-left:3px solid #2563eb">
+          <div style="font-weight:700;font-size:.85rem;color:var(--tint-blue-fg);margin-bottom:.3rem"><i class="bi bi-journal-text"></i> Activity log</div>
+          <ul class="aide-list" style="font-size:.8rem;margin:0">
+            <li>Every creation, edit and deletion is tracked, along with logins and exports</li>
+            <li>Filters by user, table, action and period</li>
+            <li>Click a row: field-by-field detail (before / after)</li>
+            <li><strong>CSV export</strong> of the filtered log (button next to Filter)</li>
+          </ul>
+        </div>
+      </div>
+      <div class="aide-tip" style="margin-top:.75rem"><i class="bi bi-people-fill"></i> <strong>Roles:</strong> <strong>Admin</strong> = nurses, care staff (full medical side, no resident or account management). <strong>Receptionist</strong> = front desk (identity, contacts, visits, exits, shopping, birthdays; never the medical side). <strong>Super Admin</strong> = management / IT (everything, plus this Administration menu).</div>
+      <div class="aide-tip" style="margin-top:.5rem"><i class="bi bi-lock-fill"></i> The log is <strong>read-only</strong> (append-only): it cannot be edited or erased, even by a Super Admin. These restrictions are enforced by the database itself (RLS and PostgreSQL triggers), not just by the interface.</div>
+    </div>` : ''}
 
   </div>
 </div>`; }

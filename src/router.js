@@ -14,9 +14,10 @@ import { renderVisites }       from './pages/visites.js';
 import { renderDeparts }       from './pages/departs.js';
 import { renderCourses }       from './pages/courses.js';
 import { renderMonProfil }     from './pages/monprofil.js';
+import { renderPanelAdmin }    from './pages/panel_admin.js';
 import { setState }            from './store.js';
 import { t }                   from './i18n.js';
-import { isReceptionist }      from './auth.js';
+import { isReceptionist, isSuperAdmin } from './auth.js';
 
 const ROUTES = {
   'dashboard':     { render: renderDashboard,     titleKey: 'routes.dashboard' },
@@ -35,10 +36,14 @@ const ROUTES = {
   'departs':       { render: renderDeparts,       titleKey: 'routes.departs' },
   'courses':       { render: renderCourses,       titleKey: 'routes.courses' },
   'monprofil':     { render: renderMonProfil,     titleKey: 'routes.monprofil' },
+  'panel-admin':   { render: renderPanelAdmin,    titleKey: 'routes.panel-admin' },
 };
 
 // Pages autorisées pour la réceptionniste (accueil)
 export const RECEPTION_PAGES = ['residents','medecins','visites','departs','courses','anniversaires','aide','monprofil'];
+
+// Pages réservées au super admin (revérifié côté serveur par la RLS)
+export const SUPER_PAGES = ['panel-admin'];
 
 export function navigate(page) { window.location.hash = '#' + page; }
 window.navigate = navigate;
@@ -52,6 +57,7 @@ function _route() {
   const home  = isReceptionist() ? 'residents' : 'dashboard';
   let hash    = window.location.hash.replace('#','') || home;
   if (isReceptionist() && !RECEPTION_PAGES.includes(hash)) hash = home;
+  if (SUPER_PAGES.includes(hash) && !isSuperAdmin()) hash = home;
   const route = ROUTES[hash] || ROUTES[home];
   const page  = ROUTES[hash] ? hash : home;
 

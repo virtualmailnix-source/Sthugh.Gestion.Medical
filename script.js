@@ -135,8 +135,8 @@ function _startApp(user) {
     });
   }
 
-  // Gestion Panel : super admin uniquement (le panel revérifie côté serveur
-  // via fn_is_super_admin et la RLS de v_audit_log / app_users)
+  // Menu Administration : super admin uniquement (le panel revérifie côté
+  // serveur via fn_is_super_admin et la RLS de v_audit_log / app_users)
   if (user.role === 'super_admin') {
     const nm = document.getElementById('nav-manager');
     if (nm) nm.style.display = '';
