@@ -1,5 +1,5 @@
 import { getLang }      from '../i18n.js';
-import { isSuperAdmin } from '../auth.js';
+import { isSuperAdmin, isReceptionist } from '../auth.js';
 
 export function renderAide(container) {
   const lang = getLang();
@@ -7,19 +7,22 @@ export function renderAide(container) {
 }
 
 /* ── CONTENU FRANÇAIS ─────────────────────────────────────── */
-function _fr() { return `
+function _fr() {
+  const recep = isReceptionist();
+  return `
 <div class="aide-wrap">
 
   <div class="aide-hero">
     <i class="bi bi-heart-pulse-fill"></i>
     <div>
       <h2>Guide d'utilisation</h2>
-      <p>St Hugh's Anglican Home, Système de Gestion Médicale</p>
+      <p>St Hugh's Anglican Home, ${recep ? "Gestion de l'Accueil" : 'Système de Gestion Médicale'}</p>
     </div>
   </div>
 
   <div class="aide-grid">
 
+    ${!recep ? `
     <!-- GUIDE VIDÉO -->
     <div class="aide-card aide-card-full">
       <div class="aide-card-title"><i class="bi bi-play-circle-fill"></i> Guide vidéo</div>
@@ -33,7 +36,7 @@ function _fr() { return `
           allowfullscreen
         ></iframe>
       </div>
-    </div>
+    </div>` : ''}
 
     <!-- CONNEXION -->
     <div class="aide-card">
@@ -49,19 +52,21 @@ function _fr() { return `
       <img src="src/composants/02-navigation.png" alt="Navigation" class="aide-illus">
       <p>Le menu à gauche donne accès à toutes les sections. Sur mobile, appuyez sur l'icône ☰ en haut à gauche.</p>
       <table class="aide-table">
-        <tr><td><i class="bi bi-grid-1x2-fill"></i></td><td><strong>Tableau de bord</strong></td><td>Vue d'ensemble + urgences du jour</td></tr>
+        ${!recep ? `<tr><td><i class="bi bi-grid-1x2-fill"></i></td><td><strong>Tableau de bord</strong></td><td>Vue d'ensemble + urgences du jour</td></tr>` : ''}
         <tr><td><i class="bi bi-people-fill"></i></td><td><strong>Résidents</strong></td><td>Dossiers des résidents</td></tr>
-        <tr><td><i class="bi bi-person-badge-fill"></i></td><td><strong>Médecins</strong></td><td>Médecins traitants</td></tr>
+        <tr><td><i class="bi bi-person-badge-fill"></i></td><td><strong>Médecins</strong></td><td>Médecins traitants${recep ? ' (consultation seulement)' : ''}</td></tr>
+        ${!recep ? `
         <tr><td><i class="bi bi-capsule-pill"></i></td><td><strong>Traitements</strong></td><td>Médicaments, alertes & catalogue</td></tr>
         <tr><td><i class="bi bi-journal-medical"></i></td><td><strong>Consultations</strong></td><td>Historique des visites</td></tr>
         <tr><td><i class="bi bi-calendar3"></i></td><td><strong>Rendez-vous</strong></td><td>Calendrier + urgences</td></tr>
-        <tr><td><i class="bi bi-list-ol"></i></td><td><strong>Planification</strong></td><td>Rotation des visites médicales 2×/semaine</td></tr>
+        <tr><td><i class="bi bi-list-ol"></i></td><td><strong>Planification</strong></td><td>Rotation des visites médicales 2×/semaine</td></tr>` : ''}
         <tr><td><i class="bi bi-person-walking"></i></td><td><strong>Visites</strong></td><td>Visites des familles et proches (enregistrement, suivi)</td></tr>
-        <tr><td><i class="bi bi-box-arrow-right"></i></td><td><strong>Sorties</strong></td><td>Archive des sorties temporaires, départs et décès</td></tr>
+        <tr><td><i class="bi bi-box-arrow-right"></i></td><td><strong>Sorties</strong></td><td>Archive des sorties temporaires${recep ? ' et départs' : ', départs et décès'}</td></tr>
         <tr><td><i class="bi bi-bag-fill"></i></td><td><strong>Courses</strong></td><td>Sorties commissions des résidents autonomes, heures départ/retour, articles achetés</td></tr>
         <tr><td><i class="bi bi-balloon-heart-fill"></i></td><td><strong>Anniversaires</strong></td><td>Célébrations des résidents, alertes automatiques</td></tr>
+        ${!recep ? `
         <tr><td><i class="bi bi-bell-fill"></i></td><td><strong>Alertes</strong></td><td>Notifications médicaments / anniversaires</td></tr>
-        <tr><td><i class="bi bi-bar-chart-fill"></i></td><td><strong>Statistiques</strong></td><td>Graphiques d'activité</td></tr>
+        <tr><td><i class="bi bi-bar-chart-fill"></i></td><td><strong>Statistiques</strong></td><td>Graphiques d'activité</td></tr>` : ''}
         <tr><td><i class="bi bi-person-circle"></i></td><td><strong>Mon profil</strong></td><td>Vos informations de compte, bouton de déconnexion</td></tr>
       </table>
     </div>
@@ -70,13 +75,15 @@ function _fr() { return `
     <div class="aide-card aide-card-wide">
       <div class="aide-card-title"><i class="bi bi-person-vcard-fill"></i> Dossier d'un résident</div>
       <img src="src/composants/03-dossier-resident.png" alt="Dossier résident" class="aide-illus">
-      <p>Depuis la page <strong>Résidents</strong>, cliquez sur une ligne pour ouvrir le dossier complet. Il contient 5 onglets :</p>
+      <p>Depuis la page <strong>Résidents</strong>, cliquez sur une ligne pour ouvrir le dossier complet. Il contient ${recep ? '3' : '5'} onglets :</p>
       <div class="aide-tabs-preview">
-        <div class="aide-tab-item"><strong>Infos</strong><span>Médecin traitant, groupe sanguin, taille, mobilité, allergies, antécédents, et en bas : historique des vacances et historique des courses si disponibles</span></div>
+        <div class="aide-tab-item"><strong>Infos</strong><span>${recep ? 'Identité, chambre, photo, date d\'admission' : 'Photo, médecin traitant, groupe sanguin, taille, mobilité, allergies, antécédents'}, et en bas : historique des vacances et historique des courses si disponibles</span></div>
         <div class="aide-tab-item"><strong>Contacts</strong><span>Famille à appeler en cas d'urgence, le contact principal est indiqué</span></div>
+        ${recep ? `
+        <div class="aide-tab-item"><strong>Visites</strong><span>Les visites des familles enregistrées pour ce résident</span></div>` : `
         <div class="aide-tab-item"><strong>Traitements</strong><span>Médicaments actifs avec jours restants et alertes de couleur</span></div>
         <div class="aide-tab-item"><strong>Consultations</strong><span>Historique des visites médicales avec lien vers les ordonnances</span></div>
-        <div class="aide-tab-item"><strong>RDV</strong><span>Rendez-vous passés et à venir pour ce résident</span></div>
+        <div class="aide-tab-item"><strong>RDV</strong><span>Rendez-vous passés et à venir pour ce résident</span></div>`}
       </div>
       <div class="aide-tip" style="margin-top:.75rem"><i class="bi bi-luggage-fill"></i> <strong>Historique des vacances :</strong> chaque sortie vacances passée (date départ, date retour, motif) apparaît automatiquement dans l'onglet Infos lorsque le résident revient au foyer.</div>
       <div class="aide-tip" style="margin-top:.5rem"><i class="bi bi-bag-fill"></i> <strong>Historique des courses :</strong> toutes les sorties commissions enregistrées pour ce résident (date, heure départ/retour, articles achetés) sont visibles dans l'onglet Infos, pour les résidents autonomes uniquement.</div>
@@ -175,6 +182,7 @@ function _fr() { return `
       <p style="margin-top:.75rem">Cliquez <strong>"Générer alertes anniversaires"</strong> pour créer des notifications dans la page Alertes. Le badge <i class="bi bi-balloon-heart-fill" style="color:var(--gold)"></i> dans le menu s'allume automatiquement la veille et le jour même.</p>
     </div>
 
+    ${!recep ? `
     <!-- CATALOGUE MÉDICAMENTS -->
     <div class="aide-card">
       <div class="aide-card-title"><i class="bi bi-list-ul"></i> Catalogue des médicaments</div>
@@ -241,10 +249,13 @@ function _fr() { return `
       <p style="margin-top:.75rem">Cliquez <strong>"Générer alertes"</strong> chaque matin pour actualiser. Les badges dans le menu se mettent à jour automatiquement toutes les 60 secondes.</p>
     </div>
 
+    ` : ''}
+
     <!-- EXPORT PDF -->
     <div class="aide-card aide-card-wide">
       <div class="aide-card-title"><i class="bi bi-file-earmark-pdf-fill"></i> Exporter en PDF</div>
       <img src="src/composants/14-statistiques-rapports.png" alt="Statistiques & Rapports" class="aide-illus">
+      ${recep ? `<p>Depuis le dossier d'un résident, le bouton <strong>PDF</strong> génère un document <strong>administratif</strong> (identité, contacts, visites, historiques de sorties et de courses - jamais de données médicales) avec, en pied de page, votre nom et la date de génération.</p>` : `
       <p>Depuis le dossier d'un résident, le bouton <strong>PDF</strong> génère un document <strong>complet</strong> adapté au statut du résident :</p>
       <div class="aide-col3" style="margin:.6rem 0">
         <div style="padding:.6rem .8rem;background:rgba(18,72,72,.07);border-radius:var(--radius-sm);border-top:3px solid var(--teal-dark)">
@@ -261,9 +272,10 @@ function _fr() { return `
         </div>
       </div>
       <div class="aide-tip" style="margin-top:.5rem"><i class="bi bi-person-fill"></i> <strong>Pied de page :</strong> chaque page du PDF indique en bas <em>"Exporté par : Prénom Nom (email)"</em>, nom et email de la personne connectée qui a généré le document, ainsi que la date de génération.</div>
-      <p style="margin-top:.5rem;font-size:.82rem;color:var(--text-light)">Nom du fichier : <code>nom_prenom_[dossier_medical|deces|archive]_St_Hughs.pdf</code></p>
+      <p style="margin-top:.5rem;font-size:.82rem;color:var(--text-light)">Nom du fichier : <code>nom_prenom_[dossier_medical|deces|archive]_St_Hughs.pdf</code></p>`}
     </div>
 
+    ${!recep ? `
     <!-- ★ SYSTÈME DE POINTS ★ -->
     <div class="aide-card aide-card-full aide-card-featured">
       <div class="aide-card-title"><i class="bi bi-graph-up-arrow"></i> Le système de points, comment ça fonctionne ?</div>
@@ -350,9 +362,40 @@ function _fr() { return `
       </div>
     </div>
 
+    ` : ''}
+
     <!-- DROITS -->
     <div class="aide-card aide-card-wide">
       <div class="aide-card-title"><i class="bi bi-person-lock"></i> Ce que vous pouvez faire</div>
+      ${recep ? `
+      <div class="aide-col2">
+        <div>
+          <div style="font-size:.82rem;font-weight:700;text-transform:uppercase;color:var(--teal-dark);margin-bottom:.5rem">✓ Autorisé (Réceptionniste)</div>
+          <ul class="aide-list">
+            <li>Voir les résidents : identité, chambre, contacts (jamais le volet médical)</li>
+            <li>Modifier l'identité et les contacts famille</li>
+            <li>Consulter la liste des médecins</li>
+            <li>Enregistrer et suivre les visites des familles</li>
+            <li>Traiter les <strong>demandes de visite en ligne</strong> (valider / refuser)</li>
+            <li>Enregistrer une <strong>sortie vacances</strong> et le retour au foyer</li>
+            <li>Enregistrer les sorties <strong>courses</strong> (résidents autonomes)</li>
+            <li>Consulter les anniversaires</li>
+            <li>Exporter le <strong>PDF administratif</strong> d'un résident</li>
+            <li>Changer votre <strong>photo de profil</strong></li>
+          </ul>
+        </div>
+        <div>
+          <div style="font-size:.82rem;font-weight:700;text-transform:uppercase;color:#dc2626;margin-bottom:.5rem">✗ Hors de votre rôle</div>
+          <ul class="aide-list">
+            <li>Tout le volet médical : traitements, consultations, rendez-vous, alertes, planification</li>
+            <li>Créer, archiver ou supprimer des résidents (départs définitifs, décès)</li>
+            <li>Tableau de bord et statistiques</li>
+            <li>Ajouter ou modifier des médecins</li>
+            <li>Gestion des comptes utilisateurs</li>
+          </ul>
+        </div>
+      </div>
+      ` : `
       <div class="aide-col2">
         <div>
           <div style="font-size:.82rem;font-weight:700;text-transform:uppercase;color:var(--teal-dark);margin-bottom:.5rem">✓ Autorisé (Admin)</div>
@@ -388,6 +431,7 @@ function _fr() { return `
           </ul>
         </div>
       </div>
+      `}
     </div>
 
     <!-- MON PROFIL -->
@@ -396,12 +440,12 @@ function _fr() { return `
       <img src="src/composants/15-mon-profil-deconnexion.png" alt="Mon profil" class="aide-illus">
       <p>Cliquez sur votre <strong>nom en haut à droite</strong> pour accéder à votre profil. Vous y trouverez :</p>
       <ul class="aide-list">
-        <li>Votre nom complet</li>
-        <li>Votre adresse email</li>
-        <li>Votre rôle (Admin ou Super Admin)</li>
+        <li>Votre <strong>photo de profil</strong>, que vous pouvez ajouter, changer ou retirer vous-même</li>
+        <li>Votre nom complet et votre adresse email</li>
+        <li>Votre rôle</li>
         <li>Le bouton <strong>Se déconnecter</strong></li>
       </ul>
-      <div class="aide-tip"><i class="bi bi-info-circle-fill"></i> Le profil est en <strong>lecture seule</strong>, pour modifier vos informations, contactez votre Super Admin.</div>
+      <div class="aide-tip"><i class="bi bi-info-circle-fill"></i> Seule la photo est modifiable ici : pour corriger votre nom, votre email ou votre rôle, contactez votre Super Admin.</div>
     </div>
 
     <!-- SUPPORT -->
@@ -459,19 +503,22 @@ function _fr() { return `
 </div>`; }
 
 /* ── CONTENU ANGLAIS ──────────────────────────────────────── */
-function _en() { return `
+function _en() {
+  const recep = isReceptionist();
+  return `
 <div class="aide-wrap">
 
   <div class="aide-hero">
     <i class="bi bi-heart-pulse-fill"></i>
     <div>
       <h2>User Guide</h2>
-      <p>St Hugh's Anglican Home, Medical Management System</p>
+      <p>St Hugh's Anglican Home, ${recep ? 'Front Desk Management' : 'Medical Management System'}</p>
     </div>
   </div>
 
   <div class="aide-grid">
 
+    ${!recep ? `
     <!-- VIDEO GUIDE -->
     <div class="aide-card aide-card-full">
       <div class="aide-card-title"><i class="bi bi-play-circle-fill"></i> Video guide</div>
@@ -485,7 +532,7 @@ function _en() { return `
           allowfullscreen
         ></iframe>
       </div>
-    </div>
+    </div>` : ''}
 
     <!-- LOGIN -->
     <div class="aide-card">
@@ -501,19 +548,21 @@ function _en() { return `
       <img src="src/composants/02-navigation.png" alt="Navigation" class="aide-illus">
       <p>The left menu gives access to all sections. On mobile, tap the ☰ icon at the top left.</p>
       <table class="aide-table">
-        <tr><td><i class="bi bi-grid-1x2-fill"></i></td><td><strong>Dashboard</strong></td><td>Overview + today's urgent cases</td></tr>
+        ${!recep ? `<tr><td><i class="bi bi-grid-1x2-fill"></i></td><td><strong>Dashboard</strong></td><td>Overview + today's urgent cases</td></tr>` : ''}
         <tr><td><i class="bi bi-people-fill"></i></td><td><strong>Residents</strong></td><td>Resident files</td></tr>
-        <tr><td><i class="bi bi-person-badge-fill"></i></td><td><strong>Doctors</strong></td><td>Attending physicians</td></tr>
+        <tr><td><i class="bi bi-person-badge-fill"></i></td><td><strong>Doctors</strong></td><td>Attending physicians${recep ? ' (view only)' : ''}</td></tr>
+        ${!recep ? `
         <tr><td><i class="bi bi-capsule-pill"></i></td><td><strong>Treatments</strong></td><td>Medications, alerts & catalogue</td></tr>
         <tr><td><i class="bi bi-journal-medical"></i></td><td><strong>Consultations</strong></td><td>Visit history</td></tr>
         <tr><td><i class="bi bi-calendar3"></i></td><td><strong>Appointments</strong></td><td>Calendar + emergency slots</td></tr>
-        <tr><td><i class="bi bi-list-ol"></i></td><td><strong>Planning</strong></td><td>Medical visit rotation 2×/week</td></tr>
+        <tr><td><i class="bi bi-list-ol"></i></td><td><strong>Planning</strong></td><td>Medical visit rotation 2×/week</td></tr>` : ''}
         <tr><td><i class="bi bi-person-walking"></i></td><td><strong>Visits</strong></td><td>Family and friends visits (logging, tracking)</td></tr>
-        <tr><td><i class="bi bi-box-arrow-right"></i></td><td><strong>Exits</strong></td><td>Archive of temporary leave, departures and deaths</td></tr>
+        <tr><td><i class="bi bi-box-arrow-right"></i></td><td><strong>Exits</strong></td><td>Archive of temporary leave${recep ? ' and departures' : ', departures and deaths'}</td></tr>
         <tr><td><i class="bi bi-bag-fill"></i></td><td><strong>Shopping</strong></td><td>Errand outings for independent residents, departure/return times, items purchased</td></tr>
         <tr><td><i class="bi bi-balloon-heart-fill"></i></td><td><strong>Birthdays</strong></td><td>Resident celebrations, automatic alerts</td></tr>
+        ${!recep ? `
         <tr><td><i class="bi bi-bell-fill"></i></td><td><strong>Alerts</strong></td><td>Medication / birthday notifications</td></tr>
-        <tr><td><i class="bi bi-bar-chart-fill"></i></td><td><strong>Statistics</strong></td><td>Activity charts</td></tr>
+        <tr><td><i class="bi bi-bar-chart-fill"></i></td><td><strong>Statistics</strong></td><td>Activity charts</td></tr>` : ''}
         <tr><td><i class="bi bi-person-circle"></i></td><td><strong>My profile</strong></td><td>Your account information, logout button</td></tr>
       </table>
     </div>
@@ -522,13 +571,15 @@ function _en() { return `
     <div class="aide-card aide-card-wide">
       <div class="aide-card-title"><i class="bi bi-person-vcard-fill"></i> Resident file</div>
       <img src="src/composants/03-dossier-resident.png" alt="Resident file" class="aide-illus">
-      <p>From the <strong>Residents</strong> page, click any row to open the full file. It has 5 tabs:</p>
+      <p>From the <strong>Residents</strong> page, click any row to open the full file. It has ${recep ? '3' : '5'} tabs:</p>
       <div class="aide-tabs-preview">
-        <div class="aide-tab-item"><strong>Info</strong><span>Attending doctor, blood type, height, mobility, allergies, medical history, plus vacation history and shopping history at the bottom if available</span></div>
+        <div class="aide-tab-item"><strong>Info</strong><span>${recep ? 'Identity, room, photo, admission date' : 'Photo, attending doctor, blood type, height, mobility, allergies, medical history'}, plus vacation history and shopping history at the bottom if available</span></div>
         <div class="aide-tab-item"><strong>Contacts</strong><span>Family emergency contacts, the primary contact is highlighted</span></div>
+        ${recep ? `
+        <div class="aide-tab-item"><strong>Visits</strong><span>Family visits recorded for this resident</span></div>` : `
         <div class="aide-tab-item"><strong>Treatments</strong><span>Active medications with days remaining and colour-coded alerts</span></div>
         <div class="aide-tab-item"><strong>Consultations</strong><span>Medical visit history with links to prescriptions</span></div>
-        <div class="aide-tab-item"><strong>Appointments</strong><span>Past and upcoming appointments for this resident</span></div>
+        <div class="aide-tab-item"><strong>Appointments</strong><span>Past and upcoming appointments for this resident</span></div>`}
       </div>
       <div class="aide-tip" style="margin-top:.75rem"><i class="bi bi-luggage-fill"></i> <strong>Vacation history:</strong> each past vacation stay (departure date, actual return date, reason) is automatically saved and appears in the Info tab when the resident returns.</div>
       <div class="aide-tip" style="margin-top:.5rem"><i class="bi bi-bag-fill"></i> <strong>Shopping history:</strong> all logged shopping trips for this resident (date, departure/return time, items purchased) are visible in the Info tab, for independent residents only.</div>
@@ -627,6 +678,7 @@ function _en() { return `
       <p style="margin-top:.75rem">Click <strong>"Generate birthday alerts"</strong> to create notifications in the Alerts page. The <i class="bi bi-balloon-heart-fill" style="color:var(--gold)"></i> badge in the menu lights up automatically the day before and on the day.</p>
     </div>
 
+    ${!recep ? `
     <!-- MEDICATION CATALOGUE -->
     <div class="aide-card">
       <div class="aide-card-title"><i class="bi bi-list-ul"></i> Medication catalogue</div>
@@ -693,10 +745,13 @@ function _en() { return `
       <p style="margin-top:.75rem">Click <strong>"Generate alerts"</strong> every morning to refresh. Menu badges update automatically every 60 seconds.</p>
     </div>
 
+    ` : ''}
+
     <!-- PDF EXPORT -->
     <div class="aide-card aide-card-wide">
       <div class="aide-card-title"><i class="bi bi-file-earmark-pdf-fill"></i> Export to PDF</div>
       <img src="src/composants/14-statistiques-rapports.png" alt="Statistics & Reports" class="aide-illus">
+      ${recep ? `<p>From a resident file, the <strong>PDF</strong> button generates an <strong>administrative</strong> document (identity, contacts, visits, leave and shopping history - never medical data) with your name and the generation date in the footer.</p>` : `
       <p>From a resident file, the <strong>PDF</strong> button generates a <strong>complete</strong> document adapted to the resident's status:</p>
       <div class="aide-col3" style="margin:.6rem 0">
         <div style="padding:.6rem .8rem;background:rgba(18,72,72,.07);border-radius:var(--radius-sm);border-top:3px solid var(--teal-dark)">
@@ -713,9 +768,10 @@ function _en() { return `
         </div>
       </div>
       <div class="aide-tip" style="margin-top:.5rem"><i class="bi bi-person-fill"></i> <strong>Footer:</strong> every page of the PDF shows <em>"Exported by: First Last (email)"</em>, the name and email of the logged-in user who generated the document, plus the generation date.</div>
-      <p style="margin-top:.5rem;font-size:.82rem;color:var(--text-light)">File name: <code>name_firstname_[medical|death|archived]_St_Hughs.pdf</code></p>
+      <p style="margin-top:.5rem;font-size:.82rem;color:var(--text-light)">File name: <code>name_firstname_[medical|death|archived]_St_Hughs.pdf</code></p>`}
     </div>
 
+    ${!recep ? `
     <!-- ★ PRIORITY SCORE ★ -->
     <div class="aide-card aide-card-full aide-card-featured">
       <div class="aide-card-title"><i class="bi bi-graph-up-arrow"></i> The priority score system, how does it work?</div>
@@ -802,9 +858,40 @@ function _en() { return `
       </div>
     </div>
 
+    ` : ''}
+
     <!-- ACCESS RIGHTS -->
     <div class="aide-card aide-card-wide">
       <div class="aide-card-title"><i class="bi bi-person-lock"></i> What you can do</div>
+      ${recep ? `
+      <div class="aide-col2">
+        <div>
+          <div style="font-size:.82rem;font-weight:700;text-transform:uppercase;color:var(--teal-dark);margin-bottom:.5rem">✓ Allowed (Receptionist)</div>
+          <ul class="aide-list">
+            <li>View residents: identity, room, contacts (never the medical side)</li>
+            <li>Edit identity and family contacts</li>
+            <li>View the doctors list</li>
+            <li>Log and track family visits</li>
+            <li>Handle <strong>online visit requests</strong> (approve / decline)</li>
+            <li>Record <strong>vacation leave</strong> and returns home</li>
+            <li>Log <strong>shopping trips</strong> (independent residents)</li>
+            <li>View birthdays</li>
+            <li>Export a resident's <strong>administrative PDF</strong></li>
+            <li>Change your <strong>profile photo</strong></li>
+          </ul>
+        </div>
+        <div>
+          <div style="font-size:.82rem;font-weight:700;text-transform:uppercase;color:#dc2626;margin-bottom:.5rem">✗ Outside your role</div>
+          <ul class="aide-list">
+            <li>The whole medical side: treatments, consultations, appointments, alerts, planning</li>
+            <li>Creating, archiving or deleting residents (permanent departures, deaths)</li>
+            <li>Dashboard and statistics</li>
+            <li>Adding or editing doctors</li>
+            <li>User account management</li>
+          </ul>
+        </div>
+      </div>
+      ` : `
       <div class="aide-col2">
         <div>
           <div style="font-size:.82rem;font-weight:700;text-transform:uppercase;color:var(--teal-dark);margin-bottom:.5rem">✓ Allowed (Admin)</div>
@@ -840,6 +927,7 @@ function _en() { return `
           </ul>
         </div>
       </div>
+      `}
     </div>
 
     <!-- MY PROFILE -->
@@ -848,12 +936,12 @@ function _en() { return `
       <img src="src/composants/15-mon-profil-deconnexion.png" alt="My profile" class="aide-illus">
       <p>Click your <strong>name in the top right</strong> to access your profile. You will find:</p>
       <ul class="aide-list">
-        <li>Your full name</li>
-        <li>Your email address</li>
-        <li>Your role (Admin or Super Admin)</li>
+        <li>Your <strong>profile photo</strong>, which you can add, change or remove yourself</li>
+        <li>Your full name and email address</li>
+        <li>Your role</li>
         <li>The <strong>Log out</strong> button</li>
       </ul>
-      <div class="aide-tip"><i class="bi bi-info-circle-fill"></i> The profile is <strong>read-only</strong>, to change your details, contact your Super Admin.</div>
+      <div class="aide-tip"><i class="bi bi-info-circle-fill"></i> Only the photo can be changed here: to correct your name, email or role, contact your Super Admin.</div>
     </div>
 
     <!-- SUPPORT -->

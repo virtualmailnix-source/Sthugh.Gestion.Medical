@@ -9,7 +9,7 @@ import { openFormConsultation }        from './consultations.js';
 import { openFormRdv }                 from './rendez-vous.js';
 import { isSuperAdmin, isReceptionist, currentUserInfo } from '../auth.js';
 import { t, getLang }                  from '../i18n.js';
-import { resolvePhotos, uploadPhoto, removePhoto } from '../photos.js';
+import { resolvePhotos, uploadPhoto, removePhoto, resolveOrdonnances } from '../storage.js';
 
 const PAGE_SIZE = 15;
 let _page = 1, _search = '', _filter = 'actif';
@@ -614,7 +614,8 @@ async function _openProfile(id) {
   const histCourses   = histCoursesRes.data || [];
   const visites       = visitesRes.data || [];
   if (!r) return;
-  await resolvePhotos(r);   // chemin -> URL signée (bucket privé)
+  await resolvePhotos(r);           // chemin -> URL signée (bucket privé)
+  await resolveOrdonnances(cons);   // liens ordonnances des consultations
 
   const sa         = isSuperAdmin();
   const isArchived = r.statut_depart === 'deces' || r.statut_depart === 'depart';
@@ -668,7 +669,7 @@ async function _openProfile(id) {
     <div class="resident-profile-head">
       ${_avatarHead(r)}
       <div>
-        <div style="font-family:Georgia,serif;font-size:1.25rem;font-weight:700">${fullName(r.nom, r.prenom)}</div>
+        <div style="font-size:1.25rem;font-weight:700">${fullName(r.nom, r.prenom)}</div>
         <div style="font-size:.85rem;opacity:.8;margin-top:.2rem">
           Ch. ${r.numero_chambre || '—'} &bull; ${formatAge(r.date_naissance)} &bull; ${r.sexe || '—'}
           ${r.taille ? ` &bull; ${r.taille} cm` : ''}
@@ -914,7 +915,7 @@ async function _openProfileAccueil(id) {
     <div class="resident-profile-head">
       ${_avatarHead(r)}
       <div>
-        <div style="font-family:Georgia,serif;font-size:1.25rem;font-weight:700">${fullName(r.nom, r.prenom)}</div>
+        <div style="font-size:1.25rem;font-weight:700">${fullName(r.nom, r.prenom)}</div>
         <div style="font-size:.85rem;opacity:.8;margin-top:.2rem">
           Ch. ${r.numero_chambre || '—'} &bull; ${formatAge(r.date_naissance)} &bull; ${r.sexe || '—'}
         </div>

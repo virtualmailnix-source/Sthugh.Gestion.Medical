@@ -15,7 +15,7 @@ const T = {
       darkMode:'Mode sombre', lightMode:'Mode clair',
       online:'En ligne', offline:'Hors ligne',
       superAdmin:'Super Admin', admin:'Admin', logout:'Déconnexion',
-      medicalMgmt:'Gestion Médicale', secureAccess:'Accès sécurisé',
+      medicalMgmt:'Gestion Médicale', receptionMgmt:"Gestion Accueil", secureAccess:'Accès sécurisé',
       emailLabel:'Adresse email', passwordLabel:'Mot de passe',
       loginBtn:'Se connecter', loginLoading:'Connexion…',
       loginNote:'Contactez votre administrateur pour obtenir un accès.',
@@ -476,11 +476,15 @@ const T = {
 
     monprofil: {
       title:'Mon profil',
-      subtitle:'Informations de votre compte - lecture seule',
+      subtitle:'Informations de votre compte',
       labelNom:'Nom complet',
       labelEmail:'Adresse email',
       labelRole:'Rôle',
-      readOnly:'Votre profil est en lecture seule. Contactez le Super Admin pour toute modification.',
+      photoAdd:'Ajouter une photo', photoChange:'Changer la photo',
+      photoRemove:'Retirer', photoNote:'JPG, PNG, WebP - max 2 Mo',
+      photoSaved:'Photo mise à jour.', photoRemoved:'Photo retirée.',
+      photoTooLarge:'Photo trop lourde (max 2 Mo)',
+      photoErr:"Erreur lors de l'envoi de la photo",
       logout:'Se déconnecter',
     },
     panel: {
@@ -548,6 +552,7 @@ const T = {
       darkMode:'Dark mode', lightMode:'Light mode',
       online:'Online', offline:'Offline',
       superAdmin:'Super Admin', admin:'Admin', logout:'Log out',
+      receptionMgmt:'Front Desk',
       medicalMgmt:'Medical Management', secureAccess:'Secure access',
       emailLabel:'Email address', passwordLabel:'Password',
       loginBtn:'Sign in', loginLoading:'Signing in…',
@@ -1009,11 +1014,15 @@ const T = {
 
     monprofil: {
       title:'My profile',
-      subtitle:'Your account information - read only',
+      subtitle:'Your account information',
       labelNom:'Full name',
       labelEmail:'Email address',
       labelRole:'Role',
-      readOnly:'Your profile is read-only. Contact the Super Admin to make any changes.',
+      photoAdd:'Add a photo', photoChange:'Change photo',
+      photoRemove:'Remove', photoNote:'JPG, PNG, WebP - max 2 MB',
+      photoSaved:'Photo updated.', photoRemoved:'Photo removed.',
+      photoTooLarge:'Photo too large (max 2 MB)',
+      photoErr:'Error while uploading the photo',
       logout:'Log out',
     },
     panel: {

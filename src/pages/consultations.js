@@ -6,6 +6,7 @@ import {
   formatDate, fullName, escapeHtml, debounce, nowLocalInput, todayISO
 } from '../utils.js';
 import { t } from '../i18n.js';
+import { resolveOrdonnances, uploadOrdonnance, removeOrdonnance } from '../storage.js';
 
 const PAGE_SIZE = 15;
 let _page = 1, _search = '', _dateFrom = todayISO(), _dateTo = todayISO();
@@ -87,6 +88,7 @@ async function _load() {
   if (error) { toastError('Erreur'); return; }
 
   const rows = data||[];
+  await resolveOrdonnances(rows);   // chemin -> URL signée (bucket privé)
   if (!rows.length) { wrap.innerHTML=`<div class="empty-state"><i class="bi bi-journal-x"></i><p>${t('consultations.noConsultShort')}</p></div>`; return; }
 
   wrap.innerHTML=`<div class="table-wrap"><table class="table">
@@ -145,6 +147,7 @@ export async function openFormConsultation(id, prefillResidentId) {
     cons=data;
   }
   const c=cons||{};
+  await resolveOrdonnances(c);   // ordonnance_url -> URL signée, _ordonnance_path -> chemin
 
   const [{data:ress},{data:docs}]=await Promise.all([
     db.from('residents').select('id,nom,prenom,numero_chambre').eq('actif',true).order('nom').limit(200),
@@ -210,7 +213,7 @@ export async function openFormConsultation(id, prefillResidentId) {
         <div style="font-weight:600;font-size:.9rem">${t('consultations.uploadDrag')}</div>
         <div style="font-size:.8rem;color:var(--text-light)">${t('consultations.uploadSizeNote')}</div>
       </div>
-      <div id="upload-preview" style="${c.ordonnance_url?'':'display:none'}">
+      <div id="upload-preview" data-path="${escapeHtml(c._ordonnance_path||'')}" style="${c.ordonnance_url?'':'display:none'}">
         ${c.ordonnance_url ? `<div class="upload-preview"><i class="bi bi-file-earmark-check-fill"></i><div><div style="font-weight:600;font-size:.88rem">${c.ordonnance_nom||t('consultations.colOrdonnance')}</div><a href="${c.ordonnance_url}" target="_blank" style="font-size:.78rem;color:var(--teal-light)">${t('consultations.seeCurrentFile')}</a></div></div>` : ''}
       </div>
       <div class="form-group" style="margin-top:.75rem">
@@ -293,14 +296,15 @@ async function _submitCons(id) {
   const fileInput=document.getElementById('file-ord');
   const file=fileInput?.files[0];
 
+  // Bucket privé : on stocke le CHEMIN (nom UUID), jamais d'URL.
+  // L'ancien fichier est retiré du bucket en cas de remplacement.
   if (file) {
-    const ext=file.name.split('.').pop();
-    const path=`${data.resident_id}/${Date.now()}_ordonnance.${ext}`;
-    const { error: upErr } = await db.storage.from('ordonnances').upload(path, file, { contentType: file.type, upsert: true });
-    if (upErr) { toastError('Erreur upload: '+upErr.message); return; }
-    const { data: { publicUrl } } = db.storage.from('ordonnances').getPublicUrl(path);
-    data.ordonnance_url  = publicUrl;
-    data.ordonnance_nom  = file.name;
+    try {
+      data.ordonnance_url = await uploadOrdonnance(file);
+      data.ordonnance_nom = file.name;
+      const oldPath = document.getElementById('upload-preview')?.dataset.path;
+      if (oldPath) removeOrdonnance(oldPath);
+    } catch (upErr) { toastError('Erreur upload: '+upErr.message); return; }
   }
 
   const { error } = id
@@ -316,11 +320,12 @@ async function _submitCons(id) {
 async function _viewConsultation(id) {
   const { data: c } = await db.from('v_consultations_detail').select('*').eq('id',id).single();
   if (!c) return;
+  await resolveOrdonnances(c);   // chemin -> URL signée (bucket privé)
 
   const body=`
     <div class="resident-profile-head">
       <div style="flex:1">
-        <div style="font-family:Georgia,serif;font-size:1.1rem;font-weight:700">${fullName(c.resident_nom,c.resident_prenom)}</div>
+        <div style="font-size:1.1rem;font-weight:700">${fullName(c.resident_nom,c.resident_prenom)}</div>
         <div style="font-size:.83rem;opacity:.8">Ch. ${c.numero_chambre||'—'} &bull; ${formatDate(c.date_consultation,{time:true})}</div>
         <div style="font-size:.82rem;opacity:.7;margin-top:.2rem">${c.medecin_titre||''} ${c.medecin_nom||'—'}</div>
       </div>

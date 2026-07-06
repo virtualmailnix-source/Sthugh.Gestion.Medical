@@ -106,7 +106,8 @@
 html { scroll-behavior: smooth; font-size: 16px; }
 
 body {
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-optical-sizing: auto;
   background: var(--bg-main);
   color: var(--text-dark);
   line-height: 1.6;
@@ -139,7 +140,7 @@ input, select, textarea { font-family: inherit; }
   animation: pulse-icon 1.6s ease-in-out infinite;
 }
 .splash-brand { margin-bottom: 2rem; }
-.splash-title { display: block; font-family: Georgia, serif; font-size: 1.75rem; font-weight: 700; letter-spacing: .5px; }
+.splash-title { display: block; font-size: 1.75rem; font-weight: 700; letter-spacing: .5px; }
 .splash-subtitle { display: block; font-size: .95rem; opacity: .75; margin-top: .25rem; letter-spacing: 2px; text-transform: uppercase; }
 .splash-bar {
   width: 200px; height: 3px; background: rgba(255,255,255,.2);
@@ -193,7 +194,7 @@ input, select, textarea { font-family: inherit; }
 .logo-icon { font-size: 1.6rem; color: var(--gold-light); flex-shrink: 0; }
 .logo-text { overflow: hidden; }
 .logo-name {
-  display: block; font-family: Georgia, serif; font-size: 1rem;
+  display: block; font-size: 1rem;
   font-weight: 700; color: var(--white); white-space: nowrap;
 }
 .logo-desc {
@@ -273,7 +274,7 @@ input, select, textarea { font-family: inherit; }
 }
 .topbar-menu-btn { display: none; }
 .topbar-title {
-  font-family: Georgia, serif; font-size: 1.1rem;
+  font-size: 1.1rem;
   font-weight: 700; color: var(--text-dark);
   flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
@@ -515,7 +516,7 @@ select.form-control { cursor: pointer; }
   flex-shrink: 0;
 }
 .modal-title {
-  font-family: Georgia, serif; font-size: 1.05rem;
+  font-size: 1.05rem;
   font-weight: 700; color: var(--text-dark);
   display: flex; align-items: center; gap: .5rem;
 }
@@ -591,7 +592,7 @@ select.form-control { cursor: pointer; }
 }
 .page-header-left { display: flex; flex-direction: column; gap: .2rem; }
 .page-header h2 {
-  font-family: Georgia, serif; font-size: 1.4rem;
+  font-size: 1.4rem;
   font-weight: 700; color: var(--text-dark);
 }
 .page-header .sub { font-size: .85rem; color: var(--text-light); }
@@ -867,7 +868,7 @@ select.form-control { cursor: pointer; }
   width: 46px; height: 46px; border-radius: 50%;
   background: var(--teal-dark); color: var(--gold-light);
   display: flex; align-items: center; justify-content: center;
-  font-family: Georgia,serif; font-size: 1rem; font-weight: 700; flex-shrink: 0;
+  font-size: 1rem; font-weight: 700; flex-shrink: 0;
 }
 
 /* ========== CONSULTATION MINI CARD ========== */
@@ -895,7 +896,7 @@ select.form-control { cursor: pointer; }
   width: 60px; height: 60px; border-radius: 50%;
   background: rgba(255,255,255,.15); color: var(--gold-light);
   display: flex; align-items: center; justify-content: center;
-  font-family: Georgia,serif; font-size: 1.4rem; font-weight: 700; flex-shrink: 0;
+  font-size: 1.4rem; font-weight: 700; flex-shrink: 0;
 }
 
 /* ========== ANTÉCÉDENTS ========== */
@@ -966,7 +967,7 @@ select.form-control { cursor: pointer; }
   border-radius: var(--radius); padding: .85rem; text-align: center;
 }
 .vital-label { font-size: .7rem; font-weight: 700; text-transform: uppercase; color: var(--text-light); margin-bottom: .3rem; }
-.vital-value { font-family: Georgia, serif; font-size: 1.2rem; font-weight: 700; color: var(--teal-dark); }
+.vital-value { font-size: 1.2rem; font-weight: 700; color: var(--teal-dark); }
 .vital-unit  { font-size: .72rem; color: var(--text-light); }
 
 /* ========== TOGGLE SWITCH ========== */
@@ -1010,7 +1011,7 @@ select.form-control { cursor: pointer; }
   font-size: 1.9rem; color: var(--teal-dark);
 }
 .login-box h1 {
-  font-family: Georgia, serif; font-size: 1.85rem;
+  font-size: 1.85rem;
   color: var(--teal-dark); margin-bottom: .25rem;
 }
 .login-box > p {
@@ -1215,7 +1216,7 @@ select.form-control { cursor: pointer; }
   margin-bottom: 1.75rem;
 }
 .aide-hero i  { font-size: 2.4rem; color: var(--gold-light); flex-shrink: 0; }
-.aide-hero h2 { font-family: Georgia, serif; font-size: 1.35rem; margin-bottom: .2rem; }
+.aide-hero h2 { font-size: 1.35rem; margin-bottom: .2rem; }
 .aide-hero p  { font-size: .88rem; opacity: .75; margin: 0; }
 
 .aide-grid {
@@ -1236,7 +1237,7 @@ select.form-control { cursor: pointer; }
 .aide-card-featured { border-top: 3px solid var(--gold); }
 
 .aide-card-title {
-  font-family: Georgia, serif; font-size: 1rem; font-weight: 700;
+  font-size: 1rem; font-weight: 700;
   color: var(--teal-dark); margin-bottom: .85rem;
   display: flex; align-items: center; gap: .5rem;
   clear: both; /* always below any floated image */
@@ -1382,7 +1383,7 @@ select.form-control { cursor: pointer; }
 .score-table td { padding: .4rem .8rem; vertical-align: middle; }
 .score-table tr  { border-top: 1px solid var(--card-border); }
 .score-pts {
-  font-family: Georgia, serif; font-weight: 700; font-size: .9rem;
+  font-weight: 700; font-size: .9rem;
   white-space: nowrap; width: 44px; text-align: right;
 }
 .score-pts.high { color: #dc2626; }
@@ -1412,7 +1413,7 @@ select.form-control { cursor: pointer; }
 .score-example-card.mid  { border-top: 3px solid #d97706; }
 .score-example-card.low  { border-top: 3px solid #16a34a; }
 .score-example-name {
-  font-family: Georgia, serif; font-weight: 700;
+  font-weight: 700;
   font-size: .92rem; color: var(--text-dark); margin-bottom: .5rem;
 }
 .score-example-detail { color: var(--text-light); padding: .1rem 0; }
@@ -1473,7 +1474,7 @@ select.form-control { cursor: pointer; }
   animation: welcome-slide-up .5s .15s cubic-bezier(.34,1.56,.64,1) both;
 }
 .welcome-name {
-  font-family: Georgia, serif; font-size: 2.2rem; font-weight: 700;
+  font-size: 2.2rem; font-weight: 700;
   animation: welcome-slide-up .5s .25s cubic-bezier(.34,1.56,.64,1) both;
 }
 .welcome-role {
@@ -1618,7 +1619,7 @@ select.form-control { cursor: pointer; }
 
 .bday-section-title {
   display: flex; align-items: center; gap: .6rem;
-  font-family: Georgia, serif; font-size: 1rem; font-weight: 700;
+  font-size: 1rem; font-weight: 700;
   color: var(--teal-dark); margin-bottom: 1rem;
   padding-bottom: .5rem; border-bottom: 2px solid var(--card-border);
 }
@@ -1697,7 +1698,7 @@ select.form-control { cursor: pointer; }
 
 .bday-congrats {
   font-size: .82rem; font-weight: 600; color: var(--gold);
-  font-family: Georgia, serif;
+ 
 }
 
 @media (max-width: 768px) {

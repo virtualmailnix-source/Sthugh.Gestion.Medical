@@ -28,7 +28,7 @@ export async function logout() {
 
 async function _loadAppUser(authUserId) {
   const [appRes, authRes] = await Promise.all([
-    db.from('app_users').select('id,role,nom,prenom').eq('auth_user_id', authUserId).eq('actif', true).single(),
+    db.from('app_users').select('id,role,nom,prenom,photo_url').eq('auth_user_id', authUserId).eq('actif', true).single(),
     db.auth.getUser(),
   ]);
   const data = appRes.data;

@@ -1,7 +1,8 @@
 import { initRouter, RECEPTION_PAGES }   from './src/router.js';
 import { db }                            from './src/supabase.js';
-import { initAuth, login, isMedicalStaff } from './src/auth.js';
+import { initAuth, login, isMedicalStaff, currentUserInfo } from './src/auth.js';
 import { getLang, setLang, applyLang, t } from './src/i18n.js';
+import { resolvePhotos }                 from './src/storage.js';
 
 // ── PWA Service Worker ─────────────────────────────────────
 if ('serviceWorker' in navigator) {
@@ -39,6 +40,19 @@ export function openModal(title, body, actions = [], size = '') {
 export function closeModal() {
   document.getElementById('modal-overlay')?.classList.add('hidden');
   document.body.style.overflow = '';
+}
+
+// Avatar du topbar : photo de profil si présente, sinon icône générique.
+// Rappelée par Mon profil après un changement de photo.
+export async function syncTopbarAvatar() {
+  const el   = document.getElementById('topbar-avatar');
+  const user = currentUserInfo();
+  if (!el || !user) return;
+  const me = { photo_url: user.photo_url || null };
+  await resolvePhotos(me);
+  el.innerHTML = me.photo_url
+    ? `<img src="${me.photo_url}" alt="" onerror="this.remove()" style="width:30px;height:30px;border-radius:50%;object-fit:cover;display:block;border:2px solid var(--teal-pale)">`
+    : `<i class="bi bi-person-circle" style="font-size:1.4rem;color:var(--teal-mid)"></i>`;
 }
 
 // ── Init ──────────────────────────────────────────────────
@@ -128,11 +142,17 @@ function _startApp(user) {
     roleEl.className   = 'topbar-role-badge ' + (user.role === 'super_admin' ? 'role-super' : 'role-admin');
   }
 
-  // Réceptionniste : ne laisser dans la sidebar que les pages autorisées
+  syncTopbarAvatar();
+
+  // Réceptionniste : ne laisser dans la sidebar que les pages autorisées,
+  // et présenter le logiciel comme « Gestion Accueil » (rien de médical)
   if (user.role === 'receptionniste') {
     document.querySelectorAll('.nav-link').forEach(a => {
       if (!RECEPTION_PAGES.includes(a.dataset.page)) a.style.display = 'none';
     });
+    const desc = document.querySelector('.logo-desc');
+    if (desc) { desc.dataset.i18n = 'ui.receptionMgmt'; desc.textContent = t('ui.receptionMgmt'); }
+    document.title = "St Hugh's — " + t('ui.receptionMgmt');
   }
 
   // Menu Administration : super admin uniquement (le panel revérifie côté

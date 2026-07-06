@@ -4,6 +4,7 @@ import { toastSuccess, toastError }       from '../toast.js';
 import { escapeHtml, initials, fullName } from '../utils.js';
 import { isSuperAdmin, currentUserInfo }  from '../auth.js';
 import { t, getLang }                     from '../i18n.js';
+import { resolvePhotos }                  from '../storage.js';
 
 // ── Panel d'administration (ex-manager/, fusionné dans l'app) ──
 // Réservé au super admin : gestion des comptes + journal d'activité.
@@ -154,6 +155,7 @@ async function _loadUsers() {
   const lastAct = {};
   (actRes.data || []).forEach(a => { lastAct[a.auth_user_id] = a.last_at; });
   const meId = currentUserInfo()?.id;
+  await resolvePhotos(users);   // photos de profil (chemin -> URL signée)
 
   wrap.innerHTML = `<div class="table-wrap"><table class="table">
     <thead><tr>
@@ -165,7 +167,7 @@ async function _loadUsers() {
       ${users.map(u => `<tr data-id="${u.id}">
         <td>
           <div style="display:flex;align-items:center;gap:.6rem">
-            <div class="patient-avatar">${initials(u.nom, u.prenom)}</div>
+            <div class="patient-avatar" style="position:relative;overflow:hidden">${initials(u.nom, u.prenom)}${u.photo_url ? `<img src="${u.photo_url}" alt="" onerror="this.remove()" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">` : ''}</div>
             <div>
               <div style="font-weight:600">${escapeHtml(fullName(u.nom, u.prenom))}${u.id === meId ? ` <span style="font-size:.72rem;color:var(--text-light)">(${t('panel.you')})</span>` : ''}</div>
               <div style="font-size:.75rem;color:var(--text-light)">${escapeHtml(u.poste || '')}</div>

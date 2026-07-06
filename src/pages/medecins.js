@@ -57,7 +57,7 @@ async function _load(search = '') {
           <div class="doctor-card" style="padding:0;border:none;background:transparent;margin-bottom:0">
             <div class="doctor-avatar">${initials(d.nom,d.prenom)}</div>
             <div style="flex:1">
-              <div style="font-family:Georgia,serif;font-size:1.05rem;font-weight:700">${d.titre||'Dr.'} ${d.prenom} ${d.nom}</div>
+              <div style="font-size:1.05rem;font-weight:700">${d.titre||'Dr.'} ${d.prenom} ${d.nom}</div>
               <div style="font-size:.82rem;color:var(--gold);font-weight:600">${d.specialite||'Médecine Générale'}</div>
               ${!d.actif ? `<span class="badge badge-inactif" style="margin-top:.3rem">${t('common.inactive')}</span>` : ''}
             </div>

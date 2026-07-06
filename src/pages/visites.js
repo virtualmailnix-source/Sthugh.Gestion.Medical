@@ -4,7 +4,7 @@ import { toastSuccess, toastError } from '../toast.js';
 import { formatDate, formatTime, fullName, escapeHtml, debounce, nowLocalInput, todayISO, telHref } from '../utils.js';
 import { t, getLang }               from '../i18n.js';
 import { currentUserInfo }          from '../auth.js';
-import { resolvePhotos }            from '../photos.js';
+import { resolvePhotos }            from '../storage.js';
 
 let _filter = 'today';
 

@@ -30,7 +30,7 @@ export async function renderDashboard(container) {
     container.innerHTML = `
       <div class="card" style="padding:3rem;text-align:center;max-width:520px;margin:4rem auto">
         <i class="bi bi-exclamation-triangle-fill" style="font-size:3rem;color:#dc2626;display:block;margin-bottom:1rem"></i>
-        <h3 style="font-family:Georgia,serif;margin-bottom:.5rem">${t('dashboard.loadError')}</h3>
+        <h3 style="margin-bottom:.5rem">${t('dashboard.loadError')}</h3>
         <p style="color:var(--text-light);margin-bottom:1.5rem">${err.message || t('dashboard.loadErrorMsg')}</p>
         <button class="btn btn-primary" onclick="location.reload()">
           <i class="bi bi-arrow-clockwise"></i> ${t('common.retry')}

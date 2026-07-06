@@ -106,7 +106,7 @@ async function _loadSlots() {
       <div class="card-body" style="padding:1rem">
         <div style="display:flex;align-items:center;justify-content:space-between">
           <div>
-            <div style="font-family:Georgia,serif;font-weight:700;font-size:1rem">${formatDate(s.date_visite,{full:true})}</div>
+            <div style="font-weight:700;font-size:1rem">${formatDate(s.date_visite,{full:true})}</div>
             <div style="font-size:.82rem;color:var(--text-light)">
               ${s.heure_debut} - ${s.heure_fin}
               &bull; ${s.medecin_titre||'Dr.'} ${s.medecin_prenom||''} ${s.medecin_nom||'—'}

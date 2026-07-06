@@ -36,14 +36,23 @@ ON CONFLICT (id) DO UPDATE
 -- ── 2. Politiques : utilisateurs actifs de l'app uniquement ──
 -- La réceptionniste gère l'identité des résidents : elle garde
 -- l'accès photos, comme le staff médical (fn_is_app_user).
-DROP POLICY IF EXISTS "photos_read_public"  ON storage.objects;
-DROP POLICY IF EXISTS "photos_upload_auth"  ON storage.objects;
-DROP POLICY IF EXISTS "photos_update_auth"  ON storage.objects;
-DROP POLICY IF EXISTS "photos_delete_auth"  ON storage.objects;
-DROP POLICY IF EXISTS "photos_read_app"     ON storage.objects;
-DROP POLICY IF EXISTS "photos_upload_app"   ON storage.objects;
-DROP POLICY IF EXISTS "photos_update_app"   ON storage.objects;
-DROP POLICY IF EXISTS "photos_delete_app"   ON storage.objects;
+-- Nettoyage GÉNÉRIQUE d'abord : supprime toute politique visant ce
+-- bucket, y compris celles créées à la main dans le Dashboard avec
+-- des noms inconnus (le SQL 10 suggérait cette voie en secours).
+DO $$
+DECLARE
+  pol RECORD;
+BEGIN
+  FOR pol IN
+    SELECT policyname FROM pg_policies
+    WHERE schemaname = 'storage' AND tablename = 'objects'
+      AND (COALESCE(qual, '') LIKE '%photos-residents%'
+        OR COALESCE(with_check, '') LIKE '%photos-residents%')
+  LOOP
+    EXECUTE format('DROP POLICY IF EXISTS %I ON storage.objects', pol.policyname);
+  END LOOP;
+END;
+$$;
 
 CREATE POLICY "photos_read_app" ON storage.objects
   FOR SELECT TO authenticated

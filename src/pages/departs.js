@@ -4,7 +4,7 @@ import { toastSuccess, toastError } from '../toast.js';
 import { formatDate, formatAge, initials, fullName, escapeHtml } from '../utils.js';
 import { t }                        from '../i18n.js';
 import { isSuperAdmin, isReceptionist } from '../auth.js';
-import { resolvePhotos }            from '../photos.js';
+import { resolvePhotos }            from '../storage.js';
 
 let _filter = 'all';
 
@@ -135,7 +135,7 @@ async function _load() {
 function _section(title, tint, rows, type) {
   return `
     <div style="margin-bottom:2rem">
-      <div style="display:flex;align-items:center;gap:.6rem;font-family:Georgia,serif;font-size:1rem;font-weight:700;
+      <div style="display:flex;align-items:center;gap:.6rem;font-size:1rem;font-weight:700;
         color:var(--tint-${tint}-fg);margin-bottom:1rem;padding:.6rem .9rem;
         background:var(--tint-${tint}-bg);border-radius:var(--radius-sm);">
         ${title}

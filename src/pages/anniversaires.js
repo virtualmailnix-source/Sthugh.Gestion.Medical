@@ -3,7 +3,7 @@ import { toastSuccess, toastError } from '../toast.js';
 import { initials, fullName }       from '../utils.js';
 import { t, getLang }               from '../i18n.js';
 import { isMedicalStaff }           from '../auth.js';
-import { resolvePhotos }            from '../photos.js';
+import { resolvePhotos }            from '../storage.js';
 
 export async function renderAnniversaires(container) {
   container.innerHTML = `

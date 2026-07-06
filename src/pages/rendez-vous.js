@@ -192,7 +192,7 @@ async function _loadUpcoming() {
     <div style="display:flex;align-items:center;gap:.75rem;padding:.5rem 0;border-bottom:1px solid var(--card-border)">
       <div style="min-width:44px;text-align:center">
         <div style="font-size:.68rem;font-weight:700;color:var(--text-light);text-transform:uppercase">${MOIS_FR[new Date(r.date_rdv).getMonth()].slice(0,3)}</div>
-        <div style="font-family:Georgia,serif;font-size:1.2rem;font-weight:700;color:var(--teal-dark);line-height:1">${new Date(r.date_rdv).getDate()}</div>
+        <div style="font-size:1.2rem;font-weight:700;color:var(--teal-dark);line-height:1">${new Date(r.date_rdv).getDate()}</div>
       </div>
       <div style="flex:1;min-width:0">
         <div style="font-weight:600;font-size:.87rem">${fullName(r.resident_nom,r.resident_prenom)}</div>

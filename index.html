@@ -10,6 +10,9 @@
   <link rel="icon" type="image/png" sizes="16x16" href="ico/favicon-16x16.png">
   <link rel="icon" type="image/png" sizes="32x32" href="ico/favicon-32x32.png">
   <link rel="apple-touch-icon" sizes="180x180" href="ico/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="style.css">
   <title>St Hugh's — Gestion Médicale</title>
@@ -167,7 +170,9 @@
               <span id="topbar-user-name" class="topbar-username"></span>
               <span id="topbar-user-role" class="topbar-role-badge"></span>
             </div>
-            <i class="bi bi-person-circle" style="font-size:1.4rem;color:var(--teal-mid);margin-left:.4rem"></i>
+            <span id="topbar-avatar" style="margin-left:.4rem;display:flex;align-items:center">
+              <i class="bi bi-person-circle" style="font-size:1.4rem;color:var(--teal-mid)"></i>
+            </span>
           </div>
         </div>
       </header>
