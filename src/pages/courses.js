@@ -171,7 +171,10 @@ async function _loadAutonomes() {
   if (_autonomes.length) return _autonomes;
   // RPC : accessible à tous les rôles sans exposer la colonne mobilite
   const { data } = await db.rpc('fn_residents_autonomes');
-  _autonomes = data || [];
+  // Ordre alphabétique NOM puis prénom (la RPC ne garantit pas l'ordre)
+  _autonomes = (data || []).sort((a, b) =>
+    (a.nom || '').localeCompare(b.nom || '', 'fr') ||
+    (a.prenom || '').localeCompare(b.prenom || '', 'fr'));
   return _autonomes;
 }
 
@@ -181,7 +184,7 @@ async function _openForm(course) {
   const isEdit = !!course;
   const residentOptions = autonomes.map(r =>
     `<option value="${r.id}" ${course?.resident_id === r.id ? 'selected' : ''}>
-      ${fullName(r.nom, r.prenom)} - Ch.${r.numero_chambre || '?'}
+      ${r.nom} ${r.prenom} - Ch.${r.numero_chambre || '?'}
     </option>`
   ).join('');
 
@@ -195,7 +198,7 @@ async function _openForm(course) {
         <option value="">— ${t('visites.selectResident')} —</option>
         ${autonomes.map(r =>
           `<option value="${r.id}" ${currentResId === r.id ? 'selected' : ''}>
-            ${fullName(r.nom, r.prenom)} - Ch.${r.numero_chambre || '?'}
+            ${r.nom} ${r.prenom} - Ch.${r.numero_chambre || '?'}
           </option>`
         ).join('')}
       </select>

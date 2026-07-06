@@ -150,11 +150,11 @@ export async function openFormConsultation(id, prefillResidentId) {
   await resolveOrdonnances(c);   // ordonnance_url -> URL signée, _ordonnance_path -> chemin
 
   const [{data:ress},{data:docs}]=await Promise.all([
-    db.from('residents').select('id,nom,prenom,numero_chambre').eq('actif',true).order('nom').limit(200),
+    db.from('residents').select('id,nom,prenom,numero_chambre').eq('actif',true).order('nom').order('prenom').limit(200),
     db.from('doctors').select('id,titre,nom,prenom').eq('actif',true).order('nom'),
   ]);
 
-  const resOpts=(ress||[]).map(r=>`<option value="${r.id}" ${(c.resident_id||prefillResidentId)===r.id?'selected':''}>${r.prenom} ${r.nom} - Ch.${r.numero_chambre||'—'}</option>`).join('');
+  const resOpts=(ress||[]).map(r=>`<option value="${r.id}" ${(c.resident_id||prefillResidentId)===r.id?'selected':''}>${r.nom} ${r.prenom} - Ch.${r.numero_chambre||'—'}</option>`).join('');
   const docOpts=(docs||[]).map(d=>`<option value="${d.id}" ${c.medecin_id===d.id?'selected':''}>${d.titre||'Dr.'} ${d.prenom} ${d.nom}</option>`).join('');
 
   const body=`<form id="form-cons" enctype="multipart/form-data">

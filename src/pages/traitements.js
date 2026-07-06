@@ -228,13 +228,13 @@ export async function openFormTraitement(id, prefillResidentId) {
   const tData = trt || {};
 
   const { data: residents } = await db.from('residents')
-    .select('id,nom,prenom,numero_chambre').eq('actif',true).order('nom').limit(200);
+    .select('id,nom,prenom,numero_chambre').eq('actif',true).order('nom').order('prenom').limit(200);
   const { data: meds } = await db.from('medicaments')
     .select('id,nom_commercial,dosage_standard,forme').order('nom_commercial').limit(500);
   const { data: docs } = await db.from('doctors').select('id,titre,nom,prenom').eq('actif',true).order('nom');
 
   const resOpts = (residents||[]).map(r=>
-    `<option value="${r.id}" ${(tData.resident_id||prefillResidentId)===r.id?'selected':''}>${r.prenom} ${r.nom} - Ch.${r.numero_chambre||'—'}</option>`
+    `<option value="${r.id}" ${(tData.resident_id||prefillResidentId)===r.id?'selected':''}>${r.nom} ${r.prenom} - Ch.${r.numero_chambre||'—'}</option>`
   ).join('');
   const docOpts = (docs||[]).map(d=>
     `<option value="${d.id}" ${tData.prescrit_par===d.id?'selected':''}>${d.titre||'Dr.'} ${d.prenom} ${d.nom}</option>`

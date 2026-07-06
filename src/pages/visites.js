@@ -219,10 +219,10 @@ async function _openFormVisite(id) {
   const { data: resList } = await db.from('v_residents_public')
     .select('id,nom,prenom,numero_chambre')
     .eq('actif', true).is('statut_depart', null)
-    .order('nom').limit(300);
+    .order('nom').order('prenom').limit(300);
 
   const resOpts = (resList || []).map(r =>
-    `<option value="${r.id}" ${v.resident_id === r.id ? 'selected' : ''}>${r.prenom} ${r.nom} - Ch.${r.numero_chambre || '—'}</option>`
+    `<option value="${r.id}" ${v.resident_id === r.id ? 'selected' : ''}>${r.nom} ${r.prenom} - Ch.${r.numero_chambre || '—'}</option>`
   ).join('');
 
   const others = v.autres_visiteurs || [];
@@ -465,14 +465,14 @@ async function _openDemandeModal(d) {
   const { data: residents } = await db.from('v_residents_public')
     .select('id, nom, prenom, numero_chambre, statut_depart')
     .eq('actif', true)
-    .order('nom').limit(400);
+    .order('nom').order('prenom').limit(400);
 
   const actifs = (residents || []).filter(r => !r.statut_depart || r.statut_depart === 'vacances');
   const readOnly = d.statut !== 'en_attente';
 
   const resOpts = actifs.map(r =>
     `<option value="${r.id}" ${d.resident_id === r.id ? 'selected' : ''}>
-      ${escapeHtml(fullName(r.nom, r.prenom))} - Ch.${r.numero_chambre || '?'}${r.statut_depart === 'vacances' ? ' (' + t('depart.badgeVacances') + ')' : ''}
+      ${escapeHtml(r.nom + ' ' + r.prenom)} - Ch.${r.numero_chambre || '?'}${r.statut_depart === 'vacances' ? ' (' + t('depart.badgeVacances') + ')' : ''}
     </option>`).join('');
 
   const body = `
@@ -544,7 +544,7 @@ async function _openDemandeModal(d) {
       fullName(r.nom, r.prenom).toLowerCase().includes(q) ||
       String(r.numero_chambre || '').toLowerCase().includes(q));
     sel.innerHTML = filtered.map(r =>
-      `<option value="${r.id}">${escapeHtml(fullName(r.nom, r.prenom))} - Ch.${r.numero_chambre || '?'}${r.statut_depart === 'vacances' ? ' (' + t('depart.badgeVacances') + ')' : ''}</option>`
+      `<option value="${r.id}">${escapeHtml(r.nom + ' ' + r.prenom)} - Ch.${r.numero_chambre || '?'}${r.statut_depart === 'vacances' ? ' (' + t('depart.badgeVacances') + ')' : ''}</option>`
     ).join('');
   });
 }

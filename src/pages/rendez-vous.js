@@ -208,11 +208,11 @@ export async function openFormRdv(id, prefillResidentId, isUrgence=false) {
   const r=rdv||{};
 
   const [{data:ress},{data:docs}]=await Promise.all([
-    db.from('residents').select('id,nom,prenom,numero_chambre,niveau_priorite').eq('actif',true).order('nom').limit(200),
+    db.from('residents').select('id,nom,prenom,numero_chambre,niveau_priorite').eq('actif',true).order('nom').order('prenom').limit(200),
     db.from('doctors').select('id,titre,nom,prenom').eq('actif',true).order('nom'),
   ]);
 
-  const resOpts=(ress||[]).map(p=>`<option value="${p.id}" ${(r.resident_id||prefillResidentId)===p.id?'selected':''}>${p.prenom} ${p.nom} - Ch.${p.numero_chambre||'—'}${p.niveau_priorite===1?' (P1)':''}</option>`).join('');
+  const resOpts=(ress||[]).map(p=>`<option value="${p.id}" ${(r.resident_id||prefillResidentId)===p.id?'selected':''}>${p.nom} ${p.prenom} - Ch.${p.numero_chambre||'—'}${p.niveau_priorite===1?' (P1)':''}</option>`).join('');
   const docOpts=(docs||[]).map(d=>`<option value="${d.id}" ${r.medecin_id===d.id?'selected':''}>${d.titre||'Dr.'} ${d.prenom} ${d.nom}</option>`).join('');
   const defDate=_selectedDate+'T'+(new Date().getHours()<16?'09':'08')+':00';
   const rdvDate=r.date_rdv?new Date(r.date_rdv).toISOString().slice(0,16):defDate;
