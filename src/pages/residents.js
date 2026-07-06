@@ -10,6 +10,7 @@ import { openFormRdv }                 from './rendez-vous.js';
 import { isSuperAdmin, isReceptionist, currentUserInfo } from '../auth.js';
 import { t, getLang }                  from '../i18n.js';
 import { resolvePhotos, uploadPhoto, removePhoto, resolveOrdonnances } from '../storage.js';
+import { prepareImage } from '../image_tools.js';
 
 const PAGE_SIZE = 15;
 let _page = 1, _search = '', _filter = 'actif';
@@ -458,17 +459,22 @@ function _contactRowHTML(c) {
 }
 
 function _initFormEvents(r, isNew) {
-  // Photo preview
-  document.getElementById('photo-input')?.addEventListener('change', e => {
-    const f = e.target.files[0];
+  // Photo : éditeur (redimensionnement + compression auto > 2 Mo) puis
+  // aperçu. Le fichier préparé est gardé sur l'input (_preparedFile) et
+  // repris par _submitResident.
+  document.getElementById('photo-input')?.addEventListener('change', async e => {
+    const input = e.target;
+    const f = input.files[0];
     if (!f) return;
-    if (f.size > 2 * 1024 * 1024) { toastError(t('residents.photoTooLarge')); e.target.value = ''; return; }
+    const prepared = await prepareImage(f);
+    if (!prepared) { input.value = ''; delete input._preparedFile; return; }
+    input._preparedFile = prepared;
     const reader = new FileReader();
     reader.onload = ev => {
       document.getElementById('photo-preview').innerHTML =
         `<img src="${ev.target.result}" style="width:100%;height:100%;object-fit:cover">`;
     };
-    reader.readAsDataURL(f);
+    reader.readAsDataURL(prepared);
   });
 
   // Mise à jour des initiales en temps réel (seulement à la création)
@@ -489,7 +495,7 @@ function _initFormEvents(r, isNew) {
     document.getElementById('photo-preview').innerHTML =
       `<span id="photo-initials" style="font-size:1.6rem;font-weight:700;color:var(--teal-dark)">${initials(r.nom || '?', r.prenom || '?')}</span>`;
     const fi = document.getElementById('photo-input');
-    if (fi) fi.value = '';
+    if (fi) { fi.value = ''; delete fi._preparedFile; }
     document.getElementById('photo-preview').dataset.removed = 'true';
   });
 
@@ -527,7 +533,8 @@ async function _submitResident(id) {
 
   // Photo : bucket privé, on stocke le CHEMIN (nom UUID), jamais d'URL.
   // L'ancien fichier est retiré du bucket en cas de remplacement/suppression.
-  const photoFile    = document.getElementById('photo-input')?.files[0];
+  const photoInput   = document.getElementById('photo-input');
+  const photoFile    = photoInput?._preparedFile || photoInput?.files[0];
   const photoRemoved = document.getElementById('photo-preview')?.dataset.removed === 'true';
   const oldPath      = document.getElementById('photo-preview')?.dataset.path || null;
 

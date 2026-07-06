@@ -1704,3 +1704,61 @@ select.form-control { cursor: pointer; }
 @media (max-width: 768px) {
   .bday-grid { grid-template-columns: 1fr; }
 }
+
+/* ── Éditeur d'image avant upload (src/image_tools.js) ─────────
+   Overlay indépendant, au-dessus de la modale partagée (z-index 500),
+   pour pouvoir s'ouvrir depuis le formulaire résident. */
+.imgedit-overlay {
+  position: fixed; inset: 0; z-index: 600;
+  background: rgba(15,42,42,.6);
+  backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 1rem;
+}
+.imgedit-box {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  box-shadow: var(--shadow-deep, 0 12px 48px rgba(0,0,0,.25));
+  width: 100%; max-width: 440px;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.imgedit-head {
+  padding: .9rem 1.25rem;
+  font-weight: 700;
+  border-bottom: 1px solid var(--card-border);
+  display: flex; align-items: center; gap: .5rem;
+}
+.imgedit-preview {
+  background: var(--beige);
+  display: flex; align-items: center; justify-content: center;
+  max-height: 42vh; min-height: 140px;
+}
+.imgedit-preview img {
+  max-width: 100%; max-height: 42vh; object-fit: contain; display: block;
+}
+.imgedit-controls { padding: 1rem 1.25rem; }
+.imgedit-controls .form-label {
+  display: flex; justify-content: space-between; align-items: baseline;
+}
+.imgedit-controls .form-label span {
+  font-weight: 400; font-size: .78rem; color: var(--text-light);
+}
+#imgedit-range { width: 100%; accent-color: var(--teal-mid); }
+.imgedit-meta {
+  display: flex; justify-content: space-between; gap: 1rem;
+  font-size: .78rem; color: var(--text-light); margin-top: .4rem;
+}
+.imgedit-note {
+  margin-top: .65rem; font-size: .78rem;
+  color: var(--teal-dark);
+  background: var(--teal-pale);
+  border-radius: 8px; padding: .5rem .7rem;
+  display: flex; gap: .45rem; align-items: flex-start;
+}
+.imgedit-foot {
+  padding: .85rem 1.25rem;
+  border-top: 1px solid var(--card-border);
+  display: flex; justify-content: flex-end; gap: .6rem;
+}

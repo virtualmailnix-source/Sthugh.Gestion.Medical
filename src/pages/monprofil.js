@@ -5,6 +5,7 @@ import { t }                       from '../i18n.js';
 import { initials }                from '../utils.js';
 import { toastSuccess, toastError } from '../toast.js';
 import { resolvePhotos, uploadPhoto, removePhoto } from '../storage.js';
+import { prepareImage } from '../image_tools.js';
 import { syncTopbarAvatar }        from '../../script.js';
 
 export async function renderMonProfil(container) {
@@ -83,8 +84,11 @@ export async function renderMonProfil(container) {
   document.getElementById('profil-photo-input')?.addEventListener('change', async e => {
     const file = e.target.files[0];
     if (!file) return;
-    if (file.size > 2 * 1024 * 1024) { toastError(t('monprofil.photoTooLarge')); e.target.value = ''; return; }
-    await _updatePhoto(container, u, file, u.photo_url || null);
+    // Éditeur : redimensionnement au choix, compression auto > 2 Mo
+    const prepared = await prepareImage(file);
+    e.target.value = '';
+    if (!prepared) return;
+    await _updatePhoto(container, u, prepared, u.photo_url || null);
   });
 
   document.getElementById('btn-rm-avatar')?.addEventListener('click', async () => {
