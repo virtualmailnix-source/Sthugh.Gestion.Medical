@@ -1247,7 +1247,7 @@ function _exportPDF(r, cons, trais, contacts, histSorties = [], histCourses = []
   }
   if (r.numero_chambre) parts.push(`Chambre ${r.numero_chambre}`);
   if (r.sexe)           parts.push(r.sexe);
-  if (r.cin)            parts.push(`CIN: ${r.cin}`);
+  if (r.cin)            parts.push(`${t('residents.cin')}: ${r.cin}`);
   if (r.taille && withMedical) parts.push(`${r.taille} cm`);
   doc.text(parts.join('  |  '), M, y);
 

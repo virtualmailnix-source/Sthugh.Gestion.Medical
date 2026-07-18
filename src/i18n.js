@@ -103,7 +103,7 @@ const T = {
       firstname:'Prénom', lastname:'Nom', dob:'Date de naissance',
       sex:'Sexe', sexM:'Masculin', sexF:'Féminin',
       entryDate:"Date d'entrée", roomNumber:'N° chambre',
-      cin:'CIN', cinFormat:'14 caractères alphanumériques, commence par une lettre',
+      cin:'ID', cinFormat:'14 caractères alphanumériques, commence par une lettre',
       bloodGroup:'Groupe sanguin', height:'Taille (cm)', heightShort:'Taille',
       allergies:'Allergies', history:'Antécédents médicaux', historyShort:'Antécédents',
       chronic:'Conditions chroniques', mobility:'Mobilité',
@@ -651,7 +651,7 @@ const T = {
       firstname:'First name', lastname:'Last name', dob:'Date of birth',
       sex:'Sex', sexM:'Male', sexF:'Female',
       entryDate:'Admission date', roomNumber:'Room number',
-      cin:'NIC', cinFormat:'14 alphanumeric characters, starts with a letter',
+      cin:'ID', cinFormat:'14 alphanumeric characters, starts with a letter',
       bloodGroup:'Blood type', height:'Height (cm)', heightShort:'Height',
       allergies:'Allergies', history:'Medical history', historyShort:'History',
       chronic:'Chronic conditions', mobility:'Mobility',
@@ -1098,7 +1098,9 @@ const T = {
   },
 };
 
-export function getLang() { return localStorage.getItem('sthughs_lang') || 'fr'; }
+// Langue de base de l'application : anglais. Le français reste disponible
+// par le sélecteur ; le choix de l'utilisateur est mémorisé.
+export function getLang() { return localStorage.getItem('sthughs_lang') || 'en'; }
 export function setLang(lang) { localStorage.setItem('sthughs_lang', lang); document.documentElement.lang = lang; }
 
 export function t(path) {
