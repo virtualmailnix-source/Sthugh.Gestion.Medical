@@ -7,6 +7,7 @@ import {
 } from '../utils.js';
 import { t } from '../i18n.js';
 import { resolveOrdonnances, uploadOrdonnance, removeOrdonnance } from '../storage.js';
+import { brancherValidationDouce } from '../constantes.js';
 
 const PAGE_SIZE = 15;
 let _page = 1, _search = '', _dateFrom = todayISO(), _dateTo = todayISO();
@@ -157,7 +158,8 @@ export async function openFormConsultation(id, prefillResidentId) {
   const resOpts=(ress||[]).map(r=>`<option value="${r.id}" ${(c.resident_id||prefillResidentId)===r.id?'selected':''}>${r.nom} ${r.prenom} - Ch.${r.numero_chambre||'—'}</option>`).join('');
   const docOpts=(docs||[]).map(d=>`<option value="${d.id}" ${c.medecin_id===d.id?'selected':''}>${d.titre||'Dr.'} ${d.prenom} ${d.nom}</option>`).join('');
 
-  const body=`<form id="form-cons" enctype="multipart/form-data">
+  const body=`<div id="cons-alerte"></div>
+  <form id="form-cons" enctype="multipart/form-data">
     <div class="form-section">
       <div class="form-section-title"><i class="bi bi-person-fill"></i> ${t('consultations.secResidentDate')}</div>
       <div class="form-row">
@@ -191,6 +193,7 @@ export async function openFormConsultation(id, prefillResidentId) {
         <div class="form-group"><label class="form-label">${t('consultations.spo2Short')}</label><input class="form-control" type="number" step=".1" name="saturation_o2" value="${c.saturation_o2||''}"></div>
         <div class="form-group"><label class="form-label">${t('consultations.weightShort')}</label><input class="form-control" id="f-poids" type="number" step=".1" name="poids" value="${c.poids||''}"></div>
         <div class="form-group"><label class="form-label">${t('consultations.heightShortC')}</label><input class="form-control" id="f-taille" type="number" step=".1" name="taille" value="${c.taille||''}"></div>
+        <div class="form-group"><label class="form-label">${t('consultations.glucoseShort')}</label><input class="form-control" type="number" step=".1" name="glycemie" value="${c.glycemie||''}"></div>
       </div>
       <div style="font-size:.84rem;color:var(--text-mid)">${t('consultations.bmiLabel')} <strong id="imc-val">${c.imc||'—'}</strong></div>
     </div>
@@ -228,9 +231,12 @@ export async function openFormConsultation(id, prefillResidentId) {
     body,
     [
       { label: t('common.cancel'), cls:'btn btn-secondary', action: closeModal },
-      { label: id ? t('common.modify') : t('common.save'), cls:'btn btn-primary', action: () => _submitCons(id) }
+      { label: id ? t('common.modify') : t('common.save'), cls:'btn btn-primary', action: () => _valider() }
     ], 'modal-xl'
   );
+
+  // Avertissement sur les constantes hors plage usuelle, jamais bloquant
+  const _valider = brancherValidationDouce('form-cons', 'cons-alerte', () => _submitCons(id));
 
   // IMC live
   ['f-poids','f-taille'].forEach(fid => {
@@ -331,13 +337,14 @@ async function _viewConsultation(id) {
       </div>
       ${c.ordonnance_url ? `<a href="${c.ordonnance_url}" target="_blank" class="btn btn-secondary btn-sm" style="color:var(--white);border-color:rgba(255,255,255,.4)"><i class="bi bi-file-earmark-pdf-fill"></i> ${t('consultations.colOrdonnance')}</a>` : ''}
     </div>
-    ${c.tension_arterielle||c.temperature||c.poids ? `
+    ${c.tension_arterielle||c.temperature||c.poids||c.glycemie ? `
     <div class="vitals-grid" style="margin-bottom:1.25rem">
       ${c.tension_arterielle?`<div class="vital-box"><div class="vital-label">TA</div><div class="vital-value">${c.tension_arterielle}</div><div class="vital-unit">mmHg</div></div>`:''}
       ${c.temperature?`<div class="vital-box"><div class="vital-label">Temp.</div><div class="vital-value">${c.temperature}</div><div class="vital-unit">°C</div></div>`:''}
       ${c.pouls?`<div class="vital-box"><div class="vital-label">Pouls</div><div class="vital-value">${c.pouls}</div><div class="vital-unit">bpm</div></div>`:''}
       ${c.saturation_o2?`<div class="vital-box"><div class="vital-label">SpO₂</div><div class="vital-value">${c.saturation_o2}</div><div class="vital-unit">%</div></div>`:''}
       ${c.poids?`<div class="vital-box"><div class="vital-label">Poids</div><div class="vital-value">${c.poids}</div><div class="vital-unit">kg</div></div>`:''}
+      ${c.glycemie?`<div class="vital-box"><div class="vital-label">${t('constantes.glucoseShort')}</div><div class="vital-value">${c.glycemie}</div><div class="vital-unit">mmol/L</div></div>`:''}
       ${c.imc?`<div class="vital-box"><div class="vital-label">IMC</div><div class="vital-value">${c.imc}</div><div class="vital-unit"></div></div>`:''}
     </div>` : ''}
     <table style="width:100%">

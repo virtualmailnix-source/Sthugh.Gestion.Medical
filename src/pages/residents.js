@@ -10,6 +10,7 @@ import { isSuperAdmin, isReceptionist, currentUserInfo } from '../auth.js';
 import { t, getLang }                  from '../i18n.js';
 import { resolvePhotos, uploadPhoto, removePhoto, resolveOrdonnances } from '../storage.js';
 import { prepareImage } from '../image_tools.js';
+import { openFormConstante, constantesPaneHTML } from '../constantes.js';
 
 const PAGE_SIZE = 15;
 let _page = 1, _search = '', _filter = 'actif';
@@ -594,7 +595,7 @@ export async function openResidentProfile(id) {
 }
 
 async function _openProfile(id) {
-  const [resRes, consRes, traitRes, rdvRes, contactsRes, histSortiesRes, histCoursesRes, visitesRes] = await Promise.all([
+  const [resRes, consRes, traitRes, rdvRes, contactsRes, histSortiesRes, histCoursesRes, visitesRes, constRes] = await Promise.all([
     db.from('v_residents_priorite').select('*').eq('id', id).single(),
     // Vue unifiée : consultations saisies + RDV échus (règle métier)
     db.from('v_consultations_unifiees').select('*').eq('resident_id', id).order('date_consultation', { ascending: false }).limit(10),
@@ -608,6 +609,8 @@ async function _openProfile(id) {
     db.from('historique_sorties').select('*').eq('resident_id', id).order('date_sortie', { ascending: false }),
     db.from('courses').select('*').eq('resident_id', id).order('date_sortie', { ascending: false }).order('heure_depart', { ascending: false }),
     db.from('visites').select('*').eq('resident_id', id).order('date_visite', { ascending: false }).limit(20),
+    // Relevés libres et constantes de consultation, un seul flux (SQL 30)
+    db.from('v_constantes_unifiees').select('*').eq('resident_id', id).order('date_releve', { ascending: false }).limit(30),
   ]);
 
   const r             = resRes.data;
@@ -618,6 +621,7 @@ async function _openProfile(id) {
   const histSorties   = histSortiesRes.data || [];
   const histCourses   = histCoursesRes.data || [];
   const visites       = visitesRes.data || [];
+  const constantes    = constRes.data || [];
   if (!r) return;
   await resolvePhotos(r);           // chemin -> URL signée (bucket privé)
   await resolveOrdonnances(cons);   // liens ordonnances des consultations
@@ -693,6 +697,7 @@ async function _openProfile(id) {
       <button class="tab-btn" data-tab="contacts">${t('residents.tabContacts')} (${contacts.length})</button>
       <button class="tab-btn" data-tab="traitements">${isArchived ? t('depart.tabHistorique') : t('residents.tabTreatments')} (${trais.length})</button>
       <button class="tab-btn" data-tab="consultations">${t('residents.tabConsultations')} (${cons.length})</button>
+      <button class="tab-btn" data-tab="constantes">${t('constantes.tabTitle')} (${constantes.length})</button>
       ${!isArchived ? `<button class="tab-btn" data-tab="rdv">${t('residents.tabRdv')} (${rdvs.length})</button>` : ''}
     </div>
 
@@ -820,6 +825,17 @@ async function _openProfile(id) {
         : `<div class="empty-state"><i class="bi bi-journal-x"></i><p>${t('residents.noConsult')}</p></div>`}
     </div>
 
+    <div class="tab-pane" data-pane="constantes">
+      ${isArchived ? readOnlyNotice : `
+        <div style="display:flex;justify-content:flex-end;margin-bottom:1rem">
+          <button class="btn btn-primary btn-sm" id="btn-add-constante" data-rid="${r.id}">
+            <i class="bi bi-plus-lg"></i> ${t('constantes.addReleve')}
+          </button>
+        </div>
+      `}
+      ${constantesPaneHTML(constantes)}
+    </div>
+
     ${!isArchived ? `<div class="tab-pane" data-pane="rdv">
       ${rdvs.length ? rdvs.map(rv => `
         <div class="consult-mini">
@@ -872,6 +888,12 @@ async function _openProfile(id) {
     closeModal();
     // currentTarget : un clic sur l'icône <i> du bouton ne porte pas data-rid
     _openFormTraitement(null, e.currentTarget.dataset.rid);
+  });
+
+  document.getElementById('btn-add-constante')?.addEventListener('click', e => {
+    const rid = e.currentTarget.dataset.rid;
+    // Le dossier est rouvert après enregistrement pour afficher le relevé
+    openFormConstante(rid, () => _openProfile(rid));
   });
 
   document.getElementById('btn-edit-contacts')?.addEventListener('click', () => {
