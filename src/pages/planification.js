@@ -1,7 +1,7 @@
 import { db }         from '../supabase.js';
 import { openModal, closeModal } from '../../script.js';
 import { toastSuccess, toastError } from '../toast.js';
-import { formatDate, fullName, escapeHtml } from '../utils.js';
+import { formatDate, fullName, escapeHtml, todayISO } from '../utils.js';
 import { t } from '../i18n.js';
 
 export async function renderPlanification(container) {
@@ -89,7 +89,7 @@ async function _loadSlots() {
 
   const { data, error } = await db.from('v_planning_detail')
     .select('*')
-    .gte('date_visite', new Date().toISOString().slice(0,10))
+    .gte('date_visite', todayISO())
     .order('date_visite')
     .limit(10);
 
@@ -224,7 +224,7 @@ async function _openFormSlot() {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">Date de visite <span class="required">*</span></label>
-        <input class="form-control" type="date" name="date_visite" min="${new Date().toISOString().slice(0,10)}" required>
+        <input class="form-control" type="date" name="date_visite" min="${todayISO()}" required>
       </div>
       <div class="form-group">
         <label class="form-label">Médecin</label>

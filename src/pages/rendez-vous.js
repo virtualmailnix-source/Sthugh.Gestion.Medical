@@ -1,13 +1,18 @@
 import { db }         from '../supabase.js';
 import { openModal, closeModal } from '../../script.js';
 import { toastSuccess, toastError } from '../toast.js';
-import { formatDate, formatTime, fullName, escapeHtml, JOURS_FR, MOIS_FR } from '../utils.js';
+import { formatDate, formatTime, fullName, escapeHtml, todayISO, ymdLocal, JOURS_FR, MOIS_FR } from '../utils.js';
 import { t } from '../i18n.js';
 
-let _selectedDate = new Date().toISOString().slice(0,10);
+let _selectedDate = todayISO();
+// Mois affiché par le mini-calendrier, indépendant du jour sélectionné :
+// naviguer entre les mois ne doit pas déplacer la sélection.
+let _calYear = new Date().getFullYear();
+let _calMon  = new Date().getMonth();
 
 export async function renderRendezVous(container) {
-  _selectedDate = new Date().toISOString().slice(0,10);
+  _selectedDate = todayISO();
+  _syncCalToSelected();
   container.innerHTML = `
     <div class="page-header">
       <div class="page-header-left">
@@ -52,23 +57,29 @@ export async function renderRendezVous(container) {
   document.getElementById('prev-day').addEventListener('click', () => _changeDay(-1));
   document.getElementById('next-day').addEventListener('click', () => _changeDay(1));
   document.getElementById('today-btn').addEventListener('click', () => {
-    _selectedDate = new Date().toISOString().slice(0,10); _refresh();
+    _selectedDate = todayISO(); _syncCalToSelected(); _refresh();
   });
   _refresh();
 }
 
 function _changeDay(d) {
   const dt=new Date(_selectedDate+'T12:00:00'); dt.setDate(dt.getDate()+d);
-  _selectedDate=dt.toISOString().slice(0,10); _refresh();
+  _selectedDate=ymdLocal(dt); _syncCalToSelected(); _refresh();
+}
+
+// Ramène le mini-calendrier sur le mois du jour sélectionné (changement de
+// jour, retour à aujourd'hui) ; la navigation mensuelle, elle, ne passe pas ici.
+function _syncCalToSelected() {
+  const d=new Date(_selectedDate+'T12:00:00');
+  _calYear=d.getFullYear(); _calMon=d.getMonth();
 }
 
 async function _refresh() { _renderCal(); _loadDay(); _loadUpcoming(); }
 
 function _renderCal() {
   const wrap=document.getElementById('mini-cal'); if(!wrap) return;
-  const sel=new Date(_selectedDate+'T12:00:00');
-  const year=sel.getFullYear(), mon=sel.getMonth();
-  const today=new Date().toISOString().slice(0,10);
+  const year=_calYear, mon=_calMon;
+  const today=todayISO();
   const first=new Date(year,mon,1).getDay(), days=new Date(year,mon+1,0).getDate();
 
   let html=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
@@ -98,10 +109,10 @@ function _renderCal() {
     btn.addEventListener('click', e=>{ _selectedDate=e.currentTarget.dataset.date; _refresh(); })
   );
   document.getElementById('cal-prev')?.addEventListener('click',()=>{
-    const d=new Date(year,mon-1,1); _selectedDate=d.toISOString().slice(0,10); _renderCal();
+    if(--_calMon<0){_calMon=11;_calYear--;} _renderCal();
   });
   document.getElementById('cal-next')?.addEventListener('click',()=>{
-    const d=new Date(year,mon+1,1); _selectedDate=d.toISOString().slice(0,10); _renderCal();
+    if(++_calMon>11){_calMon=0;_calYear++;} _renderCal();
   });
 }
 

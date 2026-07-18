@@ -3,7 +3,7 @@ import { openModal, closeModal } from '../../script.js';
 import { toastSuccess, toastError } from '../toast.js';
 import { isSuperAdmin }       from '../auth.js';
 import {
-  formatDate, fullName, escapeHtml, debounce, nowLocalInput, todayISO
+  formatDate, fullName, escapeHtml, debounce, nowLocalInput, todayISO, ymdLocal
 } from '../utils.js';
 import { t } from '../i18n.js';
 import { resolveOrdonnances, uploadOrdonnance, removeOrdonnance } from '../storage.js';
@@ -68,7 +68,7 @@ export async function renderConsultations(container) {
 }
 
 function _ago(n) {
-  const d=new Date(); d.setDate(d.getDate()-n); return d.toISOString().slice(0,10);
+  const d=new Date(); d.setDate(d.getDate()-n); return ymdLocal(d);
 }
 
 async function _load() {

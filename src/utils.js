@@ -104,8 +104,19 @@ export function isSameDay(a, b) {
          da.getDate()     === db.getDate();
 }
 
+// Date au format YYYY-MM-DD dans le fuseau LOCAL.
+// toISOString() convertit en UTC : à Maurice (UTC+4) cela recule de 4 h et
+// renvoie la veille entre minuit et 4 h du matin, ou le mois précédent pour
+// un 1er du mois. Ne jamais utiliser toISOString() pour une date calendaire.
+export function ymdLocal(date) {
+  const d = date instanceof Date ? date : new Date(date);
+  return d.getFullYear() + '-'
+       + String(d.getMonth() + 1).padStart(2, '0') + '-'
+       + String(d.getDate()).padStart(2, '0');
+}
+
 export function todayISO() {
-  return new Date().toISOString().slice(0,10);
+  return ymdLocal(new Date());
 }
 
 export function nowLocalInput() {

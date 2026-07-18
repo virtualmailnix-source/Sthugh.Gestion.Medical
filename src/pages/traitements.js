@@ -1,7 +1,7 @@
 import { db }            from '../supabase.js';
 import { openModal, closeModal } from '../../script.js';
 import { toastSuccess, toastError } from '../toast.js';
-import { formatDate, fullName, escapeHtml, debounce } from '../utils.js';
+import { formatDate, fullName, escapeHtml, debounce, todayISO } from '../utils.js';
 import { t, getLang }   from '../i18n.js';
 import { isSuperAdmin } from '../auth.js';
 
@@ -330,7 +330,7 @@ export async function openFormTraitement(id, prefillResidentId) {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">${t('treatments.startDate')} <span class="required">*</span></label>
-        <input class="form-control" type="date" name="date_debut" value="${tData.date_debut||new Date().toISOString().slice(0,10)}" required>
+        <input class="form-control" type="date" name="date_debut" value="${tData.date_debut||todayISO()}" required>
       </div>
       <div class="form-group" id="duree-group" ${isChronique?'style="display:none"':''}>
         <label class="form-label">${t('treatments.duration')}</label>
@@ -456,9 +456,9 @@ async function _submitTrt(id, prev = {}) {
     // Création : le stock correspond au début du traitement.
     // Édition : si la quantité change, le décompte repart d'aujourd'hui.
     if (!id) {
-      data.date_stock = data.date_debut || new Date().toISOString().slice(0,10);
+      data.date_stock = data.date_debut || todayISO();
     } else if (String(unites) !== String(prev.stock_initial_unites ?? '')) {
-      data.date_stock = new Date().toISOString().slice(0,10);
+      data.date_stock = todayISO();
     }
   } else {
     data.stock_initial_unites = null;
@@ -482,7 +482,7 @@ async function _renewTraitement(trow) {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">${t('treatments.newStartDate')} <span class="required">*</span></label>
-        <input class="form-control" type="date" name="date_debut" value="${new Date().toISOString().slice(0,10)}" required>
+        <input class="form-control" type="date" name="date_debut" value="${todayISO()}" required>
       </div>
       <div class="form-group">
         <label class="form-label">${t('treatments.duration')} <span class="required">*</span></label>

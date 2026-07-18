@@ -1,5 +1,5 @@
 import { db }         from '../supabase.js';
-import { formatDate, formatTime, fullName } from '../utils.js';
+import { formatDate, formatTime, fullName, todayISO } from '../utils.js';
 import { navigate }  from '../router.js';
 import { t }         from '../i18n.js';
 
@@ -15,8 +15,8 @@ export async function renderDashboard(container) {
           .or('statut_depart.is.null,statut_depart.neq.deces')
           .gte('score_priorite', 30).limit(8),
       db.from('v_rdv_detail').select('*')
-          .gte('date_rdv', new Date().toISOString().slice(0,10)+'T00:00:00')
-          .lte('date_rdv', new Date().toISOString().slice(0,10)+'T23:59:59')
+          .gte('date_rdv', todayISO()+'T00:00:00')
+          .lte('date_rdv', todayISO()+'T23:59:59')
           .in('statut',['planifie','confirme']).order('date_rdv').limit(10),
       db.from('alertes').select('*,residents(nom,prenom,numero_chambre)')
           .eq('lue',false).eq('traitee',false).order('created_at',{ascending:false}).limit(6),
