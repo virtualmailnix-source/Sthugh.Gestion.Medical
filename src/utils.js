@@ -1,9 +1,22 @@
-export const MOIS_FR = [
-  'janvier','février','mars','avril','mai','juin',
-  'juillet','août','septembre','octobre','novembre','décembre'
-];
+import { getLang } from './i18n.js';
 
-export const JOURS_FR = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+// Locale d'affichage des dates, alignée sur la convention déjà en place
+// dans le projet (panel_admin, anniversaires, traitements, script.js).
+// i18n.js n'importe rien, aucun cycle possible.
+export function locale() { return getLang() === 'en' ? 'en-MU' : 'fr-MU'; }
+
+// Noms de mois et de jours dans la langue courante. Calculés à chaque appel :
+// la langue peut changer sans recharger la page.
+export function moisNoms() {
+  const f = new Intl.DateTimeFormat(locale(), { month:'long' });
+  return Array.from({ length:12 }, (_, m) => f.format(new Date(2021, m, 1)));
+}
+
+// Le 1er août 2021 est un dimanche : l'ordre correspond à Date.getDay().
+export function joursNoms() {
+  const f = new Intl.DateTimeFormat(locale(), { weekday:'short' });
+  return Array.from({ length:7 }, (_, d) => f.format(new Date(2021, 7, 1 + d)));
+}
 
 export function formatDate(date, opts = {}) {
   if (!date) return '—';
@@ -15,21 +28,18 @@ export function formatDate(date, opts = {}) {
     full = false
   } = opts;
   if (short) {
-    return d.toLocaleDateString('fr-FR', { day:'2-digit', month:'2-digit', year:'numeric' });
+    return d.toLocaleDateString(locale(), { day:'2-digit', month:'2-digit', year:'numeric' });
   }
   if (full) {
-    return d.toLocaleDateString('fr-FR', {
+    return d.toLocaleDateString(locale(), {
       weekday:'long', day:'numeric', month:'long', year:'numeric'
     });
   }
-  const day  = d.getDate();
-  const mon  = MOIS_FR[d.getMonth()];
-  const year = d.getFullYear();
-  let str = `${day} ${mon} ${year}`;
+  let str = d.toLocaleDateString(locale(), { day:'numeric', month:'long', year:'numeric' });
   if (time) {
     const hh = String(d.getHours()).padStart(2,'0');
     const mm = String(d.getMinutes()).padStart(2,'0');
-    str += ` à ${hh}:${mm}`;
+    str += `${getLang() === 'fr' ? ' à ' : ' at '}${hh}:${mm}`;
   }
   return str;
 }
@@ -44,7 +54,7 @@ export function formatTime(date) {
 
 export function formatCurrency(amount) {
   if (amount == null || amount === '') return '—';
-  return new Intl.NumberFormat('fr-MU', {
+  return new Intl.NumberFormat(locale(), {
     style: 'currency', currency: 'MUR',
     minimumFractionDigits: 0, maximumFractionDigits: 2
   }).format(amount);

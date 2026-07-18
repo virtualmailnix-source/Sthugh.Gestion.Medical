@@ -3,8 +3,7 @@ import { openModal, closeModal }       from '../../script.js';
 import { toastSuccess, toastError }    from '../toast.js';
 import {
   formatDate, formatAge, initials, fullName,
-  escapeHtml, debounce, nowLocalInput, telHref
-} from '../utils.js';
+  escapeHtml, debounce, nowLocalInput, telHref, locale } from '../utils.js';
 import { openFormConsultation }        from './consultations.js';
 import { openFormRdv }                 from './rendez-vous.js';
 import { isSuperAdmin, isReceptionist, currentUserInfo } from '../auth.js';
@@ -1252,9 +1251,9 @@ function _exportPDF(r, cons, trais, contacts, histSorties = [], histCourses = []
   doc.text(parts.join('  |  '), M, y);
 
   y += 5;
-  const entree = r.date_entree ? new Date(r.date_entree).toLocaleDateString('fr-MU') : '—';
+  const entree = r.date_entree ? new Date(r.date_entree).toLocaleDateString(locale()) : '—';
   if (isDeces) {
-    const dateDeces = r.date_sortie ? new Date(r.date_sortie).toLocaleDateString('fr-MU') : '—';
+    const dateDeces = r.date_sortie ? new Date(r.date_sortie).toLocaleDateString(locale()) : '—';
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...red);
     doc.text(`Entree: ${entree}  |  Deces le: ${dateDeces}`, M, y);
@@ -1262,7 +1261,7 @@ function _exportPDF(r, cons, trais, contacts, histSorties = [], histCourses = []
     doc.setTextColor(80, 80, 80);
     if (r.motif_deces) { y += 5; doc.text(`Cause: ${r.motif_deces}`, M, y); }
   } else if (isDepart) {
-    const dateDepart = r.date_sortie ? new Date(r.date_sortie).toLocaleDateString('fr-MU') : '—';
+    const dateDepart = r.date_sortie ? new Date(r.date_sortie).toLocaleDateString(locale()) : '—';
     doc.text(`Entree: ${entree}  |  Depart le: ${dateDepart}${r.motif_sortie ? '  |  ' + r.motif_sortie : ''}`, M, y);
   } else if (withMedical) {
     const niv = r.niveau_priorite === 1 ? 'Urgente' : r.niveau_priorite === 2 ? 'Elevee' : 'Normale';
@@ -1296,7 +1295,7 @@ function _exportPDF(r, cons, trais, contacts, histSorties = [], histCourses = []
     ];
     if (!isDeces && !isDepart) {
       const derniereC = r.derniere_consultation
-        ? `${new Date(r.derniere_consultation).toLocaleDateString('fr-MU')} (${r.jours_sans_consultation} j.)`
+        ? `${new Date(r.derniere_consultation).toLocaleDateString(locale())} (${r.jours_sans_consultation} j.)`
         : 'Jamais';
       infoRows.splice(1, 0, ['Derniere consultation', derniereC]);
     }
@@ -1329,7 +1328,7 @@ function _exportPDF(r, cons, trais, contacts, histSorties = [], histCourses = []
         head: [['Medicament', 'Dosage', 'Posologie', isDeces || isDepart ? 'Periode' : 'Fin / Statut']],
         body: traisActifs.map(tr => [
           tr.nom_medicament || '—', tr.dosage || '—', tr.posologie || '—',
-          tr.traitement_chronique ? 'Chronique' : (tr.date_fin ? new Date(tr.date_fin).toLocaleDateString('fr-MU') : '—'),
+          tr.traitement_chronique ? 'Chronique' : (tr.date_fin ? new Date(tr.date_fin).toLocaleDateString(locale()) : '—'),
         ]),
       });
       y = doc.lastAutoTable.finalY + 8;
@@ -1345,7 +1344,7 @@ function _exportPDF(r, cons, trais, contacts, histSorties = [], histCourses = []
         ...tableOpts, startY: y,
         head: [['Date', 'Medecin', 'Diagnostic / Motif']],
         body: consRecentes.map(c => [
-          new Date(c.date_consultation).toLocaleDateString('fr-MU'),
+          new Date(c.date_consultation).toLocaleDateString(locale()),
           `${c.medecin_titre || ''} ${c.medecin_nom || ''}`.trim() || '—',
           (c.diagnostic || c.motif || '—') + (c.source === 'rdv' ? ' (RDV)' : ''),
         ]),
@@ -1368,8 +1367,8 @@ function _exportPDF(r, cons, trais, contacts, histSorties = [], histCourses = []
           body: rdvFuturs.map(rv => {
             const d = new Date(rv.date_rdv);
             return [
-              d.toLocaleDateString('fr-MU'),
-              d.toLocaleTimeString('fr-MU', { hour: '2-digit', minute: '2-digit' }),
+              d.toLocaleDateString(locale()),
+              d.toLocaleTimeString(locale(), { hour: '2-digit', minute: '2-digit' }),
               `${rv.medecin_titre || ''} ${rv.medecin_nom || ''}`.trim() || '—',
               (rv.motif || '—') + (rv.est_urgence ? ' (URGENCE)' : ''),
             ];
@@ -1391,7 +1390,7 @@ function _exportPDF(r, cons, trais, contacts, histSorties = [], histCourses = []
         ...tableOpts, startY: y,
         head: [['Date', 'Visiteur', 'Relation', 'Personnes', 'Statut']],
         body: visitesOk.map(v => [
-          v.date_visite ? new Date(v.date_visite).toLocaleDateString('fr-MU') : '—',
+          v.date_visite ? new Date(v.date_visite).toLocaleDateString(locale()) : '—',
           `${v.visiteur_prenom || ''} ${v.visiteur_nom || ''}`.trim() || '—',
           v.visiteur_relation || '—',
           v.nb_personnes || 1,
@@ -1410,8 +1409,8 @@ function _exportPDF(r, cons, trais, contacts, histSorties = [], histCourses = []
         ...tableOpts, startY: y,
         head: [['Date de sortie', 'Date de retour', 'Motif']],
         body: histSorties.map(h => [
-          h.date_sortie ? new Date(h.date_sortie).toLocaleDateString('fr-MU') : '—',
-          h.date_retour ? new Date(h.date_retour).toLocaleDateString('fr-MU') : '—',
+          h.date_sortie ? new Date(h.date_sortie).toLocaleDateString(locale()) : '—',
+          h.date_retour ? new Date(h.date_retour).toLocaleDateString(locale()) : '—',
           h.motif_sortie || '—',
         ]),
       });
@@ -1428,7 +1427,7 @@ function _exportPDF(r, cons, trais, contacts, histSorties = [], histCourses = []
         head: [['Date', 'Depart', 'Retour', 'Articles achetes', 'Statut']],
         columnStyles: { 3: { cellWidth: 60 } },
         body: histCourses.map(c => [
-          c.date_sortie ? new Date(c.date_sortie).toLocaleDateString('fr-MU') : '—',
+          c.date_sortie ? new Date(c.date_sortie).toLocaleDateString(locale()) : '—',
           c.heure_depart ? c.heure_depart.slice(0,5) : '—',
           c.heure_retour ? c.heure_retour.slice(0,5) : '—',
           c.articles || '—',
@@ -1448,7 +1447,7 @@ function _exportPDF(r, cons, trais, contacts, histSorties = [], histCourses = []
     : isDepart
     ? "Dossier Archive - Confidentiel - St Hugh's Anglican Home"
     : "Dossier confidentiel - St Hugh's Anglican Home";
-  const dateStr = new Date().toLocaleDateString('fr-MU');
+  const dateStr = new Date().toLocaleDateString(locale());
 
   for (let i = 1; i <= nb; i++) {
     doc.setPage(i);

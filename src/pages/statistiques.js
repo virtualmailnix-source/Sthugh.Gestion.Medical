@@ -1,5 +1,5 @@
 import { db }          from '../supabase.js';
-import { formatCurrency } from '../utils.js';
+import { formatCurrency, locale } from '../utils.js';
 import { toastError }    from '../toast.js';
 import { t } from '../i18n.js';
 
@@ -212,7 +212,7 @@ function _tableOverdue(rows) {
     <tbody>${rows.map(r=>`<tr>
       <td style="font-weight:600">${r.prenom} ${r.nom}</td>
       <td><span class="badge badge-teal">${r.numero_chambre||'—'}</span></td>
-      <td style="font-size:.83rem">${r.derniere_consultation?new Date(r.derniere_consultation).toLocaleDateString('fr-MU'):'Jamais'}</td>
+      <td style="font-size:.83rem">${r.derniere_consultation?new Date(r.derniere_consultation).toLocaleDateString(locale()):'Jamais'}</td>
       <td><span class="badge ${(r.jours_sans_consultation||999)>30?'badge-expire':'badge-alerte-7j'}">${r.jours_sans_consultation||'—'}j</span></td>
     </tr>`).join('')}</tbody>
   </table></div>`;

@@ -1,7 +1,7 @@
 import { db }         from '../supabase.js';
 import { openModal, closeModal } from '../../script.js';
 import { toastSuccess, toastError } from '../toast.js';
-import { formatDate, formatTime, fullName, escapeHtml, todayISO, ymdLocal, JOURS_FR, MOIS_FR } from '../utils.js';
+import { formatDate, formatTime, fullName, escapeHtml, todayISO, ymdLocal, joursNoms, moisNoms } from '../utils.js';
 import { t } from '../i18n.js';
 
 let _selectedDate = todayISO();
@@ -84,11 +84,11 @@ function _renderCal() {
 
   let html=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
     <button class="btn-icon" id="cal-prev"><i class="bi bi-chevron-left"></i></button>
-    <strong style="font-size:.9rem">${MOIS_FR[mon]} ${year}</strong>
+    <strong style="font-size:.9rem">${moisNoms()[mon]} ${year}</strong>
     <button class="btn-icon" id="cal-next"><i class="bi bi-chevron-right"></i></button>
   </div>
   <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center;font-size:.78rem">
-    ${JOURS_FR.map(d=>`<div style="font-weight:700;color:var(--text-light);padding:.25rem">${d}</div>`).join('')}`;
+    ${joursNoms().map(d=>`<div style="font-weight:700;color:var(--text-light);padding:.25rem">${d}</div>`).join('')}`;
 
   for(let i=0;i<first;i++) html+=`<div></div>`;
   for(let d=1;d<=days;d++) {
@@ -128,7 +128,7 @@ async function _loadDay() {
     .lte('date_rdv',_selectedDate+'T23:59:59')
     .order('date_rdv');
 
-  if(error){toastError('Erreur');return;}
+  if(error){toastError(t('common.error'));return;}
   const rows=data||[];
   if(!rows.length){wrap.innerHTML=`<div class="empty-state"><i class="bi bi-calendar-x"></i><p>${t('appointments.noRdvDay')}</p></div>`;return;}
 
@@ -139,9 +139,9 @@ async function _loadDay() {
         <div class="rdv-patient" style="display:flex;align-items:center;gap:.4rem">
           ${r.est_urgence?`<span class="badge badge-alerte-24h" style="font-size:.7rem">${t('appointments.urgentBadge')}</span>`:''}
           ${fullName(r.resident_nom,r.resident_prenom)}
-          <span style="font-size:.77rem;color:var(--text-light)">Ch. ${r.numero_chambre||'—'}</span>
+          <span style="font-size:.77rem;color:var(--text-light)">${t('residents.colRoom')} ${r.numero_chambre||'—'}</span>
         </div>
-        <div class="rdv-motif">${r.motif||'Consultation'} &bull; ${r.medecin_titre||''} ${r.medecin_nom||'—'}</div>
+        <div class="rdv-motif">${r.motif||t('appointments.defaultReason')} &bull; ${r.medecin_titre||''} ${r.medecin_nom||'—'}</div>
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.4rem">
         <span class="badge ${_statCls(r.statut)}">${_statLabel(r.statut)}</span>
@@ -176,6 +176,11 @@ async function _loadDay() {
   };
 }
 
+// Statuts dans l'ordre du cycle de vie ; les libellés viennent de _statLabel
+// pour rester traduits, et la liste doit correspondre à la contrainte
+// rendez_vous_statut_check en base.
+const _STATUTS = ['planifie','confirme','effectue','annule','absent'];
+
 function _statCls(s) {
   return {planifie:'badge-planifie',confirme:'badge-confirme',effectue:'badge-effectue',annule:'badge-annule',absent:'badge-absent'}[s]||'badge-teal';
 }
@@ -202,12 +207,12 @@ async function _loadUpcoming() {
   wrap.innerHTML=rows.map(r=>`
     <div style="display:flex;align-items:center;gap:.75rem;padding:.5rem 0;border-bottom:1px solid var(--card-border)">
       <div style="min-width:44px;text-align:center">
-        <div style="font-size:.68rem;font-weight:700;color:var(--text-light);text-transform:uppercase">${MOIS_FR[new Date(r.date_rdv).getMonth()].slice(0,3)}</div>
+        <div style="font-size:.68rem;font-weight:700;color:var(--text-light);text-transform:uppercase">${moisNoms()[new Date(r.date_rdv).getMonth()].slice(0,3)}</div>
         <div style="font-size:1.2rem;font-weight:700;color:var(--teal-dark);line-height:1">${new Date(r.date_rdv).getDate()}</div>
       </div>
       <div style="flex:1;min-width:0">
         <div style="font-weight:600;font-size:.87rem">${fullName(r.resident_nom,r.resident_prenom)}</div>
-        <div style="font-size:.75rem;color:var(--text-light)">${formatTime(r.date_rdv)} &bull; ${r.motif||'Consultation'}</div>
+        <div style="font-size:.75rem;color:var(--text-light)">${formatTime(r.date_rdv)} &bull; ${r.motif||t('appointments.defaultReason')}</div>
       </div>
       ${r.est_urgence?`<span class="badge badge-alerte-24h" style="font-size:.68rem">${t('appointments.urgentBadge')}</span>`:''}
     </div>`).join('');
@@ -223,7 +228,7 @@ export async function openFormRdv(id, prefillResidentId, isUrgence=false) {
     db.from('doctors').select('id,titre,nom,prenom').eq('actif',true).order('nom'),
   ]);
 
-  const resOpts=(ress||[]).map(p=>`<option value="${p.id}" ${(r.resident_id||prefillResidentId)===p.id?'selected':''}>${p.nom} ${p.prenom} - Ch.${p.numero_chambre||'—'}${p.niveau_priorite===1?' (P1)':''}</option>`).join('');
+  const resOpts=(ress||[]).map(p=>`<option value="${p.id}" ${(r.resident_id||prefillResidentId)===p.id?'selected':''}>${p.nom} ${p.prenom} - ${t('residents.colRoom')}${p.numero_chambre||'—'}${p.niveau_priorite===1?' (P1)':''}</option>`).join('');
   const docOpts=(docs||[]).map(d=>`<option value="${d.id}" ${r.medecin_id===d.id?'selected':''}>${d.titre||'Dr.'} ${d.prenom} ${d.nom}</option>`).join('');
   const defDate=_selectedDate+'T'+(new Date().getHours()<16?'09':'08')+':00';
   const rdvDate=r.date_rdv?new Date(r.date_rdv).toISOString().slice(0,16):defDate;
@@ -232,32 +237,31 @@ export async function openFormRdv(id, prefillResidentId, isUrgence=false) {
   const body=`<form id="form-rdv">
     ${urgence?`<div style="background:var(--tint-red-bg);border:1px solid var(--tint-red-border);border-radius:var(--radius);padding:.75rem 1rem;margin-bottom:1rem;color:var(--tint-red-fg);font-weight:600;font-size:.9rem"><i class="bi bi-exclamation-triangle-fill"></i> ${t('appointments.urgentBanner')}</div>`:''}
     <div class="form-group">
-      <label class="form-label">Résident <span class="required">*</span></label>
+      <label class="form-label">${t('appointments.resident')} <span class="required">*</span></label>
       <select class="form-control" name="resident_id" required><option value="">—</option>${resOpts}</select>
     </div>
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label">Date & Heure <span class="required">*</span></label>
+        <label class="form-label">${t('appointments.dateTime')} <span class="required">*</span></label>
         <input class="form-control" type="datetime-local" name="date_rdv" value="${rdvDate}" required>
       </div>
       <div class="form-group">
-        <label class="form-label">Durée</label>
+        <label class="form-label">${t('appointments.duration')}</label>
         <select class="form-control" name="duree_minutes">
           ${[15,20,30,45,60,90].map(d=>`<option value="${d}" ${(r.duree_minutes||30)===d?'selected':''}>${d} min</option>`).join('')}
         </select>
       </div>
       <div class="form-group">
-        <label class="form-label">Médecin</label>
+        <label class="form-label">${t('appointments.doctor')}</label>
         <select class="form-control" name="medecin_id"><option value="">—</option>${docOpts}</select>
       </div>
     </div>
-    <div class="form-group"><label class="form-label">Motif</label><input class="form-control" name="motif" value="${escapeHtml(r.motif||'')}"></div>
-    ${id?`<div class="form-group"><label class="form-label">Statut</label>
+    <div class="form-group"><label class="form-label">${t('appointments.reason')}</label><input class="form-control" name="motif" value="${escapeHtml(r.motif||'')}"></div>
+    ${id?`<div class="form-group"><label class="form-label">${t('appointments.status')}</label>
       <select class="form-control" name="statut">
-        ${[['planifie','Planifié'],['confirme','Confirmé'],['effectue','Effectué'],['annule','Annulé'],['absent','Absent']]
-          .map(([v,l])=>`<option value="${v}" ${(r.statut||'planifie')===v?'selected':''}>${l}</option>`).join('')}
+        ${_STATUTS.map(v=>`<option value="${v}" ${(r.statut||'planifie')===v?'selected':''}>${_statLabel(v)}</option>`).join('')}
       </select></div>`:''}
-    <div class="form-group"><label class="form-label">Notes</label><textarea class="form-control" name="notes" rows="2">${escapeHtml(r.notes||'')}</textarea></div>
+    <div class="form-group"><label class="form-label">${t('appointments.notes')}</label><textarea class="form-control" name="notes" rows="2">${escapeHtml(r.notes||'')}</textarea></div>
     <input type="hidden" name="est_urgence" value="${urgence?'true':'false'}">
   </form>`;
 
@@ -376,10 +380,9 @@ async function _changeStatus(id) {
   const next={planifie:'confirme',confirme:'effectue',effectue:'planifie'};
 
   openModal(`<i class="bi bi-arrow-repeat"></i> ${t('appointments.changeStatus')}`,
-    `<div class="form-group"><label class="form-label">Statut</label>
+    `<div class="form-group"><label class="form-label">${t('appointments.status')}</label>
     <select class="form-control" id="new-stat">
-      ${[['planifie','Planifié'],['confirme','Confirmé'],['effectue','Effectué'],['annule','Annulé'],['absent','Absent']]
-        .map(([v,l])=>`<option value="${v}" ${(next[curr]||curr)===v?'selected':''}>${l}</option>`).join('')}
+      ${_STATUTS.map(v=>`<option value="${v}" ${(next[curr]||curr)===v?'selected':''}>${_statLabel(v)}</option>`).join('')}
     </select></div>`,
     [
       {label: t('common.cancel'),              cls:'btn btn-secondary',action:closeModal},
