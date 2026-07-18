@@ -160,7 +160,7 @@ async function _openSlotDetail(slotId) {
                 <div style="font-size:.75rem;color:var(--text-light)">Ch. ${pr.residents.numero_chambre||'—'}</div>
               </div>
               <span class="badge ${pr.statut==='effectue'?'badge-paye':'badge-planifie'}">${pr.statut}</span>
-              <button class="btn-icon" data-action="remove-pr" data-id="${pr.id}" title="Retirer" style="color:#dc2626"><i class="bi bi-x-lg"></i></button>
+              <button class="btn-icon" data-action="remove-pr" data-id="${pr.id}" title="${t('planning.remove')}" style="color:#dc2626"><i class="bi bi-x-lg"></i></button>
             </div>`).join('')
           : `<div class="empty-state" style="padding:1rem"><p>Aucun résident</p></div>`}
         </div>
@@ -223,11 +223,11 @@ async function _openFormSlot() {
   const body = `<form id="form-slot">
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label">Date de visite <span class="required">*</span></label>
+        <label class="form-label">${t('planning.visitDate')} <span class="required">*</span></label>
         <input class="form-control" type="date" name="date_visite" min="${todayISO()}" required>
       </div>
       <div class="form-group">
-        <label class="form-label">Médecin</label>
+        <label class="form-label">${t('planning.doctor')}</label>
         <select class="form-control" name="medecin_id">
           <option value="">—</option>
           ${(docs||[]).map(d=>`<option value="${d.id}">${d.titre||'Dr.'} ${d.prenom} ${d.nom}</option>`).join('')}
@@ -236,20 +236,20 @@ async function _openFormSlot() {
     </div>
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label">Heure début</label>
+        <label class="form-label">${t('planning.startTime')}</label>
         <input class="form-control" type="time" name="heure_debut" value="08:00">
       </div>
       <div class="form-group">
-        <label class="form-label">Heure fin</label>
+        <label class="form-label">${t('planning.endTime')}</label>
         <input class="form-control" type="time" name="heure_fin" value="12:00">
       </div>
       <div class="form-group">
-        <label class="form-label">Nb max résidents</label>
+        <label class="form-label">${t('planning.maxResidents')}</label>
         <input class="form-control" type="number" name="nb_max" value="12" min="1" max="64">
       </div>
     </div>
     <div class="form-group">
-      <label class="form-label">Notes</label>
+      <label class="form-label">${t('planning.notes')}</label>
       <textarea class="form-control" name="notes" rows="2"></textarea>
     </div>
   </form>`;

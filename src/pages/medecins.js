@@ -109,22 +109,22 @@ export async function openFormMedecin(id) {
       <div class="form-section-title"><i class="bi bi-person-badge"></i> Identité</div>
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">Titre</label>
+          <label class="form-label">${t('doctors.title_')}</label>
           <select class="form-control" name="titre">
             ${['Dr.','Pr.','M.','Mme'].map(t=>`<option ${(d.titre||'Dr.')===t?'selected':''}>${t}</option>`).join('')}
           </select>
         </div>
         <div class="form-group">
-          <label class="form-label">Nom <span class="required">*</span></label>
+          <label class="form-label">${t('doctors.lastname')} <span class="required">*</span></label>
           <input class="form-control" name="nom" value="${escapeHtml(d.nom||'')}" required>
         </div>
         <div class="form-group">
-          <label class="form-label">Prénom</label>
+          <label class="form-label">${t('doctors.firstname')}</label>
           <input class="form-control" name="prenom" value="${escapeHtml(d.prenom||'')}">
         </div>
       </div>
       <div class="form-group">
-        <label class="form-label">Spécialité</label>
+        <label class="form-label">${t('doctors.specialty')}</label>
         <input class="form-control" name="specialite" value="${escapeHtml(d.specialite||'Médecine Générale')}">
       </div>
     </div>
@@ -132,31 +132,31 @@ export async function openFormMedecin(id) {
       <div class="form-section-title"><i class="bi bi-telephone"></i> Coordonnées</div>
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">Téléphone</label>
+          <label class="form-label">${t('doctors.phone')}</label>
           <input class="form-control" name="telephone" value="${escapeHtml(d.telephone||'')}">
         </div>
         <div class="form-group">
-          <label class="form-label">Email</label>
+          <label class="form-label">${t('doctors.email')}</label>
           <input class="form-control" type="email" name="email" value="${escapeHtml(d.email||'')}">
         </div>
       </div>
       <div class="form-group">
-        <label class="form-label">Clinique / Hôpital</label>
+        <label class="form-label">${t('doctors.clinic')}</label>
         <input class="form-control" name="clinique" value="${escapeHtml(d.clinique||'')}">
       </div>
       <div class="form-group">
-        <label class="form-label">Adresse</label>
+        <label class="form-label">${t('doctors.address')}</label>
         <input class="form-control" name="adresse" value="${escapeHtml(d.adresse||'')}">
       </div>
     </div>
     <div class="form-section">
       <div class="form-section-title"><i class="bi bi-calendar3"></i> Planning</div>
       <div class="form-group">
-        <label class="form-label">Jours de consultation</label>
-        <input class="form-control" name="jours_consultation" placeholder="ex: Mardi, Vendredi" value="${escapeHtml(d.jours_consultation||'')}">
+        <label class="form-label">${t('doctors.consultDays')}</label>
+        <input class="form-control" name="jours_consultation" placeholder="${t('doctors.consultDaysPlaceholder')}" value="${escapeHtml(d.jours_consultation||'')}">
       </div>
       <div class="form-group">
-        <label class="form-label">Notes</label>
+        <label class="form-label">${t('doctors.notes')}</label>
         <textarea class="form-control" name="notes" rows="2">${escapeHtml(d.notes||'')}</textarea>
       </div>
     </div>
