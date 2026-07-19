@@ -4,6 +4,17 @@ import { toastSuccess, toastError } from '../toast.js';
 import { formatDate, formatTime, fullName, escapeHtml, todayISO, ymdLocal, joursNoms, moisNoms } from '../utils.js';
 import { t } from '../i18n.js';
 
+// Qui, ou quoi, le rendez-vous vise : un médecin de la liste ou un
+// établissement saisi librement. Le lieu suit entre parenthèses quand
+// il est renseigné : c'est lui qui dit si le résident se déplace.
+// Exporté, le dossier résident affiche les mêmes rendez-vous.
+export function cibleRdv(r) {
+  const qui = r.etablissement
+    ? `<i class="bi bi-hospital"></i> ${escapeHtml(r.etablissement)}`
+    : (r.medecin_nom ? `${r.medecin_titre || ''} ${r.medecin_nom}`.trim() : '—');
+  return r.lieu ? `${qui} <span style="color:var(--text-light)">(${t('appointments.place_' + r.lieu)})</span>` : qui;
+}
+
 let _selectedDate = todayISO();
 // Mois affiché par le mini-calendrier, indépendant du jour sélectionné :
 // naviguer entre les mois ne doit pas déplacer la sélection.
@@ -141,7 +152,7 @@ async function _loadDay() {
           ${fullName(r.resident_nom,r.resident_prenom)}
           <span style="font-size:.77rem;color:var(--text-light)">${t('residents.colRoom')} ${r.numero_chambre||'—'}</span>
         </div>
-        <div class="rdv-motif">${r.motif||t('appointments.defaultReason')} &bull; ${r.medecin_titre||''} ${r.medecin_nom||'—'}</div>
+        <div class="rdv-motif">${r.motif||t('appointments.defaultReason')} &bull; ${cibleRdv(r)}</div>
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.4rem">
         <span class="badge ${_statCls(r.statut)}">${_statLabel(r.statut)}</span>
@@ -252,10 +263,35 @@ export async function openFormRdv(id, prefillResidentId, isUrgence=false) {
         </select>
       </div>
       <div class="form-group">
-        <label class="form-label">${t('appointments.doctor')}</label>
-        <select class="form-control" name="medecin_id"><option value="">—</option>${docOpts}</select>
+        <label class="form-label">${t('appointments.place')}</label>
+        <select class="form-control" name="lieu">
+          <option value="">—</option>
+          ${['foyer','cabinet','hopital'].map(l =>
+            `<option value="${l}" ${r.lieu===l?'selected':''}>${t('appointments.place_'+l)}</option>`).join('')}
+        </select>
       </div>
     </div>
+
+    <div class="form-group">
+      <label class="form-label">${t('appointments.withLabel')}</label>
+      <div style="display:flex;gap:1.25rem;margin:.3rem 0 .5rem">
+        <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;font-size:.88rem">
+          <input type="radio" name="cible" value="medecin" ${r.etablissement ? '' : 'checked'}>
+          ${t('appointments.withDoctor')}
+        </label>
+        <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;font-size:.88rem">
+          <input type="radio" name="cible" value="etablissement" ${r.etablissement ? 'checked' : ''}>
+          ${t('appointments.withFacility')}
+        </label>
+      </div>
+      <select class="form-control" name="medecin_id" id="rdv-medecin" style="${r.etablissement ? 'display:none' : ''}">
+        <option value="">—</option>${docOpts}
+      </select>
+      <input class="form-control" name="etablissement" id="rdv-etablissement"
+        placeholder="${t('appointments.facilityPlaceholder')}"
+        value="${escapeHtml(r.etablissement||'')}" style="${r.etablissement ? '' : 'display:none'}">
+    </div>
+
     <div class="form-group"><label class="form-label">${t('appointments.reason')}</label><input class="form-control" name="motif" value="${escapeHtml(r.motif||'')}"></div>
     ${id?`<div class="form-group"><label class="form-label">${t('appointments.status')}</label>
       <select class="form-control" name="statut">
@@ -274,6 +310,19 @@ export async function openFormRdv(id, prefillResidentId, isUrgence=false) {
       { label: id ? t('common.modify') : t('common.save'), cls:`btn ${urgence?'btn-danger':'btn-primary'}`, action: ()=>_submit(id) }
     ]
   );
+
+  // Médecin de la liste ou établissement saisi librement : un seul
+  // des deux champs est visible, la base exige au moins l'un des deux.
+  document.querySelectorAll('input[name="cible"]').forEach(radio =>
+    radio.addEventListener('change', () => {
+      const versMedecin = document.querySelector('input[name="cible"]:checked')?.value === 'medecin';
+      document.getElementById('rdv-medecin').style.display       = versMedecin ? '' : 'none';
+      document.getElementById('rdv-etablissement').style.display = versMedecin ? 'none' : '';
+      // Vider le champ masqué : sans cela un RDV porterait les deux
+      if (versMedecin) document.getElementById('rdv-etablissement').value = '';
+      else             document.getElementById('rdv-medecin').value = '';
+    })
+  );
 }
 
 async function _submit(id) {
@@ -283,6 +332,21 @@ async function _submit(id) {
   const data=Object.fromEntries([...fd.entries()].filter(([,v])=>v!==''));
   data.est_urgence=data.est_urgence==='true';
   if(!id) data.statut='planifie';
+
+  // `cible` ne pilote que l'affichage du formulaire, la base ne la connaît pas
+  const versMedecin = data.cible === 'medecin';
+  delete data.cible;
+
+  // Un RDV vise un médecin OU un établissement, jamais les deux : le
+  // champ non retenu est remis à null, sinon la valeur précédente
+  // resterait en base lors d'une modification.
+  if (versMedecin) data.etablissement = null;
+  else             data.medecin_id    = null;
+
+  if (!data.medecin_id && !data.etablissement) {
+    toastError(t('appointments.targetRequired'));
+    return;
+  }
 
   const{error}=id?await db.from('rendez_vous').update(data).eq('id',id):await db.from('rendez_vous').insert(data);
   if(error){toastError(error.message);return;}

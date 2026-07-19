@@ -5,7 +5,22 @@ import { escapeHtml, fullName, initials, debounce, telHref } from '../utils.js';
 import { isSuperAdmin, isMedicalStaff } from '../auth.js';
 import { t } from '../i18n.js';
 
+// Liste fermée des spécialités. Elle doit rester ALIGNÉE SUR LA
+// CONTRAINTE `doctors_specialite_check` du SQL 32 : une valeur
+// absente de la contrainte serait refusée à l'insertion.
+export const SPECIALITES = [
+  'Médecine Générale', 'Gériatrie', 'Médecine Interne',
+  'Cardiologie', 'Neurologie', 'Pneumologie', 'Gastro-entérologie',
+  'Endocrinologie', 'Néphrologie', 'Rhumatologie', 'Urologie',
+  'Dermatologie', 'Ophtalmologie', 'ORL', 'Orthopédie',
+  'Psychiatrie', 'Dentiste', 'Kinésithérapie', 'Podologie',
+  'Autre',
+];
+
+let _search = '', _specialite = '', _secteur = '';
+
 export async function renderMedecins(container) {
+  _search = ''; _specialite = ''; _secteur = '';
   container.innerHTML = `
     <div class="page-header">
       <div class="page-header-left">
@@ -22,14 +37,31 @@ export async function renderMedecins(container) {
         </button>` : ''}
       </div>
     </div>
+    <div class="filter-bar">
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+        <select class="form-control" id="med-specialite" style="width:auto;min-width:180px;font-size:.85rem">
+          <option value="">${t('doctors.allSpecialties')}</option>
+          ${SPECIALITES.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('')}
+        </select>
+        <select class="form-control" id="med-secteur" style="width:auto;min-width:150px;font-size:.85rem">
+          <option value="">${t('doctors.allSectors')}</option>
+          <option value="prive">${t('doctors.sectorPrivate')}</option>
+          <option value="public">${t('doctors.sectorPublic')}</option>
+        </select>
+      </div>
+    </div>
+
     <div id="med-list"></div>`;
 
   document.getElementById('btn-add-med')?.addEventListener('click', () => openFormMedecin(null));
-  document.getElementById('med-search').addEventListener('input', debounce(e => _load(e.target.value), 300));
-  _load('');
+  document.getElementById('med-search').addEventListener('input',
+    debounce(e => { _search = e.target.value; _load(); }, 300));
+  document.getElementById('med-specialite').addEventListener('change', e => { _specialite = e.target.value; _load(); });
+  document.getElementById('med-secteur').addEventListener('change', e => { _secteur = e.target.value; _load(); });
+  _load();
 }
 
-async function _load(search = '') {
+async function _load() {
   const wrap = document.getElementById('med-list');
   if (!wrap) return;
 
@@ -39,7 +71,9 @@ async function _load(search = '') {
     nb_residents:residents(count)
   `).order('nom');
 
-  if (search) query = query.or(`nom.ilike.%${search}%,prenom.ilike.%${search}%,specialite.ilike.%${search}%`);
+  if (_search)     query = query.or(`nom.ilike.%${_search}%,prenom.ilike.%${_search}%,specialite.ilike.%${_search}%`);
+  if (_specialite) query = query.eq('specialite', _specialite);
+  if (_secteur)    query = query.eq('secteur', _secteur);
 
   const { data, error } = await query;
   if (error) { toastError(t('doctors.loadError')); return; }
@@ -131,7 +165,14 @@ export async function openFormMedecin(id) {
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">${t('doctors.specialty')}</label>
-          <input class="form-control" name="specialite" value="${escapeHtml(d.specialite||'Médecine Générale')}">
+          <select class="form-control" name="specialite">
+            ${SPECIALITES.map(s => {
+              // Une spécialité déjà en base et hors liste serait refusée
+              // en modification : on prend « Médecine Générale » par défaut.
+              const courante = SPECIALITES.includes(d.specialite) ? d.specialite : 'Médecine Générale';
+              return `<option value="${escapeHtml(s)}" ${courante === s ? 'selected' : ''}>${escapeHtml(s)}</option>`;
+            }).join('')}
+          </select>
         </div>
         <div class="form-group">
           <label class="form-label">${t('doctors.sector')}</label>

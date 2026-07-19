@@ -5,7 +5,7 @@ import {
   formatDate, formatAge, initials, fullName,
   escapeHtml, debounce, nowLocalInput, telHref, locale, ymdLocal } from '../utils.js';
 import { openFormConsultation }        from './consultations.js';
-import { openFormRdv }                 from './rendez-vous.js';
+import { openFormRdv, cibleRdv }       from './rendez-vous.js';
 import { isSuperAdmin, isReceptionist, currentUserInfo } from '../auth.js';
 import { t, getLang }                  from '../i18n.js';
 import { resolvePhotos, uploadPhoto, removePhoto, resolveOrdonnances } from '../storage.js';
@@ -975,7 +975,7 @@ async function _openProfile(id) {
             <span class="consult-mini-date">${formatDate(rv.date_rdv, { time: true })}</span>
             <span class="badge ${rv.statut === 'effectue' ? 'badge-confirme' : rv.statut === 'annule' ? 'badge-annule' : 'badge-planifie'}">${t('status.' + rv.statut) || rv.statut}</span>
           </div>
-          <div class="consult-mini-body">${rv.motif || t('appointments.title')} - ${rv.medecin_titre || ''} ${rv.medecin_nom || ''}</div>
+          <div class="consult-mini-body">${rv.motif || t('appointments.title')} - ${cibleRdv(rv)}</div>
         </div>`).join('')
         : `<div class="empty-state"><i class="bi bi-calendar-x"></i><p>${t('residents.noRdv')}</p></div>`}
     </div>` : ''}`;
@@ -1527,13 +1527,17 @@ function _exportPDF(r, cons, trais, contacts, histSorties = [], histCourses = []
       if (rdvFuturs.length) {
         doc.autoTable({
           ...tableOpts, startY: y,
-          head: [['Date', 'Heure', 'Medecin', 'Motif']],
+          head: [['Date', 'Heure', 'Medecin / Etablissement', 'Motif']],
           body: rdvFuturs.map(rv => {
             const d = new Date(rv.date_rdv);
+            // Texte brut : cibleRdv rend du HTML, illisible dans un PDF
+            const cible = rv.etablissement
+              ? rv.etablissement
+              : `${rv.medecin_titre || ''} ${rv.medecin_nom || ''}`.trim();
             return [
               d.toLocaleDateString(locale()),
               d.toLocaleTimeString(locale(), { hour: '2-digit', minute: '2-digit' }),
-              `${rv.medecin_titre || ''} ${rv.medecin_nom || ''}`.trim() || '—',
+              cible || '—',
               (rv.motif || '—') + (rv.est_urgence ? ' (URGENCE)' : ''),
             ];
           }),
