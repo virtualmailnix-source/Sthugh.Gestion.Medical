@@ -4,7 +4,13 @@ import { toastSuccess, toastError } from '../toast.js';
 import { formatDate, fullName, escapeHtml, todayISO } from '../utils.js';
 import { t } from '../i18n.js';
 
+// Créneaux affichés : à venir, ou passés. Sans cette vue « passés »,
+// un créneau échu disparaissait de l'écran sans être consultable,
+// alors qu'il restait en base avec ses résidents planifiés.
+let _vueSlots = 'avenir';
+
 export async function renderPlanification(container) {
+  _vueSlots = 'avenir';
   container.innerHTML = `
     <div class="page-header">
       <div class="page-header-left">
@@ -32,10 +38,16 @@ export async function renderPlanification(container) {
       <div>
         <div class="card" style="margin-bottom:1.25rem">
           <div class="card-header">
-            <div class="card-title"><i class="bi bi-calendar3"></i> ${t('planning.nextSlots')}</div>
-            <button class="btn btn-secondary btn-sm" id="btn-refresh-slots">
-              <i class="bi bi-arrow-clockwise"></i>
-            </button>
+            <div class="card-title"><i class="bi bi-calendar3"></i> <span id="slots-title">${t('planning.nextSlots')}</span></div>
+            <div style="display:flex;gap:.4rem;align-items:center">
+              <div class="filter-chips" style="margin:0">
+                <button class="chip active" data-slots="avenir">${t('planning.filterUpcoming')}</button>
+                <button class="chip" data-slots="passes">${t('planning.filterPast')}</button>
+              </div>
+              <button class="btn btn-secondary btn-sm" id="btn-refresh-slots">
+                <i class="bi bi-arrow-clockwise"></i>
+              </button>
+            </div>
           </div>
           <div id="slots-list" style="padding:.5rem"></div>
         </div>
@@ -44,6 +56,17 @@ export async function renderPlanification(container) {
 
   document.getElementById('btn-new-slot')?.addEventListener('click', () => _openFormSlot());
   document.getElementById('btn-refresh-slots')?.addEventListener('click', () => { _loadPriority(); _loadSlots(); });
+
+  document.querySelectorAll('.chip[data-slots]').forEach(c =>
+    c.addEventListener('click', e => {
+      document.querySelectorAll('.chip[data-slots]').forEach(x => x.classList.remove('active'));
+      e.target.classList.add('active');
+      _vueSlots = e.target.dataset.slots;
+      document.getElementById('slots-title').textContent =
+        _vueSlots === 'passes' ? t('planning.pastSlots') : t('planning.nextSlots');
+      _loadSlots();
+    })
+  );
 
   _loadPriority();
   _loadSlots();
@@ -87,17 +110,19 @@ async function _loadSlots() {
   const wrap = document.getElementById('slots-list');
   if (!wrap) return;
 
-  const { data, error } = await db.from('v_planning_detail')
-    .select('*')
-    .gte('date_visite', todayISO())
-    .order('date_visite')
-    .limit(10);
+  const passes = _vueSlots === 'passes';
+  let query = db.from('v_planning_detail').select('*');
+  query = passes
+    ? query.lt('date_visite', todayISO()).order('date_visite', { ascending: false })
+    : query.gte('date_visite', todayISO()).order('date_visite');
+
+  const { data, error } = await query.limit(passes ? 30 : 10);
 
   if (error) { toastError('Erreur chargement slots'); return; }
   const rows = data || [];
 
   if (!rows.length) {
-    wrap.innerHTML = `<div class="empty-state"><i class="bi bi-calendar-x"></i><p>${t('planning.noSlots')}</p></div>`;
+    wrap.innerHTML = `<div class="empty-state"><i class="bi bi-calendar-x"></i><p>${passes ? t('planning.noPastSlots') : t('planning.noSlots')}</p></div>`;
     return;
   }
 
@@ -114,15 +139,20 @@ async function _loadSlots() {
           </div>
           <div style="text-align:right">
             <div style="font-size:1.2rem;font-weight:700;color:var(--teal-dark)">${s.nb_residents_planifies}/${s.nb_max}</div>
-            <div style="font-size:.72rem;color:var(--text-light)">résidents</div>
+            <div style="font-size:.72rem;color:var(--text-light)">${t('planning.residentsShort')}</div>
           </div>
         </div>
+        <div style="margin-top:.5rem">${_statutSlot(s.statut)}</div>
         <div style="margin-top:.75rem;display:flex;align-items:center;gap:.5rem">
           <div class="priority-bar" style="flex:1">
             <div class="priority-bar-fill" style="width:${Math.round(s.nb_residents_planifies/s.nb_max*100)}%;background:var(--teal-light)"></div>
           </div>
+          ${passes && s.statut === 'planifie' ? `
+            <button class="btn btn-success btn-sm" data-action="cloturer" data-id="${s.id}" title="${t('planning.closeSlot')}">
+              <i class="bi bi-check2-circle"></i> ${t('planning.closeSlot')}
+            </button>` : ''}
           <button class="btn btn-secondary btn-sm" data-action="open" data-id="${s.id}">
-            <i class="bi bi-people-fill"></i> ${t('planning.manage')}
+            <i class="bi bi-people-fill"></i> ${passes ? t('planning.view') : t('planning.manage')}
           </button>
         </div>
       </div>
@@ -132,8 +162,42 @@ async function _loadSlots() {
   wrap.onclick = e => {
     const btn = e.target.closest('button[data-action]');
     if (!btn) return;
-    if (btn.dataset.action === 'open') _openSlotDetail(btn.dataset.id);
+    if (btn.dataset.action === 'open')     _openSlotDetail(btn.dataset.id);
+    if (btn.dataset.action === 'cloturer') _cloturerSlot(btn.dataset.id);
   };
+}
+
+// Statut d'un créneau. La contrainte en base accepte planifie,
+// en_cours, termine et annule ; seul planifie était utilisé jusqu'ici.
+function _statutSlot(statut) {
+  const styles = {
+    termine:  ['badge-actif',    'bi-check2-circle'],
+    en_cours: ['badge-attente',  'bi-hourglass-split'],
+    annule:   ['badge-annule',   'bi-x-circle'],
+    planifie: ['badge-planifie', 'bi-calendar-event'],
+  };
+  const [cls, icone] = styles[statut] || styles.planifie;
+  return `<span class="badge ${cls}" style="font-size:.7rem"><i class="bi ${icone}"></i> ${t('planning.status_' + statut)}</span>`;
+}
+
+// Clôture d'un créneau échu : il reste consultable, avec ses
+// résidents planifiés, mais sort des créneaux à traiter.
+function _cloturerSlot(id) {
+  openModal(
+    `<i class="bi bi-check2-circle" style="color:#16a34a"></i> ${t('planning.closeSlot')}`,
+    `<p>${t('planning.closeConfirm')}</p>`,
+    [
+      { label: t('common.cancel'), cls:'btn btn-secondary', action: closeModal },
+      { label: t('planning.closeSlot'), cls:'btn btn-success', action: async () => {
+        const { error } = await db.from('planning_visites')
+          .update({ statut: 'termine' }).eq('id', id);
+        if (error) { toastError(error.message); return; }
+        toastSuccess(t('planning.closeOk'));
+        closeModal();
+        _loadSlots();
+      }}
+    ], 'modal-sm'
+  );
 }
 
 async function _openSlotDetail(slotId) {
@@ -147,9 +211,17 @@ async function _openSlotDetail(slotId) {
   const residents = prRes.data||[];
   const toAdd = priRes.data||[];
 
+  // Un créneau échu, terminé ou annulé se consulte mais ne se modifie
+  // plus : on n'ajoute pas un résident à une visite déjà passée.
+  const archive = slot.date_visite < todayISO()
+               || slot.statut === 'termine' || slot.statut === 'annule';
+
   const body = `
-    <div class="slot-detail-layout">
+    <div class="${archive ? '' : 'slot-detail-layout'}">
       <div>
+        ${archive ? `<div style="background:var(--bg-alt);border-radius:var(--radius-sm);padding:.5rem .9rem;margin-bottom:.75rem;font-size:.82rem;color:var(--text-light)">
+          <i class="bi bi-lock-fill"></i> ${t('planning.archivedReadOnly')} ${_statutSlot(slot.statut)}
+        </div>` : ''}
         <div class="form-section-title"><i class="bi bi-people-fill"></i> ${t('planning.planned')} (${residents.length}/${slot.nb_max})</div>
         <div id="slot-residents" style="max-height:320px;overflow-y:auto">
           ${residents.length ? residents.map(pr=>`
@@ -160,13 +232,14 @@ async function _openSlotDetail(slotId) {
                 <div style="font-size:.75rem;color:var(--text-light)">Ch. ${pr.residents.numero_chambre||'—'}</div>
               </div>
               <span class="badge ${pr.statut==='effectue'?'badge-paye':'badge-planifie'}">${pr.statut}</span>
-              <button class="btn-icon" data-action="remove-pr" data-id="${pr.id}" title="${t('planning.remove')}" style="color:#dc2626"><i class="bi bi-x-lg"></i></button>
+              ${archive ? '' : `<button class="btn-icon" data-action="remove-pr" data-id="${pr.id}" title="${t('planning.remove')}" style="color:#dc2626"><i class="bi bi-x-lg"></i></button>`}
             </div>`).join('')
-          : `<div class="empty-state" style="padding:1rem"><p>Aucun résident</p></div>`}
+          : `<div class="empty-state" style="padding:1rem"><p>${t('planning.noResident')}</p></div>`}
         </div>
       </div>
+      ${archive ? '' : `
       <div>
-        <div class="form-section-title"><i class="bi bi-list-ol"></i> Ajouter depuis la liste prioritaire</div>
+        <div class="form-section-title"><i class="bi bi-list-ol"></i> ${t('planning.addFromPriority')}</div>
         <div style="max-height:320px;overflow-y:auto">
           ${toAdd.map(r=>`
             <div class="resident-row">
@@ -180,7 +253,7 @@ async function _openSlotDetail(slotId) {
               </button>
             </div>`).join('')}
         </div>
-      </div>
+      </div>`}
     </div>`;
 
   openModal(
