@@ -225,11 +225,18 @@ async function _submitConstante(onSaved) {
 }
 
 // ── Historique dans le dossier résident ─────────────────────
-// rows : lignes de v_constantes_unifiees, triées du plus récent
+// rows : lignes de v_constantes_unifiees, triées du plus récent.
+// Le tableau n'affiche que les plus récentes ; la profondeur
+// complète reste chargée pour les courbes.
+const MAX_LIGNES_TABLEAU = 30;
+
 export function constantesPaneHTML(rows) {
   if (!rows.length) {
     return `<div class="empty-state"><i class="bi bi-heart-pulse"></i><p>${t('constantes.none')}</p></div>`;
   }
+
+  const total   = rows.length;
+  const affiche = rows.slice(0, MAX_LIGNES_TABLEAU);
 
   const tension = r => (r.ta_systolique && r.ta_diastolique)
     ? `${r.ta_systolique}/${r.ta_diastolique}` : '—';
@@ -257,11 +264,14 @@ export function constantesPaneHTML(rows) {
         <th>${t('constantes.glucoseShort')}</th>
       </tr></thead>
       <tbody>
-        ${rows.map(r => `<tr>
+        ${affiche.map(r => `<tr>
           <td style="white-space:nowrap">${formatDate(r.date_releve, { time:true })}</td>
-          <td><span class="badge ${r.source === 'consultation' ? 'badge-planifie' : 'badge-teal'}" style="font-size:.66rem">
-            ${r.source === 'consultation' ? t('constantes.srcConsult') : t('constantes.srcReleve')}
-          </span></td>
+          <td>${r.source === 'consultation'
+            // Même famille de badge que le relevé (pilule pleine), pas un
+            // badge de statut : c'est une catégorie, pas un état. Bleu
+            // plutôt qu'ambre, qui signale déjà les valeurs hors plage.
+            ? `<span class="badge" style="font-size:.66rem;border-left:none;padding:.2rem .55rem;background:var(--tint-blue-bg);color:var(--tint-blue-fg)">${t('constantes.srcConsult')}</span>`
+            : `<span class="badge badge-teal" style="font-size:.66rem">${t('constantes.srcReleve')}</span>`}</td>
           <td>${tension(r)}</td>
           <td>${marque('pouls', r.pouls)}</td>
           <td>${marque('temperature', r.temperature)}</td>
@@ -272,6 +282,9 @@ export function constantesPaneHTML(rows) {
       </tbody>
     </table></div>
     <div style="font-size:.78rem;color:var(--text-light);margin-top:.6rem">
+      ${total > affiche.length
+        ? `<div style="margin-bottom:.3rem"><i class="bi bi-list-ul"></i> ${affiche.length} ${t('constantes.tableTruncated')} ${total}.</div>`
+        : ''}
       <i class="bi bi-info-circle"></i> ${t('constantes.unitsNote')}
     </div>`;
 }
@@ -286,4 +299,160 @@ export function dernieresValeurs(rows) {
     if (ligne) out[p.cle] = { valeur: ligne[p.cle], date: ligne.date_releve };
   });
   return out;
+}
+
+// ── Courbes d'évolution (point 9) ───────────────────────────
+//  Chart.js 4.4.0, déjà chargé par index.html et utilisé par la
+//  page Statistiques. L'échelle de l'axe X est de type 'category',
+//  pas 'time' : l'adaptateur de dates de Chart.js n'est pas chargé
+//  et une échelle temporelle échouerait silencieusement.
+
+// La tension est tracée en deux séries, comme sur un relevé papier.
+const COURBES = [
+  { id:'tension',       cles:['ta_systolique','ta_diastolique'], i18n:'bp',      unite:'mmHg',   couleurs:['#dc2626','#2563eb'] },
+  { id:'pouls',         cles:['pouls'],                          i18n:'pulse',   unite:'bpm',    couleurs:['#124848'] },
+  { id:'temperature',   cles:['temperature'],                    i18n:'temp',    unite:'°C',     couleurs:['#d97706'] },
+  { id:'saturation_o2', cles:['saturation_o2'],                  i18n:'spo2',    unite:'%',      couleurs:['#0891b2'] },
+  { id:'poids',         cles:['poids'],                          i18n:'weight',  unite:'kg',     couleurs:['#16a34a'] },
+  { id:'glycemie',      cles:['glycemie'],                       i18n:'glucose', unite:'mmol/L', couleurs:['#7c3aed'] },
+];
+
+const PERIODES = [
+  { id:'90',  i18n:'days90' },
+  { id:'365', i18n:'year1' },
+  { id:'0',   i18n:'periodAll' },
+];
+
+let _chartEvolution = null;
+
+export function detruireCourbe() {
+  _chartEvolution?.destroy();
+  _chartEvolution = null;
+}
+
+export function courbeHTML() {
+  return `
+    <div style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:flex-end;margin-bottom:.85rem">
+      <div class="form-group" style="margin:0;min-width:170px">
+        <label class="form-label" style="font-size:.78rem">${t('constantes.chartParam')}</label>
+        <select class="form-control" id="courbe-param">
+          ${COURBES.map(c => `<option value="${c.id}">${t('constantes.' + c.i18n)}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group" style="margin:0;min-width:140px">
+        <label class="form-label" style="font-size:.78rem">${t('constantes.chartPeriod')}</label>
+        <select class="form-control" id="courbe-periode">
+          ${PERIODES.map(p => `<option value="${p.id}">${t('constantes.' + p.i18n)}</option>`).join('')}
+        </select>
+      </div>
+      <label style="display:flex;align-items:center;gap:.4rem;font-size:.82rem;padding-bottom:.55rem;cursor:pointer">
+        <input type="checkbox" id="courbe-filtre" checked>
+        ${t('constantes.chartHideOutliers')}
+      </label>
+    </div>
+    <div class="chart-container" id="courbe-zone"><canvas id="courbe-constantes"></canvas></div>
+    <div id="courbe-note" style="font-size:.78rem;color:var(--text-light);margin-top:.5rem"></div>`;
+}
+
+// rows : lignes de v_constantes_unifiees, du plus récent au plus ancien.
+// Appelée à l'ouverture de l'onglet, quand le canvas a enfin une
+// taille : Chart.js mesure mal un conteneur encore masqué.
+export function initCourbe(rows) {
+  if (!document.getElementById('courbe-constantes')) return;
+
+  const redessiner = () => _dessinerCourbe(rows);
+  ['courbe-param', 'courbe-periode', 'courbe-filtre'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.onchange = redessiner;
+  });
+  redessiner();
+}
+
+function _dessinerCourbe(rows) {
+  const canvas = document.getElementById('courbe-constantes');
+  const note   = document.getElementById('courbe-note');
+  const zone   = document.getElementById('courbe-zone');
+  if (!canvas || !window.Chart) return;
+
+  detruireCourbe();
+
+  const courbe   = COURBES.find(c => c.id === document.getElementById('courbe-param')?.value) || COURBES[0];
+  const jours    = +(document.getElementById('courbe-periode')?.value || 0);
+  const filtrer  = document.getElementById('courbe-filtre')?.checked !== false;
+
+  // Du plus ancien au plus récent : une courbe se lit dans le sens
+  // du temps, la liste arrive dans l'ordre inverse.
+  let points = [...rows].reverse();
+
+  if (jours > 0) {
+    const depuis = Date.now() - jours * 86400000;
+    points = points.filter(r => new Date(r.date_releve).getTime() >= depuis);
+  }
+
+  // Une ligne n'entre dans la courbe que si elle porte au moins une
+  // des mesures tracées : un relevé partiel ne crée pas de trou.
+  points = points.filter(r => courbe.cles.some(c => r[c] !== null && r[c] !== undefined));
+
+  // Les valeurs aberrantes déjà en base (saturation 545 %, pouls 454)
+  // écraseraient l'échelle et rendraient la courbe illisible. Elles
+  // sont écartées par défaut, jamais supprimées : le compte est
+  // annoncé sous le graphique et le tableau continue de les montrer.
+  let exclus = 0;
+  if (filtrer) {
+    const avant = points.length;
+    points = points.filter(r => courbe.cles.every(c => {
+      const v = r[c];
+      if (v === null || v === undefined) return true;
+      const p = PARAMETRES.find(x => x.cle === c);
+      return !p || (Number(v) >= p.min && Number(v) <= p.max);
+    }));
+    exclus = avant - points.length;
+  }
+
+  const messages = [];
+  if (exclus) messages.push(`${exclus} ${t('constantes.chartExcluded')}`);
+
+  if (points.length < 2) {
+    if (zone) zone.style.display = 'none';
+    if (note) note.innerHTML = `<i class="bi bi-info-circle"></i> ${t('constantes.chartNotEnough')}`
+      + (messages.length ? ' ' + messages.join(' ') : '');
+    return;
+  }
+  if (zone) zone.style.display = '';
+
+  const encre  = getComputedStyle(document.body).getPropertyValue('--text-mid').trim() || '#666';
+  const grille = getComputedStyle(document.body).getPropertyValue('--card-border').trim() || '#ddd';
+
+  _chartEvolution = new window.Chart(canvas, {
+    type:'line',
+    data:{
+      labels: points.map(r => formatDate(r.date_releve)),
+      datasets: courbe.cles.map((cle, i) => ({
+        label: t('constantes.' + (courbe.cles.length > 1 ? (cle === 'ta_systolique' ? 'bpSys' : 'bpDia') : courbe.i18n)),
+        // null laisse un trou : Chart.js relie les points connus
+        data: points.map(r => (r[cle] === null || r[cle] === undefined) ? null : Number(r[cle])),
+        borderColor: courbe.couleurs[i],
+        backgroundColor: courbe.couleurs[i],
+        borderWidth: 2,
+        pointRadius: 3,
+        tension: .25,
+        spanGaps: true,
+      }))
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      interaction:{ mode:'index', intersect:false },
+      plugins:{
+        legend:{ display: courbe.cles.length > 1, position:'bottom', labels:{ color:encre, font:{ size:11 } } },
+        tooltip:{ callbacks:{ label: c => `${c.dataset.label} : ${c.parsed.y} ${courbe.unite}` } }
+      },
+      scales:{
+        y:{ ticks:{ color:encre }, grid:{ color:grille }, title:{ display:true, text:courbe.unite, color:encre } },
+        x:{ ticks:{ color:encre, maxRotation:45, autoSkip:true, maxTicksLimit:12 }, grid:{ display:false } }
+      }
+    }
+  });
+
+  messages.unshift(`${points.length} ${t('constantes.chartPoints')}`);
+  if (note) note.innerHTML = `<i class="bi bi-info-circle"></i> ${messages.join(' &bull; ')}`;
 }

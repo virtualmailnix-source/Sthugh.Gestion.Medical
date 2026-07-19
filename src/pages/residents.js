@@ -10,7 +10,7 @@ import { isSuperAdmin, isReceptionist, currentUserInfo } from '../auth.js';
 import { t, getLang }                  from '../i18n.js';
 import { resolvePhotos, uploadPhoto, removePhoto, resolveOrdonnances } from '../storage.js';
 import { prepareImage } from '../image_tools.js';
-import { openFormConstante, constantesPaneHTML } from '../constantes.js';
+import { openFormConstante, constantesPaneHTML, courbeHTML, initCourbe, detruireCourbe } from '../constantes.js';
 
 const PAGE_SIZE = 15;
 let _page = 1, _search = '', _filter = 'actif';
@@ -595,6 +595,10 @@ export async function openResidentProfile(id) {
 }
 
 async function _openProfile(id) {
+  // Une instance Chart.js survit à son canvas retiré du DOM : la
+  // détruire avant de reconstruire le dossier (voir statistiques.js).
+  detruireCourbe();
+
   const [resRes, consRes, traitRes, rdvRes, contactsRes, histSortiesRes, histCoursesRes, visitesRes, constRes] = await Promise.all([
     db.from('v_residents_priorite').select('*').eq('id', id).single(),
     // Vue unifiée : consultations saisies + RDV échus (règle métier)
@@ -609,8 +613,9 @@ async function _openProfile(id) {
     db.from('historique_sorties').select('*').eq('resident_id', id).order('date_sortie', { ascending: false }),
     db.from('courses').select('*').eq('resident_id', id).order('date_sortie', { ascending: false }).order('heure_depart', { ascending: false }),
     db.from('visites').select('*').eq('resident_id', id).order('date_visite', { ascending: false }).limit(20),
-    // Relevés libres et constantes de consultation, un seul flux (SQL 30)
-    db.from('v_constantes_unifiees').select('*').eq('resident_id', id).order('date_releve', { ascending: false }).limit(30),
+    // Relevés libres et constantes de consultation, un seul flux (SQL 30).
+    // La profondeur sert les courbes ; le tableau n'en montre que le début.
+    db.from('v_constantes_unifiees').select('*').eq('resident_id', id).order('date_releve', { ascending: false }).limit(200),
   ]);
 
   const r             = resRes.data;
@@ -833,6 +838,13 @@ async function _openProfile(id) {
           </button>
         </div>
       `}
+      ${constantes.length ? `
+        <div style="font-weight:600;font-size:.85rem;color:var(--teal-dark);margin-bottom:.6rem;display:flex;align-items:center;gap:.4rem">
+          <i class="bi bi-graph-up"></i> ${t('constantes.chartTitle')}
+        </div>
+        ${courbeHTML()}
+        <div style="height:1px;background:var(--card-border);margin:1.25rem 0"></div>
+      ` : ''}
       ${constantesPaneHTML(constantes)}
     </div>
 
@@ -873,7 +885,7 @@ async function _openProfile(id) {
     // Gérer sortie : actif + super_admin → toutes options; actif + admin → vacances uniquement
     ...(isActive && sa  ? [{ label: `<i class="bi bi-box-arrow-right"></i> ${t('depart.btnExit')}`, cls: 'btn btn-secondary btn-sm', action: () => { closeModal(); _openDepartModal(r); } }] : []),
     ...(isActive && !sa ? [{ label: `<i class="bi bi-luggage-fill"></i> ${t('depart.typeVacances')}`, cls: 'btn btn-secondary btn-sm', action: () => { closeModal(); _openDepartModal(r); } }] : []),
-    { label: t('common.close'), cls: 'btn btn-secondary btn-sm', action: closeModal }
+    { label: t('common.close'), cls: 'btn btn-secondary btn-sm', action: () => { detruireCourbe(); closeModal(); } }
   ], 'modal-xl');
 
   document.querySelectorAll('.tab-btn[data-tab]').forEach(btn =>
@@ -881,6 +893,9 @@ async function _openProfile(id) {
       document.querySelectorAll('.tab-btn,.tab-pane').forEach(el => el.classList.remove('active'));
       btn.classList.add('active');
       document.querySelector(`[data-pane="${btn.dataset.tab}"]`)?.classList.add('active');
+      // La courbe se dessine à l'ouverture de l'onglet : Chart.js
+      // mesure mal un conteneur encore masqué.
+      if (btn.dataset.tab === 'constantes') initCourbe(constantes);
     })
   );
 
