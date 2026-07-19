@@ -152,8 +152,6 @@ function _stockBadge(r) {
 // ── Réapprovisionnement ───────────────────────────────────
 function _openRestock(trow) {
   if (!trow) return;
-  const condOk = trow.unites_par_plaquette > 0 && trow.plaquettes_par_boite > 0;
-  const parBoite = condOk ? trow.unites_par_plaquette * trow.plaquettes_par_boite : 0;
 
   const body = `<form id="form-restock">
     <p style="margin-bottom:.75rem">
@@ -163,16 +161,9 @@ function _openRestock(trow) {
       ${t('treatments.restockCurrent')} : <strong>${trow.stock_restant !== null ? Math.round(trow.stock_restant) : '—'} ${trow.unite || ''}</strong>
       ${trow.autonomie_jours !== null ? ` (${trow.autonomie_jours} ${t('treatments.days')})` : ''}
     </div>
-    <div class="form-row">
-      ${condOk ? `<div class="form-group">
-        <label class="form-label">${t('treatments.restockBoxes')}</label>
-        <input class="form-control" type="number" name="boites" min="0" step="1" placeholder="2">
-        <div class="form-hint">1 ${t('treatments.box')} = ${parBoite} ${trow.unite || t('treatments.unitsShort')}</div>
-      </div>` : ''}
-      <div class="form-group">
-        <label class="form-label">${t('treatments.restockUnits')}</label>
-        <input class="form-control" type="number" name="unites" min="0" step="0.5" placeholder="20">
-      </div>
+    <div class="form-group">
+      <label class="form-label">${t('treatments.restockUnits')}</label>
+      <input class="form-control" type="number" name="unites" min="0" step="0.5" placeholder="20" required>
     </div>
   </form>`;
 
@@ -180,12 +171,12 @@ function _openRestock(trow) {
     { label: t('common.cancel'), cls:'btn btn-secondary', action: closeModal },
     { label: t('treatments.restock'), cls:'btn btn-primary', action: async () => {
       const fd = new FormData(document.getElementById('form-restock'));
-      const boites = parseInt(fd.get('boites')) || null;
       const unites = parseFloat(fd.get('unites')) || null;
-      if (!boites && !unites) { toastError(t('treatments.restockQtyRequired')); return; }
+      if (!unites) { toastError(t('treatments.restockQtyRequired')); return; }
+      // p_boites reste dans la signature de la RPC mais n'est plus
+      // alimenté : le réapprovisionnement se saisit en unités (lot G).
       const { error } = await db.rpc('fn_reapprovisionner', {
         p_traitement_id: trow.id,
-        p_boites: boites,
         p_unites: unites,
       });
       if (error) { toastError(error.message); return; }
@@ -298,20 +289,6 @@ export async function openFormTraitement(id, prefillResidentId) {
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">${t('treatments.unitsPerBlister')}</label>
-          <input class="form-control stock-field" type="number" name="unites_par_plaquette" min="1" value="${tData.unites_par_plaquette||''}" placeholder="10">
-        </div>
-        <div class="form-group">
-          <label class="form-label">${t('treatments.blistersPerBox')}</label>
-          <input class="form-control stock-field" type="number" name="plaquettes_par_boite" min="1" value="${tData.plaquettes_par_boite||''}" placeholder="2">
-        </div>
-        <div class="form-group">
-          <label class="form-label">${t('treatments.stockBoxes')}</label>
-          <input class="form-control stock-field" type="number" name="stock_boites" min="0" step="0.5" placeholder="1">
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
           <label class="form-label">${t('treatments.stockUnits')}</label>
           <input class="form-control stock-field" type="number" name="stock_initial_unites" min="0" step="0.5" value="${tData.stock_initial_unites||''}" placeholder="20">
           <div class="form-hint">${t('treatments.stockUnitsHint')}</div>
@@ -397,18 +374,16 @@ export async function openFormTraitement(id, prefillResidentId) {
   });
 }
 
-// Calcule stock total (unités) + autonomie depuis les champs du formulaire
+// Calcule stock total (unités) + autonomie depuis les champs du formulaire.
+// Le stock se saisit en unités, et seulement en unités : plaquettes et
+// boîtes n'étaient qu'un raccourci de saisie, retiré au lot G. Les
+// colonnes correspondantes restent en base, plus alimentées.
 function _stockFromForm() {
   const g = n => parseFloat(document.querySelector(`#form-trt [name="${n}"]`)?.value) || 0;
   const dose   = g('dose_par_prise');
   const prises = g('prises_par_jour');
-  const upp    = g('unites_par_plaquette');
-  const ppb    = g('plaquettes_par_boite');
-  const boites = g('stock_boites');
-  let unites   = g('stock_initial_unites');
-  // Les boîtes priment si le conditionnement est complet
-  if (boites > 0 && upp > 0 && ppb > 0) unites = boites * ppb * upp;
-  const conso = dose * prises;
+  const unites = g('stock_initial_unites');
+  const conso  = dose * prises;
   return { unites, conso, autonomie: conso > 0 && unites > 0 ? Math.floor(unites / conso) : null };
 }
 
@@ -448,9 +423,7 @@ async function _submitTrt(id, prev = {}) {
   data.alerte_renouvellement = !!document.getElementById('alerte-check')?.checked;
   if (data.traitement_chronique) { delete data.duree_jours; }
 
-  // Stock : les boîtes sont un raccourci de saisie, pas une colonne
   const { unites } = _stockFromForm();
-  delete data.stock_boites;
   if (unites > 0) {
     data.stock_initial_unites = unites;
     // Création : le stock correspond au début du traitement.
