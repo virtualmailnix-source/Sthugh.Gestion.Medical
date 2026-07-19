@@ -25,6 +25,9 @@ export async function renderDeparts(container) {
         <button class="chip" data-f="vacances">
           <i class="bi bi-luggage-fill"></i> ${t('depart.filterVacances')}
         </button>
+        <button class="chip" data-f="hospitalisation">
+          <i class="bi bi-hospital-fill"></i> ${t('depart.filterHospitalisation')}
+        </button>
         <button class="chip" data-f="depart">
           <i class="bi bi-door-open-fill"></i> ${t('depart.filterDeparts')}
         </button>
@@ -58,7 +61,7 @@ async function _load() {
   let q;
   if (isReceptionist()) {
     q = db.from('v_residents_public')
-      .select('id, numero_chambre, nom, prenom, date_naissance, sexe, photo_url, statut_depart, date_sortie, date_retour_prevue, motif_sortie')
+      .select('id, numero_chambre, nom, prenom, date_naissance, sexe, photo_url, statut_depart, date_sortie, date_retour_prevue, motif_sortie, etablissement_sante')
       .not('statut_depart', 'is', null)
       .neq('statut_depart', 'deces')
       .order('date_sortie', { ascending: false, nullsFirst: false });
@@ -67,7 +70,7 @@ async function _load() {
       .select(`
         id, numero_chambre, nom, prenom, date_naissance, sexe, photo_url,
         statut_depart, date_sortie, date_retour_prevue, motif_sortie, motif_deces,
-        conditions_chroniques,
+        etablissement_sante, conditions_chroniques,
         doctors ( id, nom, prenom, titre )
       `)
       .not('statut_depart', 'is', null)
@@ -89,6 +92,7 @@ async function _load() {
 
   /* Grouper par type */
   const vacances = rows.filter(r => r.statut_depart === 'vacances');
+  const hospit   = rows.filter(r => r.statut_depart === 'hospitalisation');
   const departs  = rows.filter(r => r.statut_depart === 'depart');
   const deces    = rows.filter(r => r.statut_depart === 'deces');
 
@@ -98,6 +102,12 @@ async function _load() {
     html += _section(
       `<i class="bi bi-luggage-fill"></i> ${t('depart.filterVacances')} (${vacances.length})`,
       'blue', vacances, 'vacances'
+    );
+  }
+  if (hospit.length && (_filter === 'all' || _filter === 'hospitalisation')) {
+    html += _section(
+      `<i class="bi bi-hospital-fill"></i> ${t('depart.filterHospitalisation')} (${hospit.length})`,
+      'blue', hospit, 'hospitalisation'
     );
   }
   if (departs.length && (_filter === 'all' || _filter === 'depart')) {
@@ -133,6 +143,9 @@ async function _load() {
 }
 
 function _section(title, tint, rows, type) {
+  // Vacances et hospitalisation sont des absences temporaires : date de
+  // retour prévue et bouton de retour au foyer.
+  const temporaire = type === 'vacances' || type === 'hospitalisation';
   return `
     <div style="margin-bottom:2rem">
       <div style="display:flex;align-items:center;gap:.6rem;font-size:1rem;font-weight:700;
@@ -146,7 +159,8 @@ function _section(title, tint, rows, type) {
           <th>${t('residents.colResident')}</th>
           <th>${t('residents.dob')}</th>
           <th>${t('depart.exitDate')}</th>
-          ${type === 'vacances' ? `<th>${t('depart.returnDate')}</th>` : ''}
+          ${temporaire ? `<th>${t('depart.returnDate')}</th>` : ''}
+          ${type === 'hospitalisation' ? `<th>${t('depart.facility')}</th>` : ''}
           <th>${type === 'deces' ? t('depart.deathReason') : t('depart.exitReason')}</th>
           <th style="text-align:right"></th>
         </tr></thead>
@@ -166,13 +180,14 @@ function _section(title, tint, rows, type) {
             </td>
             <td style="font-size:.85rem">${formatAge(r.date_naissance)}</td>
             <td style="font-size:.83rem">${r.date_sortie ? formatDate(r.date_sortie, { time: true }) : '—'}</td>
-            ${type === 'vacances' ? `<td style="font-size:.83rem">${r.date_retour_prevue ? formatDate(r.date_retour_prevue) : '—'}</td>` : ''}
+            ${temporaire ? `<td style="font-size:.83rem">${r.date_retour_prevue ? formatDate(r.date_retour_prevue) : '—'}</td>` : ''}
+            ${type === 'hospitalisation' ? `<td style="font-size:.83rem">${escapeHtml(r.etablissement_sante || '—')}</td>` : ''}
             <td style="font-size:.83rem;max-width:200px">
               ${escapeHtml(type === 'deces' ? (r.motif_deces || '—') : (r.motif_sortie || '—'))}
             </td>
             <td>
               <div class="table-actions">
-                ${type === 'vacances'
+                ${temporaire
                   ? `<button class="btn btn-success btn-sm" data-action="restore" data-id="${r.id}" data-nom="${escapeHtml(fullName(r.nom, r.prenom))}">
                       <i class="bi bi-house-fill"></i> ${t('depart.btnRestore')}
                      </button>`
@@ -204,9 +219,9 @@ function _confirmRestore(id, nom) {
           _load();
           return;
         }
-        // Récupérer les données vacances avant de les effacer
+        // Récupérer les données de l'absence avant de les effacer
         const { data: res } = await db.from('residents')
-          .select('date_sortie, date_retour_prevue, motif_sortie')
+          .select('statut_depart, date_sortie, date_retour_prevue, motif_sortie, etablissement_sante')
           .eq('id', id).single();
         if (res?.date_sortie) {
           await db.from('historique_sorties').insert({
@@ -215,11 +230,16 @@ function _confirmRestore(id, nom) {
             date_retour:        new Date().toISOString(),
             date_retour_prevue: res.date_retour_prevue || null,
             motif_sortie:       res.motif_sortie || null,
+            // Sans ce type, l'historique ne dirait pas s'il s'agissait
+            // de vacances ou d'une hospitalisation
+            type_sortie:         res.statut_depart || 'vacances',
+            etablissement_sante: res.etablissement_sante || null,
           });
         }
         const { error } = await db.from('residents').update({
           statut_depart: null, date_sortie: null,
-          date_retour_prevue: null, motif_sortie: null, actif: true
+          date_retour_prevue: null, motif_sortie: null,
+          etablissement_sante: null, actif: true
         }).eq('id', id);
         if (error) { toastError(error.message); return; }
         toastSuccess(t('depart.restoreOk'));

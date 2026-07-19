@@ -35,7 +35,7 @@ async function _load(search = '') {
 
   let query = db.from('doctors').select(`
     id, titre, nom, prenom, specialite, telephone, telephone2, email,
-    clinique, jours_consultation, notes, actif,
+    clinique, jours_consultation, notes, actif, secteur,
     nb_residents:residents(count)
   `).order('nom');
 
@@ -59,7 +59,12 @@ async function _load(search = '') {
             <div style="flex:1">
               <div style="font-size:1.05rem;font-weight:700">${d.titre||'Dr.'} ${d.prenom} ${d.nom}</div>
               <div style="font-size:.82rem;color:var(--gold);font-weight:600">${d.specialite||'Médecine Générale'}</div>
-              ${!d.actif ? `<span class="badge badge-inactif" style="margin-top:.3rem">${t('common.inactive')}</span>` : ''}
+              <div style="margin-top:.3rem;display:flex;gap:.35rem;flex-wrap:wrap">
+                ${d.secteur === 'public'
+                  ? `<span class="badge" style="font-size:.66rem;border-left:none;padding:.2rem .55rem;background:var(--tint-blue-bg);color:var(--tint-blue-fg)">${t('doctors.sectorPublic')}</span>`
+                  : `<span class="badge badge-teal" style="font-size:.66rem">${t('doctors.sectorPrivate')}</span>`}
+                ${!d.actif ? `<span class="badge badge-inactif">${t('common.inactive')}</span>` : ''}
+              </div>
             </div>
           </div>
           <div style="margin-top:1rem;display:grid;gap:.4rem;font-size:.85rem">
@@ -123,9 +128,18 @@ export async function openFormMedecin(id) {
           <input class="form-control" name="prenom" value="${escapeHtml(d.prenom||'')}">
         </div>
       </div>
-      <div class="form-group">
-        <label class="form-label">${t('doctors.specialty')}</label>
-        <input class="form-control" name="specialite" value="${escapeHtml(d.specialite||'Médecine Générale')}">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">${t('doctors.specialty')}</label>
+          <input class="form-control" name="specialite" value="${escapeHtml(d.specialite||'Médecine Générale')}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">${t('doctors.sector')}</label>
+          <select class="form-control" name="secteur">
+            <option value="prive"  ${(d.secteur||'prive')==='prive'  ? 'selected' : ''}>${t('doctors.sectorPrivate')}</option>
+            <option value="public" ${d.secteur==='public' ? 'selected' : ''}>${t('doctors.sectorPublic')}</option>
+          </select>
+        </div>
       </div>
     </div>
     <div class="form-section">

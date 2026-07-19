@@ -3,7 +3,7 @@ import { openModal, closeModal }       from '../../script.js';
 import { toastSuccess, toastError }    from '../toast.js';
 import {
   formatDate, formatAge, initials, fullName,
-  escapeHtml, debounce, nowLocalInput, telHref, locale } from '../utils.js';
+  escapeHtml, debounce, nowLocalInput, telHref, locale, ymdLocal } from '../utils.js';
 import { openFormConsultation }        from './consultations.js';
 import { openFormRdv }                 from './rendez-vous.js';
 import { isSuperAdmin, isReceptionist, currentUserInfo } from '../auth.js';
@@ -13,10 +13,47 @@ import { prepareImage } from '../image_tools.js';
 import { openFormConstante, constantesPaneHTML, courbeHTML, initCourbe, detruireCourbe } from '../constantes.js';
 
 const PAGE_SIZE = 15;
-let _page = 1, _search = '', _filter = 'actif';
+let _page = 1, _search = '', _filter = 'actif', _sexe = '', _tranche = '';
+
+// Absences temporaires : le résident est hors du foyer mais son dossier
+// reste actif et modifiable, il compte toujours dans l'effectif et un
+// bouton le fait revenir. Départ et décès, eux, archivent le dossier.
+const estAbsenceTemporaire = s => s === 'vacances' || s === 'hospitalisation';
+
+// Tranches d'âge du point 4. Bornes incluses, `max` absent = pas de
+// limite haute. Un résident sans date de naissance sort du résultat
+// dès qu'une tranche est choisie : son âge est inconnu.
+const TRANCHES_AGE = [
+  { id:'-70',   min:0,  max:69 },
+  { id:'70-79', min:70, max:79 },
+  { id:'80-89', min:80, max:89 },
+  { id:'90+',   min:90 },
+];
+
+// Un âge se traduit en intervalle de dates de naissance. Calcul en
+// local, jamais par toISOString : Maurice est à UTC+4 et la
+// conversion reculerait d'un jour.
+function _bornesNaissance(tranche) {
+  const t = TRANCHES_AGE.find(x => x.id === tranche);
+  if (!t) return null;
+  const aujourdhui = new Date();
+
+  // Avoir min ans révolus : être né au plus tard il y a min ans.
+  const nePlusTard = new Date(aujourdhui);
+  nePlusTard.setFullYear(nePlusTard.getFullYear() - t.min);
+
+  // Avoir au plus max ans : être né après la date des max+1 ans.
+  let nePlusTot = null;
+  if (t.max !== undefined) {
+    nePlusTot = new Date(aujourdhui);
+    nePlusTot.setFullYear(nePlusTot.getFullYear() - t.max - 1);
+    nePlusTot.setDate(nePlusTot.getDate() + 1);
+  }
+  return { nePlusTard: ymdLocal(nePlusTard), nePlusTot: nePlusTot ? ymdLocal(nePlusTot) : null };
+}
 
 export async function renderResidents(container) {
-  _page = 1; _search = ''; _filter = 'actif';
+  _page = 1; _search = ''; _filter = 'actif'; _sexe = ''; _tranche = '';
   const sa = isSuperAdmin();
 
   container.innerHTML = `
@@ -43,10 +80,25 @@ export async function renderResidents(container) {
         ${!isReceptionist() ? `
         <button class="chip" data-filter="urgents">${t('residents.filterUrgent')}</button>` : ''}
         <button class="chip" data-filter="vacances"><i class="bi bi-luggage-fill"></i> ${t('depart.filterVacances')}</button>
+        <button class="chip" data-filter="hospitalisation"><i class="bi bi-hospital-fill"></i> ${t('depart.filterHospitalisation')}</button>
         <button class="chip" data-filter="depart"><i class="bi bi-door-open-fill"></i> ${t('depart.filterDeparts')}</button>
         ${!isReceptionist() ? `
         <button class="chip" data-filter="deces">✝ ${t('depart.filterDeces')}</button>
         <button class="chip" data-filter="inactif">${t('residents.filterArchived')}</button>` : ''}
+      </div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.6rem">
+        <select class="form-control" id="res-sexe" style="width:auto;min-width:140px;font-size:.85rem">
+          <option value="">${t('residents.filterAllSexes')}</option>
+          <option value="Masculin">${t('statistics.male')}</option>
+          <option value="Féminin">${t('statistics.female')}</option>
+        </select>
+        <select class="form-control" id="res-age" style="width:auto;min-width:150px;font-size:.85rem">
+          <option value="">${t('residents.filterAllAges')}</option>
+          <option value="-70">${t('residents.ageUnder70')}</option>
+          <option value="70-79">70 - 79 ${t('common.years')}</option>
+          <option value="80-89">80 - 89 ${t('common.years')}</option>
+          <option value="90+">${t('residents.age90plus')}</option>
+        </select>
       </div>
     </div>
 
@@ -65,6 +117,12 @@ export async function renderResidents(container) {
       _filter = e.target.dataset.filter; _page = 1; _loadResidents();
     })
   );
+  document.getElementById('res-sexe')?.addEventListener('change', e => {
+    _sexe = e.target.value; _page = 1; _loadResidents();
+  });
+  document.getElementById('res-age')?.addEventListener('change', e => {
+    _tranche = e.target.value; _page = 1; _loadResidents();
+  });
   _loadResidents();
 }
 
@@ -88,8 +146,20 @@ async function _loadResidents() {
   if (_filter === 'urgents')  query = query.eq('actif', true).eq('niveau_priorite', 1)
                                            .or('statut_depart.is.null,statut_depart.neq.deces');
   if (_filter === 'vacances') query = query.eq('statut_depart', 'vacances');
+  if (_filter === 'hospitalisation') query = query.eq('statut_depart', 'hospitalisation');
   if (_filter === 'depart')   query = query.eq('statut_depart', 'depart');
   if (_filter === 'deces')    query = query.eq('statut_depart', 'deces');
+
+  // Sexe et âge : filtrés en base, pas après coup, sinon le compteur
+  // de pagination porterait sur les lignes d'avant filtrage.
+  if (_sexe) query = query.eq('sexe', _sexe);
+  if (_tranche) {
+    const bornes = _bornesNaissance(_tranche);
+    if (bornes) {
+      query = query.lte('date_naissance', bornes.nePlusTard);
+      if (bornes.nePlusTot) query = query.gte('date_naissance', bornes.nePlusTot);
+    }
+  }
 
   if (_search) query = query.or(
     `nom.ilike.%${_search}%,prenom.ilike.%${_search}%,numero_chambre.ilike.%${_search}%`
@@ -144,6 +214,8 @@ function _tableAccueilHTML(rows) {
         <td style="font-size:.83rem">
           ${r.statut_depart === 'vacances'
             ? `<span class="badge" style="background:var(--tint-blue-bg);color:var(--tint-blue-fg)"><i class="bi bi-luggage-fill"></i> ${t('depart.badgeVacances')}</span>`
+            : r.statut_depart === 'hospitalisation'
+            ? `<span class="badge" style="background:var(--tint-blue-bg);color:var(--tint-blue-fg)" title="${escapeHtml(r.etablissement_sante || '')}"><i class="bi bi-hospital-fill"></i> ${t('depart.badgeHospitalisation')}</span>`
             : r.statut_depart === 'depart'
             ? `<span class="badge" style="background:var(--tint-gray-bg);color:var(--tint-gray-fg)"><i class="bi bi-door-open-fill"></i> ${t('depart.badgeDeparture')}</span>`
             : `<span class="badge badge-actif">${t('residents.statusPresent')}</span>`}
@@ -186,6 +258,8 @@ function _tableHTML(rows) {
             ? '<span style="color:var(--text-light)">—</span>'
             : r.statut_depart === 'vacances'
             ? `<span class="badge" style="background:var(--tint-blue-bg);color:var(--tint-blue-fg)"><i class="bi bi-luggage-fill"></i> ${t('depart.badgeVacances')}</span>`
+            : r.statut_depart === 'hospitalisation'
+            ? `<span class="badge" style="background:var(--tint-blue-bg);color:var(--tint-blue-fg)" title="${escapeHtml(r.etablissement_sante || '')}"><i class="bi bi-hospital-fill"></i> ${t('depart.badgeHospitalisation')}</span>`
             : r.statut_depart === 'depart'
             ? `<span class="badge" style="background:var(--tint-gray-bg);color:var(--tint-gray-fg)"><i class="bi bi-door-open-fill"></i> ${t('depart.badgeDeparture')}</span>`
             : r.derniere_consultation
@@ -213,7 +287,7 @@ function _tableHTML(rows) {
         </td>
         <td><div class="table-actions">
           <button class="btn-icon" data-action="view"    title="Dossier"><i class="bi bi-folder2-open"></i></button>
-          ${!r.statut_depart || r.statut_depart === 'vacances' ? `
+          ${!r.statut_depart || estAbsenceTemporaire(r.statut_depart) ? `
             <button class="btn-icon" data-action="consult" title="Consultation"><i class="bi bi-journal-plus"></i></button>
             <button class="btn-icon" data-action="rdv"     title="RDV"><i class="bi bi-calendar-plus"></i></button>
           ` : ''}
@@ -370,6 +444,19 @@ export async function openFormResident(id) {
             <option value="Alitement" ${r.mobilite === 'Alitement' ? 'selected' : ''}>${t('residents.mobilityBed')}</option>
           </select>
         </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">${t('residents.privateDoctorName')}</label>
+          <input class="form-control" name="medecin_prive_nom" value="${escapeHtml(r.medecin_prive_nom || '')}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">${t('residents.privateDoctorPhone')}</label>
+          <input class="form-control" name="medecin_prive_telephone" value="${escapeHtml(r.medecin_prive_telephone || '')}">
+        </div>
+      </div>
+      <div style="font-size:.8rem;color:var(--text-light);margin-top:-.35rem">
+        <i class="bi bi-info-circle"></i> ${t('residents.privateDoctorHint')}
       </div>
     </div>
 
@@ -530,6 +617,12 @@ async function _submitResident(id) {
   const data = Object.fromEntries([...fd.entries()].filter(([, v]) => v !== ''));
   if (data.cin) data.cin = data.cin.toUpperCase();
 
+  // Le filtre ci-dessus retire les chaînes vides : sans ce rattrapage,
+  // un médecin privé effacé resterait en base, faute d'être transmis.
+  ['medecin_prive_nom', 'medecin_prive_telephone'].forEach(k => {
+    if (fd.get(k) === '') data[k] = null;
+  });
+
   // Photo : bucket privé, on stocke le CHEMIN (nom UUID), jamais d'URL.
   // L'ancien fichier est retiré du bucket en cas de remplacement/suppression.
   const photoInput   = document.getElementById('photo-input');
@@ -633,7 +726,7 @@ async function _openProfile(id) {
 
   const sa         = isSuperAdmin();
   const isArchived = r.statut_depart === 'deces' || r.statut_depart === 'depart';
-  const isVacances = r.statut_depart === 'vacances';
+  const isAbsent = estAbsenceTemporaire(r.statut_depart);
   const isActive   = !r.statut_depart;
 
   const contactsHTML = contacts.length
@@ -671,6 +764,19 @@ async function _openProfile(id) {
         ${r.motif_sortie ? `<div style="font-size:.82rem;color:var(--tint-gray-fg);margin-top:.2rem;font-style:italic">${escapeHtml(r.motif_sortie)}</div>` : ''}
       </div>
       <span class="badge" style="background:var(--tint-gray-border);color:var(--tint-gray-fg);font-size:.78rem;white-space:nowrap"><i class="bi bi-lock-fill"></i> ${t('depart.archivedReadOnly')}</span>
+    </div>
+  ` : r.statut_depart === 'hospitalisation' ? `
+    <div style="background:var(--tint-blue-bg);border:1px solid var(--tint-blue-fg);border-radius:var(--radius-sm);padding:.8rem 1rem;margin:.5rem 0 .25rem;display:flex;align-items:center;gap:.75rem">
+      <i class="bi bi-hospital-fill" style="font-size:1.4rem;color:var(--tint-blue-fg)"></i>
+      <div style="flex:1">
+        <div style="font-weight:700;color:var(--tint-blue-fg)">${t('depart.profileHospitalised')}</div>
+        <div style="font-size:.82rem;color:var(--tint-blue-fg);margin-top:.1rem">
+          ${r.etablissement_sante ? escapeHtml(r.etablissement_sante) : ''}
+          ${r.date_sortie ? ` &bull; ${t('depart.since')} ${formatDate(r.date_sortie)}` : ''}
+          ${r.date_retour_prevue ? ` &bull; ${t('depart.expectedBack')} ${formatDate(r.date_retour_prevue)}` : ''}
+        </div>
+        ${r.motif_sortie ? `<div style="font-size:.82rem;color:var(--tint-blue-fg);margin-top:.2rem;font-style:italic">${escapeHtml(r.motif_sortie)}</div>` : ''}
+      </div>
     </div>
   ` : '';
 
@@ -710,7 +816,15 @@ async function _openProfile(id) {
       <div style="display:flex;gap:1.5rem;align-items:flex-start;flex-wrap:wrap-reverse">
       <table style="flex:1;min-width:260px;font-size:.9rem">
         ${_row(t('residents.cin'), r.cin ? escapeHtml(r.cin) : '—')}
-        ${_row(t('residents.treatingDoctor'), r.medecin_nom ? (r.medecin_titre || 'Dr.') + ' ' + r.medecin_prenom + ' ' + r.medecin_nom : '—')}
+        ${_row(t('residents.treatingDoctor'), r.medecin_nom
+          ? (r.medecin_titre || 'Dr.') + ' ' + r.medecin_prenom + ' ' + r.medecin_nom
+            + (r.medecin_secteur === 'public' ? ` <span style="font-size:.78rem;color:var(--text-light)">(${t('doctors.sectorPublic')})</span>` : '')
+          : '—')}
+        ${r.medecin_prive_nom ? _row(t('residents.privateDoctor'),
+          escapeHtml(r.medecin_prive_nom)
+          + (r.medecin_prive_telephone
+             ? ` <a href="${telHref(r.medecin_prive_telephone)}" style="color:var(--teal-light)"><i class="bi bi-telephone-fill"></i> ${escapeHtml(r.medecin_prive_telephone)}</a>`
+             : '')) : ''}
         ${_row(t('residents.profileLabelAdmission'), formatDate(r.date_entree))}
         ${r.statut_depart === 'deces' && r.date_sortie ? _row(t('depart.deceasedOn'), `<strong style="color:var(--tint-red-fg)">${formatDate(r.date_sortie)}</strong>`) : ''}
         ${r.statut_depart === 'deces' && r.motif_deces ? _row(getLang() === 'en' ? 'Cause of death' : 'Cause du décès', escapeHtml(r.motif_deces)) : ''}
@@ -739,12 +853,18 @@ async function _openProfile(id) {
           </div>
           <div class="table-wrap"><table class="table" style="font-size:.82rem">
             <thead><tr>
+              <th>${t('historiqueSorties.colType')}</th>
               <th>${t('historiqueSorties.colDateSortie')}</th>
               <th>${t('historiqueSorties.colDateRetour')}</th>
               <th>${t('historiqueSorties.colMotif')}</th>
             </tr></thead>
             <tbody>
               ${histSorties.map(h => `<tr>
+                <td>${h.type_sortie === 'hospitalisation'
+                  ? `<span class="badge" style="font-size:.66rem;border-left:none;padding:.2rem .55rem;background:var(--tint-blue-bg);color:var(--tint-blue-fg)"><i class="bi bi-hospital-fill"></i> ${t('depart.badgeHospitalisation')}</span>`
+                  : `<span class="badge badge-teal" style="font-size:.66rem"><i class="bi bi-luggage-fill"></i> ${t('depart.badgeVacances')}</span>`}
+                  ${h.etablissement_sante ? `<div style="font-size:.75rem;color:var(--text-light);margin-top:.15rem">${escapeHtml(h.etablissement_sante)}</div>` : ''}
+                </td>
                 <td>${h.date_sortie ? formatDate(h.date_sortie, { time: true }) : '—'}</td>
                 <td>${h.date_retour ? formatDate(h.date_retour, { time: true }) : '—'}</td>
                 <td style="color:var(--text-light)">${escapeHtml(h.motif_sortie || '—')}</td>
@@ -877,11 +997,11 @@ async function _openProfile(id) {
     // Modifier : super_admin uniquement, jamais pour les décédés
     ...(sa && r.statut_depart !== 'deces' ? [{ label: t('common.modify'), cls: 'btn btn-secondary btn-sm', action: () => { closeModal(); openFormResident(id); } }] : []),
     // Nouvelle consultation : actif ou vacances seulement
-    ...(isActive || isVacances ? [{ label: t('residents.newConsult'), cls: 'btn btn-primary btn-sm', action: () => { closeModal(); openFormConsultation(null, id); } }] : []),
+    ...(isActive || isAbsent ? [{ label: t('residents.newConsult'), cls: 'btn btn-primary btn-sm', action: () => { closeModal(); openFormConsultation(null, id); } }] : []),
     // PDF : toujours visible, libellé selon statut - ouvre le choix du contenu
     { label: pdfLabel, cls: 'btn btn-secondary btn-sm', action: () => _openExportChoice(r, cons, trais, contacts, histSorties, histCourses, visites, rdvs) },
     // Retour au foyer (vacances)
-    ...(isVacances ? [{ label: `<i class="bi bi-house-fill"></i> ${t('depart.btnRestore')}`, cls: 'btn btn-success btn-sm', action: () => { closeModal(); _openRestoreModal(r); } }] : []),
+    ...(isAbsent ? [{ label: `<i class="bi bi-house-fill"></i> ${t('depart.btnRestore')}`, cls: 'btn btn-success btn-sm', action: () => { closeModal(); _openRestoreModal(r); } }] : []),
     // Gérer sortie : actif + super_admin → toutes options; actif + admin → vacances uniquement
     ...(isActive && sa  ? [{ label: `<i class="bi bi-box-arrow-right"></i> ${t('depart.btnExit')}`, cls: 'btn btn-secondary btn-sm', action: () => { closeModal(); _openDepartModal(r); } }] : []),
     ...(isActive && !sa ? [{ label: `<i class="bi bi-luggage-fill"></i> ${t('depart.typeVacances')}`, cls: 'btn btn-secondary btn-sm', action: () => { closeModal(); _openDepartModal(r); } }] : []),
@@ -935,7 +1055,7 @@ async function _openProfileAccueil(id) {
   if (!r) return;
   await resolvePhotos(r);   // chemin -> URL signée (bucket privé)
 
-  const isVacances = r.statut_depart === 'vacances';
+  const isAbsent = estAbsenceTemporaire(r.statut_depart);
   const isActive   = !r.statut_depart;
 
   const contactsHTML = contacts.length
@@ -976,6 +1096,10 @@ async function _openProfileAccueil(id) {
         ${_row(t('residents.cin'), r.cin ? escapeHtml(r.cin) : '—')}
         ${_row(t('residents.profileLabelAdmission'), formatDate(r.date_entree))}
         ${r.statut_depart === 'vacances' && r.date_sortie ? _row(t('depart.badgeVacances'), formatDate(r.date_sortie) + (r.date_retour_prevue ? ' → ' + formatDate(r.date_retour_prevue) : '')) : ''}
+        ${r.statut_depart === 'hospitalisation' ? _row(t('depart.badgeHospitalisation'),
+          [escapeHtml(r.etablissement_sante || ''),
+           r.date_sortie ? formatDate(r.date_sortie) + (r.date_retour_prevue ? ' → ' + formatDate(r.date_retour_prevue) : '') : '']
+          .filter(Boolean).join(' &bull; ') || '—') : ''}
         ${r.statut_depart === 'depart' && r.date_sortie ? _row(t('depart.departedOn'), formatDate(r.date_sortie)) : ''}
       </table>
       ${_photoInfos(r)}
@@ -1032,7 +1156,7 @@ async function _openProfileAccueil(id) {
       action: () => _exportPDF(r, [], [], contacts, histSorties, histCourses, 'admin', visites) },
     ...(isActive ? [{ label: `<i class="bi bi-luggage-fill"></i> ${t('depart.typeVacances')}`, cls: 'btn btn-secondary btn-sm',
       action: () => { closeModal(); _openVacancesAccueil(r); } }] : []),
-    ...(isVacances ? [{ label: `<i class="bi bi-house-fill"></i> ${t('depart.btnRestore')}`, cls: 'btn btn-success btn-sm',
+    ...(isAbsent ? [{ label: `<i class="bi bi-house-fill"></i> ${t('depart.btnRestore')}`, cls: 'btn btn-success btn-sm',
       action: async () => {
         const { data, error } = await db.rpc('fn_accueil_retour', { p_resident_id: r.id });
         if (error || !data) { toastError(error?.message || t('depart.restoreErr')); return; }
@@ -1323,6 +1447,9 @@ function _exportPDF(r, cons, trais, contacts, histSorties = [], histCourses = []
     section(isDeces ? 'INFORMATIONS MEDICALES AU MOMENT DU DECES' : 'INFORMATIONS MEDICALES');
     const infoRows = [
       ['Medecin traitant',      medecin],
+      // Praticien personnel du resident : les familles le demandent
+      ...(r.medecin_prive_nom ? [['Medecin prive',
+        [r.medecin_prive_nom, r.medecin_prive_telephone].filter(Boolean).join(' - ')]] : []),
       ['Groupe sanguin',        r.groupe_sanguin || '—'],
       ['Mobilite',              r.mobilite || '—'],
       ['Allergies',             r.allergies || '—'],
@@ -1564,6 +1691,11 @@ export function _openDepartModal(r) {
           <i class="bi bi-luggage-fill" style="color:#2563eb"></i>
           <span>${t('depart.typeVacances')}</span>
         </label>
+        <label style="display:flex;align-items:center;gap:.65rem;cursor:pointer;padding:.6rem .9rem;border:1px solid var(--card-border);border-radius:var(--radius-sm)">
+          <input type="radio" name="type_sortie" value="hospitalisation">
+          <i class="bi bi-hospital-fill" style="color:#0891b2"></i>
+          <span>${t('depart.typeHospitalisation')}</span>
+        </label>
         ${sa ? `
         <label style="display:flex;align-items:center;gap:.65rem;cursor:pointer;padding:.6rem .9rem;border:1px solid var(--card-border);border-radius:var(--radius-sm)">
           <input type="radio" name="type_sortie" value="depart">
@@ -1589,6 +1721,10 @@ export function _openDepartModal(r) {
         <input class="form-control" type="date" name="date_retour_prevue">
       </div>
     </div>
+    <div class="form-group" id="etablissement-group" style="display:none">
+      <label class="form-label">${t('depart.facility')}</label>
+      <input class="form-control" name="etablissement_sante" placeholder="${t('depart.facilityPlaceholder')}">
+    </div>
     <div class="form-group" id="motif-sortie-group">
       <label class="form-label">${t('depart.exitReason')}</label>
       <textarea class="form-control" name="motif_sortie" rows="2"></textarea>
@@ -1613,9 +1749,13 @@ export function _openDepartModal(r) {
   document.querySelectorAll('input[name="type_sortie"]').forEach(radio => {
     radio.addEventListener('change', () => {
       const v = document.querySelector('input[name="type_sortie"]:checked')?.value;
-      document.getElementById('return-date-group').style.display  = v === 'vacances' ? '' : 'none';
-      document.getElementById('motif-sortie-group').style.display = v === 'deces'    ? 'none' : '';
-      document.getElementById('deces-reason-group').style.display = v === 'deces'    ? '' : 'none';
+      // Une hospitalisation est une absence temporaire, comme les
+      // vacances : elle a une date de retour prévue, plus un établissement.
+      const temporaire = v === 'vacances' || v === 'hospitalisation';
+      document.getElementById('return-date-group').style.display   = temporaire ? '' : 'none';
+      document.getElementById('etablissement-group').style.display = v === 'hospitalisation' ? '' : 'none';
+      document.getElementById('motif-sortie-group').style.display  = v === 'deces' ? 'none' : '';
+      document.getElementById('deces-reason-group').style.display  = v === 'deces' ? '' : 'none';
     });
   });
 }
@@ -1632,7 +1772,11 @@ async function _submitDepart(id) {
     date_retour_prevue: fd.get('date_retour_prevue') || null,
     motif_sortie:      fd.get('motif_sortie') || null,
     motif_deces:       fd.get('motif_deces') || null,
-    actif:             type === 'vacances', // vacances = still actif, depart/deces = false
+    // L'établissement n'a de sens que pour une hospitalisation
+    etablissement_sante: type === 'hospitalisation' ? (fd.get('etablissement_sante') || null) : null,
+    // Absences temporaires : le résident reste actif et compté dans
+    // l'effectif. Départ et décès le retirent.
+    actif:             type === 'vacances' || type === 'hospitalisation',
   };
 
   const { data: saved, error } = await db.from('residents')
@@ -1669,11 +1813,16 @@ async function _openRestoreModal(r) {
             date_retour:        new Date().toISOString(),
             date_retour_prevue: r.date_retour_prevue || null,
             motif_sortie:       r.motif_sortie || null,
+            // Sans ce type, l'historique ne dirait pas s'il s'agissait
+            // de vacances ou d'une hospitalisation
+            type_sortie:         r.statut_depart || 'vacances',
+            etablissement_sante: r.etablissement_sante || null,
           });
         }
         const { error } = await db.from('residents').update({
           statut_depart: null, date_sortie: null,
-          date_retour_prevue: null, motif_sortie: null, actif: true
+          date_retour_prevue: null, motif_sortie: null,
+          etablissement_sante: null, actif: true
         }).eq('id', r.id);
         if (error) { toastError(error.message); return; }
         toastSuccess(t('depart.restoreOk'));
