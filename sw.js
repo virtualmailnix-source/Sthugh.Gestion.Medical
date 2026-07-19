@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_NAME = 'sthugh-medical-v39';
+const CACHE_NAME = 'sthugh-medical-v40';
 
 const STATIC_ASSETS = [
   './',

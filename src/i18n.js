@@ -7,6 +7,7 @@ const T = {
     nav: {
       dashboard:'Tableau de bord', residents:'Résidents', medecins:'Médecins',
       traitements:'Traitements', consultations:'Consultations', rdv:'Rendez-vous',
+      hopitaux:'Hôpitaux',
       planification:'Planification', alertes:'Alertes', statistiques:'Statistiques',
       aide:'Aide', anniversaires:'Anniversaires', visites:'Visites', departs:'Sorties',
       courses:'Courses', manager:'Administration',
@@ -27,6 +28,7 @@ const T = {
     },
     routes: {
       dashboard:'Tableau de bord', residents:'Résidents', medecins:'Médecins traitants',
+      hopitaux:'Hôpitaux',
       traitements:'Traitements en cours', consultations:'Consultations',
       'rendez-vous':'Rendez-vous', planification:'Planification des visites',
       alertes:'Alertes & Notifications', statistiques:'Statistiques',
@@ -279,6 +281,28 @@ const T = {
       usualRange:'plage usuelle',
       unusualTitle:'Valeurs inhabituelles détectées',
       unusualConfirm:'Vérifiez la saisie. Cliquez à nouveau sur Enregistrer pour confirmer ces valeurs.',
+    },
+
+    hospitals: {
+      title:'Hôpitaux', subtitle:'Annuaire des établissements de santé',
+      searchPlaceholder:'Nom, adresse…',
+      add:'Nouvel établissement',
+      allTypes:'Tous les types',
+      type_hopital:'Hôpital', type_clinique:'Clinique', type_cabinet:'Cabinet',
+      sector_public:'Public', sector_prive:'Privé',
+      secIdentity:'Identité', secContact:'Coordonnées',
+      name:'Nom', type:'Type', phone2:'Téléphone 2',
+      activeLabel:'Établissement actif',
+      doctorsCount:'médecins',
+      formTitleNew:'Nouvel établissement', formTitleEdit:'Modifier l\'établissement',
+      created:'Établissement enregistré', modified:'Établissement modifié',
+      deleted:'Établissement supprimé',
+      deleteConfirm:'Supprimer cet établissement de l\'annuaire ?',
+      deleteNote:'Les rendez-vous et dossiers qui y renvoient sont conservés : ils repasseront simplement en texte libre.',
+      duplicateName:'Un établissement porte déjà ce nom.',
+      emptyDirectory:'L\'annuaire est vide. Ajoutez vos établissements, ils seront ensuite proposés dans les rendez-vous et les hospitalisations.',
+      loadError:'Erreur de chargement des établissements',
+      freeText:'Autre (saisir le nom)',
     },
 
     appointments: {
@@ -616,6 +640,7 @@ const T = {
     nav: {
       dashboard:'Dashboard', residents:'Residents', medecins:'Doctors',
       traitements:'Treatments', consultations:'Consultations', rdv:'Appointments',
+      hopitaux:'Hospitals',
       planification:'Planning', alertes:'Alerts', statistiques:'Statistics',
       aide:'Help', anniversaires:'Birthdays', visites:'Visits', departs:'Exits',
       courses:'Shopping', manager:'Administration',
@@ -637,6 +662,7 @@ const T = {
     },
     routes: {
       dashboard:'Dashboard', residents:'Residents', medecins:'Attending Doctors',
+      hopitaux:'Hospitals',
       traitements:'Active Treatments', consultations:'Consultations',
       'rendez-vous':'Appointments', planification:'Visit Planning',
       alertes:'Alerts & Notifications', statistiques:'Statistics',
@@ -889,6 +915,28 @@ const T = {
       usualRange:'usual range',
       unusualTitle:'Unusual values detected',
       unusualConfirm:'Please check the entry. Click Save again to confirm these values.',
+    },
+
+    hospitals: {
+      title:'Hospitals', subtitle:'Healthcare facility directory',
+      searchPlaceholder:'Name, address…',
+      add:'New facility',
+      allTypes:'All types',
+      type_hopital:'Hospital', type_clinique:'Clinic', type_cabinet:'Practice',
+      sector_public:'Public', sector_prive:'Private',
+      secIdentity:'Identity', secContact:'Contact details',
+      name:'Name', type:'Type', phone2:'Phone 2',
+      activeLabel:'Active facility',
+      doctorsCount:'doctors',
+      formTitleNew:'New facility', formTitleEdit:'Edit facility',
+      created:'Facility saved', modified:'Facility updated',
+      deleted:'Facility deleted',
+      deleteConfirm:'Remove this facility from the directory?',
+      deleteNote:'Appointments and records pointing to it are kept: they simply revert to free text.',
+      duplicateName:'A facility with this name already exists.',
+      emptyDirectory:'The directory is empty. Add your facilities and they will be offered in appointments and hospitalisations.',
+      loadError:'Could not load facilities',
+      freeText:'Other (type the name)',
     },
 
     appointments: {

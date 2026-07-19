@@ -11,6 +11,7 @@ import { t, getLang }                  from '../i18n.js';
 import { resolvePhotos, uploadPhoto, removePhoto, resolveOrdonnances } from '../storage.js';
 import { prepareImage } from '../image_tools.js';
 import { openFormConstante, constantesPaneHTML, courbeHTML, initCourbe, detruireCourbe } from '../constantes.js';
+import { listeHopitaux, optionsHopitaux } from './hopitaux.js';
 
 const PAGE_SIZE = 15;
 let _page = 1, _search = '', _filter = 'actif', _sexe = '', _tranche = '';
@@ -1680,8 +1681,9 @@ function _sk() {
 }
 
 // ── Gestion sorties / décès ───────────────────────────────
-export function _openDepartModal(r) {
-  const sa = isSuperAdmin();
+export async function _openDepartModal(r) {
+  const sa   = isSuperAdmin();
+  const hops = await listeHopitaux();
 
   const body = `<form id="form-depart">
     <div class="form-group">
@@ -1727,7 +1729,13 @@ export function _openDepartModal(r) {
     </div>
     <div class="form-group" id="etablissement-group" style="display:none">
       <label class="form-label">${t('depart.facility')}</label>
-      <input class="form-control" name="etablissement_sante" placeholder="${t('depart.facilityPlaceholder')}">
+      <select class="form-control" name="hopital_id" id="dep-hopital">
+        <option value="">—</option>
+        ${optionsHopitaux(hops, null)}
+        <option value="_libre">${t('hospitals.freeText')}</option>
+      </select>
+      <input class="form-control" name="etablissement_sante" id="dep-etablissement"
+        placeholder="${t('depart.facilityPlaceholder')}" style="margin-top:.5rem;${hops.length ? 'display:none' : ''}">
     </div>
     <div class="form-group" id="motif-sortie-group">
       <label class="form-label">${t('depart.exitReason')}</label>
@@ -1762,6 +1770,14 @@ export function _openDepartModal(r) {
       document.getElementById('deces-reason-group').style.display  = v === 'deces' ? '' : 'none';
     });
   });
+
+  // Tant que l'annuaire est incomplet, la saisie libre reste ouverte
+  document.getElementById('dep-hopital')?.addEventListener('change', e => {
+    const libre = e.target.value === '_libre' || e.target.value === '';
+    const champ = document.getElementById('dep-etablissement');
+    champ.style.display = libre ? '' : 'none';
+    if (!libre) champ.value = '';
+  });
 }
 
 async function _submitDepart(id) {
@@ -1776,8 +1792,13 @@ async function _submitDepart(id) {
     date_retour_prevue: fd.get('date_retour_prevue') || null,
     motif_sortie:      fd.get('motif_sortie') || null,
     motif_deces:       fd.get('motif_deces') || null,
-    // L'établissement n'a de sens que pour une hospitalisation
-    etablissement_sante: type === 'hospitalisation' ? (fd.get('etablissement_sante') || null) : null,
+    // L'établissement n'a de sens que pour une hospitalisation. Une
+    // fiche d'annuaire prime sur le nom saisi librement.
+    hopital_id: type === 'hospitalisation' && fd.get('hopital_id') && fd.get('hopital_id') !== '_libre'
+      ? fd.get('hopital_id') : null,
+    etablissement_sante: type === 'hospitalisation'
+      && (!fd.get('hopital_id') || fd.get('hopital_id') === '_libre')
+      ? (fd.get('etablissement_sante') || null) : null,
     // Absences temporaires : le résident reste actif et compté dans
     // l'effectif. Départ et décès le retirent.
     actif:             type === 'vacances' || type === 'hospitalisation',
@@ -1826,7 +1847,7 @@ async function _openRestoreModal(r) {
         const { error } = await db.from('residents').update({
           statut_depart: null, date_sortie: null,
           date_retour_prevue: null, motif_sortie: null,
-          etablissement_sante: null, actif: true
+          etablissement_sante: null, hopital_id: null, actif: true
         }).eq('id', r.id);
         if (error) { toastError(error.message); return; }
         toastSuccess(t('depart.restoreOk'));

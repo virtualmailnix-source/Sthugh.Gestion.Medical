@@ -4,6 +4,7 @@ import { toastSuccess, toastError } from '../toast.js';
 import { escapeHtml, fullName, initials, debounce, telHref } from '../utils.js';
 import { isSuperAdmin, isMedicalStaff } from '../auth.js';
 import { t } from '../i18n.js';
+import { listeHopitaux, optionsHopitaux } from './hopitaux.js';
 
 // Liste fermée des spécialités. Elle doit rester ALIGNÉE SUR LA
 // CONTRAINTE `doctors_specialite_check` du SQL 32 : une valeur
@@ -67,7 +68,8 @@ async function _load() {
 
   let query = db.from('doctors').select(`
     id, titre, nom, prenom, specialite, telephone, telephone2, email,
-    clinique, jours_consultation, notes, actif, secteur,
+    clinique, jours_consultation, notes, actif, secteur, hopital_id,
+    hopitaux ( nom ),
     nb_residents:residents(count)
   `).order('nom');
 
@@ -105,7 +107,7 @@ async function _load() {
             ${d.telephone ? `<div><i class="bi bi-telephone-fill" style="color:var(--teal-light);margin-right:.5rem"></i><a href="${telHref(d.telephone)}" style="color:inherit">${d.telephone}</a></div>` : ''}
             ${d.telephone2 ? `<div><i class="bi bi-telephone-fill" style="color:var(--teal-light);margin-right:.5rem"></i><a href="${telHref(d.telephone2)}" style="color:inherit">${d.telephone2}</a></div>` : ''}
             ${d.email ? `<div><i class="bi bi-envelope-fill" style="color:var(--teal-light);margin-right:.5rem"></i><a href="mailto:${escapeHtml(d.email)}" style="color:inherit">${escapeHtml(d.email)}</a></div>` : ''}
-            ${d.clinique ? `<div><i class="bi bi-building-fill" style="color:var(--teal-light);margin-right:.5rem"></i>${d.clinique}</div>` : ''}
+            ${d.hopitaux?.nom || d.clinique ? `<div><i class="bi bi-building-fill" style="color:var(--teal-light);margin-right:.5rem"></i>${escapeHtml(d.hopitaux?.nom || d.clinique)}</div>` : ''}
             ${d.jours_consultation ? `<div><i class="bi bi-calendar3" style="color:var(--teal-light);margin-right:.5rem"></i>${d.jours_consultation}</div>` : ''}
           </div>
           <div style="display:flex;align-items:center;justify-content:space-between;margin-top:1rem;padding-top:.75rem;border-top:1px solid var(--card-border)">
@@ -136,6 +138,7 @@ async function _load() {
 }
 
 export async function openFormMedecin(id) {
+  const hops = await listeHopitaux();
   let doc = null;
   if (id) {
     const { data } = await db.from('doctors').select('*').eq('id',id).single();
@@ -197,7 +200,13 @@ export async function openFormMedecin(id) {
       </div>
       <div class="form-group">
         <label class="form-label">${t('doctors.clinic')}</label>
-        <input class="form-control" name="clinique" value="${escapeHtml(d.clinique||'')}">
+        <select class="form-control" name="hopital_id" id="med-hopital">
+          <option value="">—</option>
+          ${optionsHopitaux(hops, d.hopital_id)}
+          <option value="_libre" ${!d.hopital_id && d.clinique ? 'selected' : ''}>${t('hospitals.freeText')}</option>
+        </select>
+        <input class="form-control" name="clinique" id="med-clinique" style="margin-top:.5rem;${(!d.hopital_id && d.clinique) || !hops.length ? '' : 'display:none'}"
+          placeholder="${t('doctors.clinic')}" value="${escapeHtml(d.clinique||'')}">
       </div>
       <div class="form-group">
         <label class="form-label">${t('doctors.address')}</label>
@@ -225,6 +234,14 @@ export async function openFormMedecin(id) {
       { label: id ? t('common.modify') : t('common.save'), cls:'btn btn-primary', action: () => _submit(id) }
     ], 'modal-lg'
   );
+
+  // Tant que l'annuaire est incomplet, la saisie libre reste ouverte
+  document.getElementById('med-hopital')?.addEventListener('change', e => {
+    const libre = e.target.value === '_libre' || e.target.value === '';
+    const champ = document.getElementById('med-clinique');
+    champ.style.display = libre ? '' : 'none';
+    if (!libre) champ.value = '';
+  });
 }
 
 async function _submit(id) {
@@ -232,6 +249,13 @@ async function _submit(id) {
   if (!form.checkValidity()) { form.reportValidity(); return; }
   const fd   = new FormData(form);
   const data = Object.fromEntries([...fd.entries()].filter(([,v])=>v!==''));
+
+  // « _libre » n'est qu'un marqueur d'interface, pas une clé.
+  // Une fiche d'annuaire prime : le texte libre est alors effacé.
+  if (data.hopital_id === '_libre') delete data.hopital_id;
+  if (data.hopital_id) data.clinique = null;
+  else                 data.hopital_id = null;
+  if (fd.get('clinique') === '' && !data.hopital_id) data.clinique = null;
 
   const { error } = id
     ? await db.from('doctors').update(data).eq('id',id)

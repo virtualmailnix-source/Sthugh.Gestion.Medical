@@ -3,6 +3,7 @@ import { openModal, closeModal } from '../../script.js';
 import { toastSuccess, toastError } from '../toast.js';
 import { formatDate, formatTime, fullName, escapeHtml, todayISO, ymdLocal, joursNoms, moisNoms } from '../utils.js';
 import { t } from '../i18n.js';
+import { listeHopitaux, optionsHopitaux } from './hopitaux.js';
 
 // Qui, ou quoi, le rendez-vous vise : un médecin de la liste ou un
 // établissement saisi librement. Le lieu suit entre parenthèses quand
@@ -234,10 +235,15 @@ export async function openFormRdv(id, prefillResidentId, isUrgence=false) {
   if(id){const{data}=await db.from('rendez_vous').select('*').eq('id',id).single();rdv=data;}
   const r=rdv||{};
 
-  const [{data:ress},{data:docs}]=await Promise.all([
+  const [{data:ress},{data:docs},hops]=await Promise.all([
     db.from('residents').select('id,nom,prenom,numero_chambre,niveau_priorite').eq('actif',true).order('nom').order('prenom').limit(200),
     db.from('doctors').select('id,titre,nom,prenom').eq('actif',true).order('nom'),
+    listeHopitaux(),
   ]);
+
+  // Le RDV vise un établissement s'il porte une fiche d'annuaire ou,
+  // pour les RDV d'avant le lot I, un nom saisi en texte libre.
+  const versEtab = !!(r.hopital_id || r.etablissement);
 
   const resOpts=(ress||[]).map(p=>`<option value="${p.id}" ${(r.resident_id||prefillResidentId)===p.id?'selected':''}>${p.nom} ${p.prenom} - ${t('residents.colRoom')}${p.numero_chambre||'—'}${p.niveau_priorite===1?' (P1)':''}</option>`).join('');
   const docOpts=(docs||[]).map(d=>`<option value="${d.id}" ${r.medecin_id===d.id?'selected':''}>${d.titre||'Dr.'} ${d.prenom} ${d.nom}</option>`).join('');
@@ -276,20 +282,27 @@ export async function openFormRdv(id, prefillResidentId, isUrgence=false) {
       <label class="form-label">${t('appointments.withLabel')}</label>
       <div style="display:flex;gap:1.25rem;margin:.3rem 0 .5rem">
         <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;font-size:.88rem">
-          <input type="radio" name="cible" value="medecin" ${r.etablissement ? '' : 'checked'}>
+          <input type="radio" name="cible" value="medecin" ${versEtab ? '' : 'checked'}>
           ${t('appointments.withDoctor')}
         </label>
         <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;font-size:.88rem">
-          <input type="radio" name="cible" value="etablissement" ${r.etablissement ? 'checked' : ''}>
+          <input type="radio" name="cible" value="etablissement" ${versEtab ? 'checked' : ''}>
           ${t('appointments.withFacility')}
         </label>
       </div>
-      <select class="form-control" name="medecin_id" id="rdv-medecin" style="${r.etablissement ? 'display:none' : ''}">
+      <select class="form-control" name="medecin_id" id="rdv-medecin" style="${versEtab ? 'display:none' : ''}">
         <option value="">—</option>${docOpts}
       </select>
-      <input class="form-control" name="etablissement" id="rdv-etablissement"
-        placeholder="${t('appointments.facilityPlaceholder')}"
-        value="${escapeHtml(r.etablissement||'')}" style="${r.etablissement ? '' : 'display:none'}">
+      <div id="rdv-etab-zone" style="${versEtab ? '' : 'display:none'}">
+        <select class="form-control" name="hopital_id" id="rdv-hopital">
+          <option value="">${hops.length ? '—' : ''}</option>
+          ${optionsHopitaux(hops, r.hopital_id)}
+          <option value="_libre" ${!r.hopital_id && r.etablissement ? 'selected' : ''}>${t('hospitals.freeText')}</option>
+        </select>
+        <input class="form-control" name="etablissement" id="rdv-etablissement"
+          placeholder="${t('appointments.facilityPlaceholder')}" style="margin-top:.5rem;${(!r.hopital_id && r.etablissement) || !hops.length ? '' : 'display:none'}"
+          value="${escapeHtml(r.etablissement||'')}">
+      </div>
     </div>
 
     <div class="form-group"><label class="form-label">${t('appointments.reason')}</label><input class="form-control" name="motif" value="${escapeHtml(r.motif||'')}"></div>
@@ -316,13 +329,26 @@ export async function openFormRdv(id, prefillResidentId, isUrgence=false) {
   document.querySelectorAll('input[name="cible"]').forEach(radio =>
     radio.addEventListener('change', () => {
       const versMedecin = document.querySelector('input[name="cible"]:checked')?.value === 'medecin';
-      document.getElementById('rdv-medecin').style.display       = versMedecin ? '' : 'none';
-      document.getElementById('rdv-etablissement').style.display = versMedecin ? 'none' : '';
-      // Vider le champ masqué : sans cela un RDV porterait les deux
-      if (versMedecin) document.getElementById('rdv-etablissement').value = '';
-      else             document.getElementById('rdv-medecin').value = '';
+      document.getElementById('rdv-medecin').style.display  = versMedecin ? '' : 'none';
+      document.getElementById('rdv-etab-zone').style.display = versMedecin ? 'none' : '';
+      // Vider les champs masqués : sans cela un RDV porterait les deux
+      if (versMedecin) {
+        document.getElementById('rdv-etablissement').value = '';
+        document.getElementById('rdv-hopital').value = '';
+      } else {
+        document.getElementById('rdv-medecin').value = '';
+      }
     })
   );
+
+  // « Autre » révèle la saisie libre : tant que l'annuaire est
+  // incomplet, aucun établissement ne doit être impossible à saisir.
+  document.getElementById('rdv-hopital')?.addEventListener('change', e => {
+    const libre = e.target.value === '_libre' || e.target.value === '';
+    const champ = document.getElementById('rdv-etablissement');
+    champ.style.display = libre ? '' : 'none';
+    if (!libre) champ.value = '';
+  });
 }
 
 async function _submit(id) {
@@ -340,10 +366,20 @@ async function _submit(id) {
   // Un RDV vise un médecin OU un établissement, jamais les deux : le
   // champ non retenu est remis à null, sinon la valeur précédente
   // resterait en base lors d'une modification.
-  if (versMedecin) data.etablissement = null;
-  else             data.medecin_id    = null;
+  // « _libre » n'est qu'un marqueur d'interface, pas une clé
+  if (data.hopital_id === '_libre') delete data.hopital_id;
 
-  if (!data.medecin_id && !data.etablissement) {
+  if (versMedecin) {
+    data.etablissement = null;
+    data.hopital_id    = null;
+  } else {
+    data.medecin_id = null;
+    // Une fiche d'annuaire prime : le nom vient d'elle, pas du texte
+    if (data.hopital_id) data.etablissement = null;
+    else                 data.hopital_id    = null;
+  }
+
+  if (!data.medecin_id && !data.etablissement && !data.hopital_id) {
     toastError(t('appointments.targetRequired'));
     return;
   }

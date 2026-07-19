@@ -1,6 +1,7 @@
 import { renderDashboard }     from './pages/dashboard.js';
 import { renderResidents }     from './pages/residents.js';
 import { renderMedecins }      from './pages/medecins.js';
+import { renderHopitaux }      from './pages/hopitaux.js';
 import { renderTraitements }   from './pages/traitements.js';
 import { renderConsultations } from './pages/consultations.js';
 import { renderRendezVous }    from './pages/rendez-vous.js';
@@ -23,6 +24,7 @@ const ROUTES = {
   'dashboard':     { render: renderDashboard,     titleKey: 'routes.dashboard' },
   'residents':     { render: renderResidents,     titleKey: 'routes.residents' },
   'medecins':      { render: renderMedecins,      titleKey: 'routes.medecins' },
+  'hopitaux':      { render: renderHopitaux,      titleKey: 'routes.hopitaux' },
   'traitements':   { render: renderTraitements,   titleKey: 'routes.traitements' },
   'consultations': { render: renderConsultations, titleKey: 'routes.consultations' },
   'rendez-vous':   { render: renderRendezVous,    titleKey: 'routes.rendez-vous' },
@@ -40,7 +42,7 @@ const ROUTES = {
 };
 
 // Pages autorisées pour la réceptionniste (accueil)
-export const RECEPTION_PAGES = ['residents','medecins','visites','departs','courses','anniversaires','aide','monprofil'];
+export const RECEPTION_PAGES = ['residents','medecins','hopitaux','visites','departs','courses','anniversaires','aide','monprofil'];
 
 // Pages réservées au super admin (revérifié côté serveur par la RLS)
 export const SUPER_PAGES = ['panel-admin'];
